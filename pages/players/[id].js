@@ -42,7 +42,7 @@ const PlayerPage = ({id}) => {
         <div className={s.main}>
             <h1>Player Stats</h1>
             <div>
-                {!person_loading ? (
+                {!person_loading && person_data ? (
                     <div>
                     <h2>{person_data.people[0].fullName}</h2>
                     <p>{person_data.people[0].birthDate}</p>
@@ -66,7 +66,7 @@ const PlayerPage = ({id}) => {
                     <th>Pts</th>
                     <th>PIM</th>
                 </tr>
-                {!stat_loading && !!stat_data?.stats[0] ? stat_data.stats[0].splits.map((szn) => {
+                {!stat_loading && !!stat_data.stats[0] ? stat_data.stats[0].splits.map((szn) => {
                         return (
                         <tr>
                             <td>{szn.season.substring(0,4)+'/'+szn.season.substring(4,8)}</td>
@@ -76,11 +76,10 @@ const PlayerPage = ({id}) => {
                             <td>{szn.stat.goals}</td>
                             <td>{szn.stat.assists}</td>
                             <td>{szn.stat.points}</td>
-                            {/* <td>{szn.stat.pim}</td> */}
-                            <td>hey</td>
+                            <td>{szn.stat.pim}</td>
                         </tr>)          
                 }) :
-                <td>fuk u</td>
+                <p>Loading...</p>
                 }
             </table>
         </div>
