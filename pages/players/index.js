@@ -29,7 +29,7 @@ export default function Players() {
                                 return (
                                     <li key={person.person.id}>
                                         {/* <p>{person.person.fullName}</p> */}
-                                        <Link href={`/${encodeURIComponent(person.person.id)}`}>
+                                        <Link href={`/players/${encodeURIComponent(person.person.id)}`}>
                                             <a>{person.person.fullName}</a>
                                         </Link>
                                     </li>
