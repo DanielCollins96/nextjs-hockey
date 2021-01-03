@@ -10,20 +10,9 @@ export default function Home() {
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <header>
-        <nav>
-          <ul>
-            <li>
-            <Link href="/players">
-              <a>Players</a>
-            </Link>
-            </li>
-          </ul>
-        </nav>
-      </header>
       <main className={styles.main}>
         <div className={styles.grid}>
-
+          Big dick
         </div>
       </main>
 
