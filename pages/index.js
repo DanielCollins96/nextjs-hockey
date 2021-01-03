@@ -14,7 +14,9 @@ export default function Home() {
         <nav>
           <ul>
             <li>
-              
+            <Link href="/players">
+              <a>Players</a>
+            </Link>
             </li>
           </ul>
         </nav>
