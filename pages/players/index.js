@@ -1,14 +1,14 @@
 import Link from 'next/link'
 import { useQuery } from 'react-query';
 
-const fetchTeams = async () => {
+const fetchPlayers = async () => {
     const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
     const resJson = await res.json();
 
     return resJson.teams
 };
 export default function Players() {
-    const { isLoading, isError, data, error } = useQuery('teams', fetchTeams)
+    const { isLoading, isError, data, error } = useQuery('players', fetchPlayers)
     console.log(data)
     if (isLoading) {
         return <span>Loading...</span>

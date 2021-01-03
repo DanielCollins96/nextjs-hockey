@@ -12,6 +12,9 @@ const Header = () => {
                     <Link href="/players">
                         <a className={s.link}>Players</a>
                     </Link>
+                    <Link href="/teams">
+                        <a className={s.link}>Teams</a>
+                    </Link>
                 </ul>
             </nav>
         </div>
