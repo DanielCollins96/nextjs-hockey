@@ -36,20 +36,30 @@ export default function TeamPage({id}) {
     const result = 
     useQueries
     ([
-        { queryKey: 'fetchYearlyStats', queryFn: async () => {
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&`);
-            const seasonStats = await res.json()
-            return seasonStats.teams
-            } 
+        { 
+            queryKey: 'fetchTeam', 
+            queryFn: async () => {
+                const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
+                const teamRes = await res.json()
+                return teamRes.teams
+            }
         },
-        { queryKey: 'fetchTeam', queryFn: async () => {
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
-            const teamRes = await res.json()
-            return teamRes.teams
-            } 
+        { 
+            queryKey: 'fetchYearlyStats', 
+            queryFn: async () => {
+                const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&`);
+                const seasonStats = await res.json()
+                return seasonStats.teams
+            },
+            {
+                enabled: team_data,
+            }
         },
     ])
-    const { [0]: {data: season_data, isLoading: season_loading, isError: isSErr, error: sErr}, [1]: { data: team_data, isLoading: team_loading, isError: isTErr, error:  tErr} } = result
+    const { 
+        [0]: { data: team_data, isLoading: team_loading, isError: isTErr, error:  tErr}, 
+        [1]: {data: season_data, isLoading: season_loading, isError: isSErr, error: sErr}, 
+    } = result
     // const { isLoading, isError, data, error } = response
     // console.log(id)
     console.log(season_data)
@@ -71,6 +81,7 @@ export default function TeamPage({id}) {
         :
         <p>Data Not Found</p>}
         {/* <p>{JSON.stringify(team_data)}</p> */}
+        
         <svg width={width} height={height}>
         {testData.map((d, i) => {
             const barHeight = yMax - yPoint(d);
