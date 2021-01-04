@@ -32,37 +32,45 @@ export default function TeamPage({id}) {
     const compose = (scale, accessor) => dataVal => scale(accessor(dataVal));
     const xPoint = compose(xScale, x);
     const yPoint = compose(yScale, y);
+
+    const { data: team_data } = useQuery('fetchTeam', async () => {
+        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
+        const teamRes = await res.json()
+        return teamRes.teams
+    })
+    console.log(!!team_data)
+    // console.log(parseInt(team_data[0]?.firstYearOfPlay)+1)
+    // console.log(!!team_data[0].firstYearOfPlay)
     
-    const result = 
-    useQueries
-    ([
-        { 
-            queryKey: 'fetchTeam', 
-            queryFn: async () => {
-                const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
-                const teamRes = await res.json()
-                return teamRes.teams
-            }
-        },
-        { 
-            queryKey: 'fetchYearlyStats', 
-            queryFn: async () => {
-                const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&`);
-                const seasonStats = await res.json()
-                return seasonStats.teams
-            },
-            {
-                enabled: team_data,
-            }
-        },
-    ])
-    const { 
-        [0]: { data: team_data, isLoading: team_loading, isError: isTErr, error:  tErr}, 
-        [1]: {data: season_data, isLoading: season_loading, isError: isSErr, error: sErr}, 
-    } = result
+    const { data: yearly_data } = useQuery(['fetchSeasons', id], async () => {
+                    console.log('sdhsjjsjsjsj')
+                    let seasons = [];
+                    for (let i = parseInt(team_data[0].firstYearOfPlay); i < 2019; i++) {
+                        console.log(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${team_data[0].firstYearOfPlay}${parseInt(team_data[0].firstYearOfPlay)+1}`);
+                        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${team_data[0].firstYearOfPlay}${parseInt(team_data[0].firstYearOfPlay)+1}`);
+                        const seasonStats = await res.json()
+                        if (!!seasonStats.teams) {
+                            console.log(typeof seasonStats.teams[0].teamStats[0])
+                            seasons.push({...seasonStats.teams[0].teamStats[0], ...{'year': i}})
+                        }
+                    }
+                    let val = await Promise.all(seasons)
+                    // console.log(val)
+                    return val
+                },
+                {
+                    enabled: !!team_data
+                    // enabled: true
+                })
+console.log(yearly_data)
+
+    // const { 
+    //     [0]: { data: team_data, isLoading: team_loading, isError: isTErr, error:  tErr}, 
+    //     [1]: {data: season_data, isLoading: season_loading, isError: isSErr, error: sErr}, 
+    // } = result
     // const { isLoading, isError, data, error } = response
     // console.log(id)
-    console.log(season_data)
+    // console.log(season_data)
     // if (season_loading || team_loading) {
     //     return <span>Loading...</span>
     //   }
@@ -72,7 +80,7 @@ export default function TeamPage({id}) {
     // }
     return (
         <div>
-        {!isTErr && !!team_data ? 
+        {!!team_data ? 
         <div>
         <h3>{team_data[0].name}</h3>
         <p>{team_data[0].firstYearOfPlay}</p>
