@@ -18,16 +18,17 @@ export default function TeamPage({id}) {
     const { data: yearly_data } = useQuery(['fetchSeasons', id], async () => {
                     console.log('sdhsjjsjsjsj')
                     let seasons = [];
-                    for (let i = parseInt(team_data[0].firstYearOfPlay,10); i < 2019; i++) {
-                        console.log(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${team_data[0].firstYearOfPlay}${parseInt(team_data[0].firstYearOfPlay, 10)+1}`);
-                        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${team_data[0].firstYearOfPlay}${parseInt(team_data[0].firstYearOfPlay)+1}`);
+                    // for (let i = parseInt(team_data[0].firstYearOfPlay,10); i < 2019; i++) {
+                    for (let i = 2008; i < 2020; i++) {
+                        console.log(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${i}${i+1}`);
+                        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${i}${i+1}`);
                         const seasonStats = await res.json()
                         if (!!seasonStats.teams) {
                             console.log(typeof seasonStats.teams[0].teamStats[0])
                             seasons.push({...seasonStats.teams[0].teamStats[0], ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)}})
                         }
                     }
-                    let val = await Promise.all(seasons)
+                    let val = await Promise.allSettled(seasons)
                     // console.log(val)
                     return val
                 },
@@ -72,8 +73,8 @@ console.log(yearly_data)
         }}
         >
             <YAxis />
-            <XAxis dataKey="year" />
-            <Line type="monotone" dataKey="wins" stroke="#7FFFD4" />
+            <XAxis dataKey="value.year" />
+            <Line type="monotone" dataKey="value.wins" stroke="#7FFFD4" />
         </LineChart>
         </div>
     )
