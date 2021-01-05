@@ -1,6 +1,6 @@
 import { useQuery, useQueries } from 'react-query';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
   } from 'recharts';
 import s from './team.module.css';
 
@@ -15,7 +15,7 @@ export default function TeamPage({id}) {
     // console.log(parseInt(team_data[0]?.firstYearOfPlay)+1)
     // console.log(!!team_data[0].firstYearOfPlay)
     
-    const { data: yearly_data } = useQuery(['fetchSeasons', id], async () => {
+    const { data: yearly_data, isLoading: seasonsLoading } = useQuery(['fetchSeasons', id], async () => {
                     console.log('sdhsjjsjsjsj')
                     let seasons = [];
                     // for (let i = parseInt(team_data[0].firstYearOfPlay,10); i < 2019; i++) {
@@ -36,7 +36,7 @@ export default function TeamPage({id}) {
                     enabled: !!team_data
                     // enabled: true
                 })
-console.log(yearly_data)
+console.log(seasonsLoading)
 
     // const { 
     //     [0]: { data: team_data, isLoading: team_loading, isError: isTErr, error:  tErr}, 
@@ -56,7 +56,7 @@ console.log(yearly_data)
     return (
         <div>
         {!!team_data ? 
-        <div>
+        <div style={{'textAlign': 'center'}}>
         <h3>{team_data[0].name}</h3>
         <p>{team_data[0].firstYearOfPlay}</p>
         <p>{team_data[0].officialSiteUrl}</p>
@@ -64,18 +64,34 @@ console.log(yearly_data)
         :
         <p>Data Not Found</p>}
         {/* <p>{JSON.stringify(team_data)}</p> */}
-        <LineChart
-        width={500}
-        height={300}
-        data={yearly_data}
-        margin={{
-          top: 5, right: 30, left: 20, bottom: 5,
-        }}
-        >
-            <YAxis />
-            <XAxis dataKey="value.year" />
-            <Line type="monotone" dataKey="value.wins" stroke="#7FFFD4" />
-        </LineChart>
+        <div className={s.flexCenter}>
+            {seasonsLoading ? 
+            <div className={s.spinner}>
+                <div className={s.bounce1}></div>
+                <div className={s.bounce2}></div>
+                <div className={s.bounce3}></div>
+            </div> :
+
+            <LineChart
+                width={500}
+                height={300}
+                data={yearly_data}
+                // margin={{
+                    // right: 30, left: 20, bottom:
+                    // }}
+                    >
+                {/* <CartesianGrid stroke="#f5f5f5" fill="#e6e6e6" /> */}
+                <YAxis>
+                <Label value="Games" angle={-90} position="insideLeft" />
+                </YAxis>
+                <XAxis dataKey="value.year">
+                    <Label value="Season" offset={0} position="insideBottom" /> 
+                </XAxis>
+                <Tooltip />
+                <Line type="monotone" dataKey="value.wins" stroke="#7FFFD4" />
+            </LineChart>
+            }
+        </div>
         </div>
     )
 };
