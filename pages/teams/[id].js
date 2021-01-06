@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { useState } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
@@ -43,23 +45,17 @@ console.log(seasonsLoading)
     //     [1]: {data: season_data, isLoading: season_loading, isError: isSErr, error: sErr}, 
     // } = result
     // const { isLoading, isError, data, error } = response
-    // console.log(id)
-    // console.log(season_data)
-    // if (season_loading || team_loading) {
-    //     return <span>Loading...</span>
-    //   }
-    
-    // if (isSErr || isTErr) {
-    //     return <span>Error: </span>
-    // }
-    let sumdata = [8,12,5,9,10]
+
     return (
         <div>
         {!!team_data ? 
         <div style={{'textAlign': 'center'}}>
         <h3>{team_data[0].name}</h3>
         <p>{team_data[0].firstYearOfPlay}</p>
-        <p>{team_data[0].officialSiteUrl}</p>
+        <Link href={`${team_data[0].officialSiteUrl}`}>
+            <a>{team_data[0].officialSiteUrl}</a>
+        </Link>
+        
         </div>
         :
         <p>Data Not Found</p>}
@@ -82,13 +78,13 @@ console.log(seasonsLoading)
                     >
                 {/* <CartesianGrid stroke="#f5f5f5" fill="#e6e6e6" /> */}
                 <YAxis>
-                <Label value="Games" angle={-90} position="insideLeft" />
+                <Label value="Wins" angle={-90} position="insideLeft" />
                 </YAxis>
                 <XAxis dataKey="value.year">
                     <Label value="Season" offset={0} position="insideBottom" /> 
                 </XAxis>
                 <Tooltip />
-                <Line type="monotone" dataKey="value.wins" stroke="#7FFFD4" />
+                <Line type="monotone" dataKey="value.wins" strokeWidth={2} stroke="#009966" />
             </LineChart>
             }
         </div>

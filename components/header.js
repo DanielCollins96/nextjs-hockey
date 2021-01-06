@@ -15,6 +15,9 @@ const Header = () => {
                     <Link href="/teams">
                         <a className={s.link}>Teams</a>
                     </Link>
+                    <Link href="/chart">
+                        <a className={s.link}>Chart Maker</a>
+                    </Link>
                 </ul>
             </nav>
         </div>
