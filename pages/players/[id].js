@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
+import Table from '../../components/Table';
 import s from './player.module.css';
 
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
@@ -7,15 +9,6 @@ import s from './player.module.css';
 const PlayerPage = ({id}) => {
     console.log('why')
     console.log(id)
-    // console.log(pathname)
-    // const router = useRouter()
-    // const { id } = router.query
-    // console.log(query)
-    // const { isLoading, isError, data, error } = useQuery('fetchPlayer', async () => {
-    //     const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}`);
-    //     const playerRes = await res.json()
-    //     return playerRes
-    // })
 
     const result = 
     useQueries
@@ -34,8 +27,43 @@ const PlayerPage = ({id}) => {
         },
     ])
     const { [0]: {data: stat_data, isLoading: stat_loading}, [1]: { data: person_data, isLoading: person_loading } } = result
-    // console.log(player)
-    // console.log(stats)
+
+    const columns = useMemo(
+        () => [
+             {
+                 Header: 'Season',
+                 accessor: 'season' 
+             },
+             {
+                 Header: 'Team',
+                 accessor: 'team'
+             },
+            // {
+            //      Header: 'League',
+            //      accessor: 'league'
+            //  },
+            // {
+            //      Header: 'GP',
+            //      accessor: 'gp'
+            //  },
+            // {
+            //      Header: 'Goals',
+            //      accessor: 'g'
+            //  },
+            // {
+            //      Header: 'Assists',
+            //      accessor: 'a'
+            //  },
+            // {
+            //      Header: 'Points',
+            //      accessor: 'pts'
+            //  },
+            //  {
+            //      Header: 'PIM',
+            //      accessor: 'pim'
+            //  },
+        ]
+    )
     console.log(result)
     console.log(stat_loading)
     return (
@@ -55,7 +83,10 @@ const PlayerPage = ({id}) => {
             }
             </div>
             {/* {JSON.stringify(stat_data.stats[0].splits)} */}
-            <table className={s.table}>
+            
+            
+            
+            {/* <table className={s.table}>
                 <tr>
                     <th>Season</th>
                     <th>Team</th>
@@ -81,7 +112,7 @@ const PlayerPage = ({id}) => {
                 }) :
                 <p>Loading...</p>
                 }
-            </table>
+            </table> */}
         </div>
     )
 };

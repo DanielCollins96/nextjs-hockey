@@ -46,4 +46,13 @@
     justify-content: center;
 }
 
+.parent {
+  display: grid;
+  grid-template-columns: minmax(150px, 25%) 1fr;
+}
+
+.content {
+  margin: 0 24px;
+}
+
 

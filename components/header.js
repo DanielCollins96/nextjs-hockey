@@ -3,7 +3,7 @@ import s from './header.module.css'
 const Header = () => {
     return (
         <div className={s.navbar}>
-            <h2>Those stats fam</h2>
+            <h2 className={s.logo}>Those stats fam &copy;</h2>
             <nav>
                 <ul className={s.list}>
                     <Link href="/">
