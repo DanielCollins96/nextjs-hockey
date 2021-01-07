@@ -1,4 +1,4 @@
-import { useTable, useSortBy  } from 'react-table'
+import { useTable, useSortBy,useFilters } from 'react-table'
 
 
 export default function Table({ columns, data }) {
