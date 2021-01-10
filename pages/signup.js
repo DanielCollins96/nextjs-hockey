@@ -22,7 +22,7 @@ export default function Signup() {
     
     const submitCredentials = async credentials => {
         try {
-            console.log(credentials)
+            console.log(JSON.stringify(credentials))
           setLoginLoading(true);
         //   const { message } = await publicFetch.post(
         //     `signup`,
@@ -30,9 +30,11 @@ export default function Signup() {
         //   );
         let message = await fetch('signup', {
             method: 'POST',
-            credentials
-        })
-            console.log(message)
+            body: credentials
+          })
+          // body: JSON.stringify(credentials)
+        let val = await message.json()
+            console.log(val)
           // authContext.setAuthState(data);
           setSignupSuccess(message);
           setSignupError('');
