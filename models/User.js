@@ -20,11 +20,11 @@ const UserSchema = new mongoose.Schema({
 },
 {timestamps: true});
 
-UserSchema.methods.setPassword = (password) => {
-    const newPass = await hashPassword(password);
-    this.password = newPass;
-}
+// UserSchema.methods.setPassword = (password) => {
+//     const newPass = await hashPassword(password);
+//     this.password = newPass;
+// }
 
-mongoose.model('User', UserSchema);
+export default mongoose.model('User', UserSchema);
 
 

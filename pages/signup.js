@@ -2,6 +2,9 @@ import { useContext, useState } from 'react';
 import { Form, Formik, Field, ErrorMessage } from "formik";
 import * as Yup from 'yup';
 import { useRouter } from 'next/router';
+import { publicFetch } from '../utils/fetch';
+
+
 
 const signupSchema = Yup.object().shape({
     userName: Yup.string().required('Username is required'),
@@ -19,21 +22,29 @@ export default function Signup() {
     
     const submitCredentials = async credentials => {
         try {
+            console.log(credentials)
           setLoginLoading(true);
-          const { data } = await publicFetch.post(
-            `signup`,
+        //   const { message } = await publicFetch.post(
+        //     `signup`,
+        //     credentials
+        //   );
+        let message = await fetch('signup', {
+            method: 'POST',
             credentials
-          );
-    
+        })
+            console.log(message)
           // authContext.setAuthState(data);
-          setSignupSuccess(data.message);
+          setSignupSuccess(message);
           setSignupError('');
     
           router.push('/dashboard');
         } catch (error) {
           setLoginLoading(false);
-          const { data } = error.response;
-          setSignupError(data.message);
+        //   const { data } = error.response;
+        //   const data = error;
+          console.log(error)
+        //   console.log(JSON.stringify(data))
+        //   setSignupError(message);
           setSignupSuccess('');
         }
       };
@@ -42,13 +53,12 @@ export default function Signup() {
         <div>
             <Formik
               initialValues={{ userName: '', email: '', password: ''}}
-              onSubmit={(data, {setSubmitting}) => {            
-                setTimeout(() => {
-                  alert(JSON.stringify(data, null, 2));
-                  setSubmitting(false);
-                }, 1400);
-              }}
               validationSchema={signupSchema}
+              onSubmit={(values, {setSubmitting}) => {            console.log('Values:', values)
+                //   alert(JSON.stringify(data, null, 2));
+                setSubmitting(false);
+                submitCredentials(values)
+              }}
             >
               {({
                 values,
@@ -62,18 +72,24 @@ export default function Signup() {
                             name="userName" 
                             type="input" 
                             placeholder="Username"/>
+                        <ErrorMessage name="userName" /> 
                     </div>
                     <div>
                         <Field 
                             name="email" 
                             type="email"
                             placeholder="Email"/>
+                        <ErrorMessage name="email" /> 
                     </div>
                     <div>
                         <Field 
                             name="password" 
                             type="password"
                             placeholder="Password"/>
+                        <ErrorMessage name="password" /> 
+                    </div>
+                    <div>
+
                     </div>
                     <button type="submit" disabled={isSubmitting}>Submit</button>
                 <pre>{JSON.stringify(values, null, 2)}</pre>
