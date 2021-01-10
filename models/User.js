@@ -5,11 +5,18 @@ import {
 } from '../pages/api/util'
 
 const UserSchema = new mongoose.Schema({
-    username: String,
-    email: String,
-    firstName: String,
-    lastName: String,
-    password: String
+    username: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
 },
 {timestamps: true});
 

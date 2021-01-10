@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Form, Formik } from "formik";
+import { Form, Formik, Field, ErrorMessage } from "formik";
 import * as Yup from 'yup';
 import { useRouter } from 'next/router';
 
@@ -42,8 +42,7 @@ export default function Signup() {
         <div>
             <Formik
               initialValues={{ userName: '', email: '', password: ''}}
-              onSubmit={(data, {setSubmitting}) => {
-                
+              onSubmit={(data, {setSubmitting}) => {            
                 setTimeout(() => {
                   alert(JSON.stringify(data, null, 2));
                   setSubmitting(false);
@@ -55,41 +54,30 @@ export default function Signup() {
                 values,
                 handleChange,
                 handleBlur,
-                handleSubmit,
                 isSubmitting
               }) => (
-                <form onSubmit={handleSubmit}>
-                  <div>
-                  <label htmlFor="userName">Username</label>
-                  <input
-                    id="userName"
-                    name="userName"
-                    value={values.userName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  </div>
-                  <div>
-                  <label htmlFor="email">Email</label>
-                  <input
-                    name="email"
-                    value={values.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  </div>
-                  <div>
-                  <label htmlFor="password">Password</label>
-                  <input
-                    name="password"
-                    value={values.password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                  />
-                  </div>
-                  <button type="submit" disabled={isSubmitting}>Submit</button>
+                <Form>
+                    <div>
+                        <Field 
+                            name="userName" 
+                            type="input" 
+                            placeholder="Username"/>
+                    </div>
+                    <div>
+                        <Field 
+                            name="email" 
+                            type="email"
+                            placeholder="Email"/>
+                    </div>
+                    <div>
+                        <Field 
+                            name="password" 
+                            type="password"
+                            placeholder="Password"/>
+                    </div>
+                    <button type="submit" disabled={isSubmitting}>Submit</button>
                 <pre>{JSON.stringify(values, null, 2)}</pre>
-                </form>
+                </Form>
               )}
             </Formik>
         </div>
