@@ -3,6 +3,7 @@ import { Form, Formik, Field, ErrorMessage } from "formik";
 import * as Yup from 'yup';
 import { useRouter } from 'next/router';
 import { publicFetch } from '../utils/fetch';
+console.log(process.env.NEXT_PUBLIC_API_URL)
 
 
 
@@ -22,19 +23,21 @@ export default function Signup() {
     
     const submitCredentials = async credentials => {
         try {
-            console.log(JSON.stringify(credentials))
+          console.log(process.env.NEXT_PUBLIC_API_URL)
+          console.log(JSON.stringify(credentials))
           setLoginLoading(true);
-        //   const { message } = await publicFetch.post(
-        //     `signup`,
-        //     credentials
-        //   );
-        let message = await fetch('signup', {
-            method: 'POST',
-            body: credentials
-          })
-          // body: JSON.stringify(credentials)
-        let val = await message.json()
-            console.log(val)
+            // const { message } = await publicFetch.post(
+            const message = await publicFetch.post(
+              `signup`,
+              credentials
+            );
+          // let message = await fetch('signup', {
+          //     method: 'POST',
+          //     body: credentials
+          //   })
+            // body: JSON.stringify(credentials)
+          // let val = await message.json()
+          console.log(message.data)
           // authContext.setAuthState(data);
           setSignupSuccess(message);
           setSignupError('');

@@ -15,6 +15,11 @@
 
 .link {
     padding: 5px;
+    /* transition: .5s; */
+}
+
+.link:hover {
+    border-bottom: #000 2px solid;
 }
 
 .list {
