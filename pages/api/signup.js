@@ -24,7 +24,6 @@ if (req.method === 'POST') {
         console.log(User)
         // existingUser = true;
         let existingUser = await User.findOne({ email: email });
-        // let existingUser = await User.find({});
         console.log(existingUser)
         if (existingUser) {
             return res
