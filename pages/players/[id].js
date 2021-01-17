@@ -86,7 +86,7 @@ const PlayerPage = ({id}) => {
             
             
             
-            {/* <table className={s.table}>
+            <table className={s.table}>            
                 <tr>
                     <th>Season</th>
                     <th>Team</th>
@@ -112,7 +112,7 @@ const PlayerPage = ({id}) => {
                 }) :
                 <p>Loading...</p>
                 }
-            </table> */}
+            </table>
         </div>
     )
 };
