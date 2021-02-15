@@ -23,8 +23,14 @@
 }
 
 .list {
+    /* display: flex; */
     padding: 0;
     margin-left: 10px;
+    list-style-type: none;
+}
+
+.list__item {
+    /* text */
 }
 
 .logo {

@@ -8,18 +8,18 @@ const Header = () => {
             <h2 className={s.logo}>Those stats fam &copy;</h2>
             <nav>
                 <ul className={s.list}>
-                    <Link href="/">
+                    <li className={s.list__item}><Link href="/">
                         <a className={s.link}>Home</a>
-                    </Link>
-                    <Link href="/players">
+                    </Link></li>
+                    <li className={s.list__item}><Link href="/players">
                         <a className={s.link}>Players</a>
-                    </Link>
-                    <Link href="/teams">
+                    </Link></li>
+                    <li><Link href="/teams">
                         <a className={s.link}>Teams</a>
-                    </Link>
-                    <Link href="/chart">
+                    </Link></li>
+                    <li><Link href="/chart">
                         <a className={s.link}>Chart Maker</a>
-                    </Link>
+                    </Link></li>
                 </ul>
             </nav>
             </div>
@@ -32,7 +32,7 @@ const Header = () => {
                         <a className={s.link}>Sign-Up</a>
                     </Link>
                 </ul>
-            </nav>
+            </nav> 
         </div>
 
     )
