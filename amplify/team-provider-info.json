@@ -1,0 +1,20 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-hockeydata-staging-30534-authRole",
+      "UnauthRoleArn": "arn:aws:iam::510880872516:role/amplify-hockeydata-staging-30534-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::510880872516:role/amplify-hockeydata-staging-30534-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-hockeydata-staging-30534-deployment",
+      "UnauthRoleName": "amplify-hockeydata-staging-30534-unauthRole",
+      "StackName": "amplify-hockeydata-staging-30534",
+      "StackId": "arn:aws:cloudformation:us-west-2:510880872516:stack/amplify-hockeydata-staging-30534/d6cb42b0-7003-11eb-bc88-063358fac729",
+      "AmplifyAppId": "d3td3mop50tbpz"
+    },
+    "categories": {
+      "auth": {
+        "hockeydata": {}
+      }
+    }
+  }
+}
