@@ -6,7 +6,7 @@ import s from './layout.module.css';
 
 export default function Layout ({children, title = 'Hockey Stats'}) {
     return (
-        <div lassName={s.container}>
+        <div className={s.container}>
             <Head>
                 <title>Hockey</title>
                 <link rel="icon" href="/favicon.ico" />

@@ -5,8 +5,13 @@ import Layout from '../components/layout';
 
 import '../styles/globals.css'
 
-const queryClient = new QueryClient()
+import Amplify from 'aws-amplify';
+import config from '../aws-exports';
+Amplify.configure({
+  ...config, ssr: true
+});
 
+const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps }) {
   return (

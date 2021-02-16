@@ -3,8 +3,6 @@ import s from './header.module.css'
 const Header = () => {
     return (
         <div className={s.navbar}>
-            <div className={s.flex}>
-
             <h2 className={s.logo}>Those stats fam &copy;</h2>
             <nav>
                 <ul className={s.list}>
@@ -22,7 +20,6 @@ const Header = () => {
                     </Link></li>
                 </ul>
             </nav>
-            </div>
             <nav>
                 <ul className={s.list}>
                     <Link href="/login">
