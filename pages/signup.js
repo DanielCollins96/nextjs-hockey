@@ -27,6 +27,9 @@ const signupSchema = Yup.object().shape({
     email: Yup.string()
       .email('Invalid email')
       .required('Email is required'),
+    password: Yup.string().required('Password is required')
+      .min(8)
+
 });
 
 export default function Signup() {
@@ -38,41 +41,26 @@ export default function Signup() {
     return (
         <div className={s.center}>
             <Formik
-              initialValues={{ username: '', email: ''}}
+              initialValues={{ username: '', email: '', password: ''}}
               validationSchema={signupSchema}
-              onSubmit={ (values) => 
-                
-                {
+              onSubmit={ async (values) => {
                   try {
-                    console.log(JSON.stringify(values))
+                    console.log(JSON.stringify(values.username))
                     // alert(JSON.stringify(credentials))
-                    //   const message = await publicFetch.post(
-                    //     `signup`,
-                    //     credentials
-                    //   );
-                    // actions.setStatus = {
-                    //   message: res.data.message
-                    // };
-                    // const user = await Auth.signup({
-                    //   email, username
-                    // });
-                
-                    // setSignupSuccess(message);
-                    // setSignupError('');
-                
+                    const { email, username, password } = values;
+                    const user = await Auth.signUp({
+                      email, username, password
+                    });
+                    console.log(user)
+                    alert(user?.message)
                     router.push('/dashboard');
                   } catch (error) {
                     console.log(error);
+                    alert(error.message)
                     setLoginLoading(false);
-                    // setSignupSuccess('');
                   }
                 }
               }
-              // onSubmit={(values, {setSubmitting, setStatus}) => {            
-              //   console.log('Values:', values)
-              //   setSubmitting(false);
-              //   submitCredentials(values)
-              // }}
             >
               {({
                 values,
@@ -93,7 +81,6 @@ export default function Signup() {
                         type="input" 
                         placeholder="Username"
                         color="secondary"
-
                       />
                     </div>
                     <div>
@@ -104,6 +91,12 @@ export default function Signup() {
                       />                        
                     </div>
                     <div>
+                      <MyTextField 
+                        id="password" 
+                        name="password" 
+                        type="password" 
+                        placeholder="Password"
+                      />
                     </div>
                     {status && status.message && (
                       <div className="message">{status.message}</div>

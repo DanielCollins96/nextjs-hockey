@@ -15,7 +15,7 @@
 
 .link {
     padding: 5px; 
-    transition: .5s;
+    transition: .25s;
 }
 
 .link:hover {
@@ -31,7 +31,6 @@
 }
 
 .list__item {
-    /* text */
     padding: 5px;
     /* display: flex;
     align-items: center;
