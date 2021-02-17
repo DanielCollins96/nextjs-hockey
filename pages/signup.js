@@ -4,6 +4,8 @@ import * as Yup from 'yup';
 import { useRouter } from 'next/router';
 import { publicFetch } from '../utils/fetch';
 import { TextField, Button } from "@material-ui/core";
+import { Auth } from 'aws-amplify';
+import s from "./signup.module.css";
 
 function MyTextField({ placeholder, ...props}) {
   const [field, meta, helpers] = useField(props);
@@ -21,46 +23,51 @@ function MyTextField({ placeholder, ...props}) {
 }
 
 const signupSchema = Yup.object().shape({
-    userName: Yup.string().required('Username is required'),
+    username: Yup.string().required('Username is required'),
     email: Yup.string()
       .email('Invalid email')
       .required('Email is required'),
-    password: Yup.string().required('Password is required')
 });
-
-const submitCredentials = async (credentials, actions) => {
-  try {
-    console.log(JSON.stringify(credentials))
-      const message = await publicFetch.post(
-        `signup`,
-        credentials
-      );
-    actions.setStatus = {
-      message: res.data.message
-    };
-    console.log(message.data)
-    setSignupSuccess(message);
-    setSignupError('');
-
-    router.push('/dashboard');
-  } catch (error) {
-    setLoginLoading(false);
-    setSignupSuccess('');
-  }
-};
 
 export default function Signup() {
     const router = useRouter();
-    const [signupSuccess, setSignupSuccess] = useState();
-    const [signupError, setSignupError] = useState();
+    // const [signupSuccess, setSignupSuccess] = useState();
+    // const [signupError, setSignupError] = useState();
     const [loginLoading, setLoginLoading] = useState(false);
     
     return (
-        <div>
+        <div className={s.center}>
             <Formik
-              initialValues={{ userName: '', email: '', password: ''}}
+              initialValues={{ username: '', email: ''}}
               validationSchema={signupSchema}
-              onSubmit={submitCredentials}
+              onSubmit={ (values) => 
+                
+                {
+                  try {
+                    console.log(JSON.stringify(values))
+                    // alert(JSON.stringify(credentials))
+                    //   const message = await publicFetch.post(
+                    //     `signup`,
+                    //     credentials
+                    //   );
+                    // actions.setStatus = {
+                    //   message: res.data.message
+                    // };
+                    // const user = await Auth.signup({
+                    //   email, username
+                    // });
+                
+                    // setSignupSuccess(message);
+                    // setSignupError('');
+                
+                    router.push('/dashboard');
+                  } catch (error) {
+                    console.log(error);
+                    setLoginLoading(false);
+                    // setSignupSuccess('');
+                  }
+                }
+              }
               // onSubmit={(values, {setSubmitting, setStatus}) => {            
               //   console.log('Values:', values)
               //   setSubmitting(false);
@@ -75,11 +82,18 @@ export default function Signup() {
                 status
               }) => (
                 <Form>
+                  {/* <div>
+                    <TextField
+                      color="secondary"
+                    />
+                  </div> */}
                     <div>
                       <MyTextField
-                        name="userName" 
+                        name="username" 
                         type="input" 
                         placeholder="Username"
+                        color="secondary"
+
                       />
                     </div>
                     <div>
@@ -90,21 +104,12 @@ export default function Signup() {
                       />                        
                     </div>
                     <div>
-                      <MyTextField 
-                        id="password" 
-                        name="password" 
-                        type="password" 
-                        placeholder="Password"
-                      />
-                    </div>
-                    <div>
                     </div>
                     {status && status.message && (
                       <div className="message">{status.message}</div>
                     )}
                     <Button disabled={isSubmitting} color="primary" type="submit">Submit</Button>
-                    {/* <button type="submit" disabled={isSubmitting}>Submit</button> */}
-                <pre>{JSON.stringify(values, null, 2)}</pre>
+                <p>{JSON.stringify(values, null, 2)}</p>
                 <pre>{JSON.stringify(status, null, 2)}</pre>
                 </Form>
               )}

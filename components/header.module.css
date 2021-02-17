@@ -19,7 +19,7 @@
 }
 
 .link:hover {
-    border-bottom: #000 2px solid;
+    border-bottom: #000 3px solid;
 }
 
 .list {
@@ -33,6 +33,9 @@
 .list__item {
     /* text */
     padding: 5px;
+    /* display: flex;
+    align-items: center;
+    justify-content: center; */
 }
 
 .signup {

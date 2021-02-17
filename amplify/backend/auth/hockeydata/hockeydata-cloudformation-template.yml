@@ -133,21 +133,17 @@ Parameters:
   adminQueries:
     Type: String
             
-            
-  
-  thirdPartyAuth:
-    Type: String
-            
-        
-  authProviders:
-    Type: CommaDelimitedList
-      
   
   usernameCaseSensitive:
     Type: String
             
         
   dependsOn:
+    Type: CommaDelimitedList
+      
+            
+        
+  authProviders:
     Type: CommaDelimitedList
       
 Conditions:
@@ -230,10 +226,10 @@ Resources:
       Policies:
         PasswordPolicy:
           MinimumLength: !Ref passwordPolicyMinLength
-          RequireLowercase: true
-          RequireNumbers: true
-          RequireSymbols: true
-          RequireUppercase: true
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
       
       UsernameAttributes: !Ref usernameAttributes
       
