@@ -1,8 +1,4 @@
-import Head from 'next/head';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
-import styles from '../styles/Home.module.css';
 // import Puck from '../public/ice-hockey-puck.svg';
 
 export default function Home() {
@@ -19,6 +15,9 @@ export default function Home() {
             whileTap={{ scale: 0.9 }}
             drag={true}
           />
+          <div>
+
+          </div>
     </div>
   )
 }

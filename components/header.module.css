@@ -32,10 +32,11 @@
 
 .list__item {
     /* text */
+    padding: 5px;
 }
 
 .logo {
-    padding: 5px;
+    padding: 10px;
     font-weight: bold;
 }
 

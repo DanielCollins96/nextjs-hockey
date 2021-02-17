@@ -30,10 +30,7 @@ const signupSchema = Yup.object().shape({
 
 const submitCredentials = async (credentials, actions) => {
   try {
-    // console.log(process.env.NEXT_PUBLIC_API_URL)
     console.log(JSON.stringify(credentials))
-    // setLoginLoading(true);
-      // const { message } = await publicFetch.post(
       const message = await publicFetch.post(
         `signup`,
         credentials
@@ -42,18 +39,12 @@ const submitCredentials = async (credentials, actions) => {
       message: res.data.message
     };
     console.log(message.data)
-    // authContext.setAuthState(data);
     setSignupSuccess(message);
     setSignupError('');
 
     router.push('/dashboard');
   } catch (error) {
     setLoginLoading(false);
-  //   const { data } = error.response;
-  //   const data = error;
-    console.log(error)
-  //   console.log(JSON.stringify(data))
-  //   setSignupError(message);
     setSignupSuccess('');
   }
 };

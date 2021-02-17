@@ -21,7 +21,7 @@ export const schema = {
                     "name": "content",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 }
             },
@@ -40,6 +40,8 @@ export const schema = {
                                 "allow": "public",
                                 "operations": [
                                     "create",
+                                    "update",
+                                    "delete",
                                     "read"
                                 ]
                             }
