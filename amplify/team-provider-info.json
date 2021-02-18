@@ -1,19 +1,19 @@
 {
   "staging": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-network-staging-54213-authRole",
-      "UnauthRoleArn": "arn:aws:iam::510880872516:role/amplify-network-staging-54213-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::510880872516:role/amplify-network-staging-54213-authRole",
+      "AuthRoleName": "amplify-three-staging-60858-authRole",
+      "UnauthRoleArn": "arn:aws:iam::510880872516:role/amplify-three-staging-60858-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::510880872516:role/amplify-three-staging-60858-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-network-staging-54213-deployment",
-      "UnauthRoleName": "amplify-network-staging-54213-unauthRole",
-      "StackName": "amplify-network-staging-54213",
-      "StackId": "arn:aws:cloudformation:us-east-1:510880872516:stack/amplify-network-staging-54213/0d5f11e0-71ac-11eb-b588-0edef5a02865",
-      "AmplifyAppId": "d20pr3f7hxpb6w"
+      "DeploymentBucketName": "amplify-three-staging-60858-deployment",
+      "UnauthRoleName": "amplify-three-staging-60858-unauthRole",
+      "StackName": "amplify-three-staging-60858",
+      "StackId": "arn:aws:cloudformation:us-east-1:510880872516:stack/amplify-three-staging-60858/ca280d10-71af-11eb-a73a-0aa443d7245f",
+      "AmplifyAppId": "d358sf7b2vr19t"
     },
     "categories": {
       "auth": {
-        "network": {}
+        "three": {}
       }
     }
   }

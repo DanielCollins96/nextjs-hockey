@@ -18,29 +18,13 @@ function Profile() {
     <AmplifyAuthenticator>
       { user && <h1>Welcome, {user.username}</h1> }
       <AmplifySignUp
-        slot="sign-up"
-        usernameAlias="email"
-        formFields={[
-          {
-            type: "text",
-            label: "Preffered Name",
-            placeholder: "custom Phone placeholder",
-            required: true,
-          },
-          {
-            type: "email",
-            label: "Email",
-            placeholder: "Email",
-            required: true,
-          },
-          {
-            type: "password",
-            label: "Password",
-            placeholder: "Password",
-            required: true,
-          },
-        ]} 
-      />
+          slot="sign-up"
+          formFields={[
+            { type: "username" },
+            { type: "password" },
+            { type: "email" }
+          ]}
+        />
 
     </AmplifyAuthenticator>
   )

@@ -79,7 +79,6 @@ export default function Signup() {
             </pre>
             <Button  color="primary" type="submit">Submit</Button>
           </form>
-          <AmplifySignOut />
           {/* <p>{JSON.stringify(values, null, 2)}</p>
           <pre>{JSON.stringify(status, null, 2)}</pre> */}
         </div>
