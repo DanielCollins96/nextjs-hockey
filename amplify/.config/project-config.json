@@ -2,7 +2,7 @@
   "providers": [
     "awscloudformation"
   ],
-  "projectName": "hockey_data",
+  "projectName": "network",
   "version": "3.0",
   "frontend": "javascript",
   "javascript": {

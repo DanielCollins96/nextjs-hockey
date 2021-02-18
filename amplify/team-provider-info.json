@@ -1,19 +1,19 @@
 {
   "staging": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-hockeydata-staging-53059-authRole",
-      "UnauthRoleArn": "arn:aws:iam::510880872516:role/amplify-hockeydata-staging-53059-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::510880872516:role/amplify-hockeydata-staging-53059-authRole",
+      "AuthRoleName": "amplify-network-staging-54213-authRole",
+      "UnauthRoleArn": "arn:aws:iam::510880872516:role/amplify-network-staging-54213-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::510880872516:role/amplify-network-staging-54213-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-hockeydata-staging-53059-deployment",
-      "UnauthRoleName": "amplify-hockeydata-staging-53059-unauthRole",
-      "StackName": "amplify-hockeydata-staging-53059",
-      "StackId": "arn:aws:cloudformation:us-east-1:510880872516:stack/amplify-hockeydata-staging-53059/27989850-7018-11eb-a9ee-1201663355d3",
-      "AmplifyAppId": "d2r0ev8gfo8ige"
+      "DeploymentBucketName": "amplify-network-staging-54213-deployment",
+      "UnauthRoleName": "amplify-network-staging-54213-unauthRole",
+      "StackName": "amplify-network-staging-54213",
+      "StackId": "arn:aws:cloudformation:us-east-1:510880872516:stack/amplify-network-staging-54213/0d5f11e0-71ac-11eb-b588-0edef5a02865",
+      "AmplifyAppId": "d20pr3f7hxpb6w"
     },
     "categories": {
       "auth": {
-        "hockeydata": {}
+        "network": {}
       }
     }
   }
