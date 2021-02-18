@@ -22,8 +22,8 @@ const Header = () => {
             </nav>
             <nav>
                 <ul className={s.list}>
-                    <li className={s.list__item}><Link href="/login">
-                        <a className={s.link}>Login</a>
+                    <li className={s.list__item}><Link href="/profile">
+                        <a className={s.link}>Profile</a>
                     </Link></li>
                     <li className={s.list__item, s.signup}><Link href="/signup">
                         <a className={s.link}>Sign-Up</a>

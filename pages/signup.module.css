@@ -4,3 +4,20 @@
     background: yellow;
     border: red 1px solid;
 }
+
+.form {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .select,
+.input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid white;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
