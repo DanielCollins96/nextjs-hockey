@@ -1,6 +1,6 @@
 // https://github.com/dabit3/next.js-amplify-datastore/
 import { withSSRContext } from 'aws-amplify'
-import { Post } from '../../models'
+// import { Post } from '../../models'
 import Markdown from 'react-markdown'
 import { useRouter } from 'next/router'
 
@@ -28,11 +28,11 @@ export async function getStaticPaths(req) {
 }
 
 export async function getStaticProps (req) {
-  const { DataStore } = withSSRContext(req)
-  const { params } = req
-  const { id } = params
-  const post = await DataStore.query(Post, id)
-
+  // const { DataStore } = withSSRContext(req)
+  // const { params } = req
+  // const { id } = params
+  // const post = await DataStore.query(Post, id)
+const post = {title: 'Big Guy 4u', content: 'For You'};
   return {
     props: {
       post: JSON.parse(JSON.stringify(post))
