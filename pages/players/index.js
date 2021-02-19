@@ -9,7 +9,7 @@ const fetchPlayers = async () => {
 };
 export default function Players() {
     const { isLoading, isError, data, error } = useQuery('players', fetchPlayers)
-    console.log(data)
+    // console.log(data)
     if (isLoading) {
         return <span>Loading...</span>
       }
@@ -20,12 +20,20 @@ export default function Players() {
     return (
         <div>
             {
-                data.map((team) => {
+                data
+                    .sort((teamA, teamB) => {
+                        return teamA.name > teamB.name ? 1 : -1
+                    })                    
+                    .map((team) => {
                     return (
                         <div>
-                        <p>{team.name}</p>
-                        <ul style={{ columns: 2}}>
-                            {team.roster.roster.map((person) => {
+                        <h2 style={{ textAlign: "center" }}>{team.name}</h2>
+                        <ul style={{ columns: 3 }}>
+                            {team.roster.roster
+                                .sort((playerA, playerB) => {
+                                    return playerA.person.fullName > playerB.person.fullName ? 1 : -1
+                                })
+                                .map((person) => {
                                 return (
                                     <li key={person.person.id}>
                                         {/* <p>{person.person.fullName}</p> */}

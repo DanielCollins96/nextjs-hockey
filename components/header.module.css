@@ -38,9 +38,13 @@
 }
 
 .signup {
-    background: rgba(233, 212, 96, 0.5);
+    /* background: rgba(233, 212, 96, 0.5); */
+    background: var(--primary);
     padding: 15px;
     border-radius: 10px;
+    border-color: yellow;
+    font-size: large;
+    /* text-transform: uppercase; */
     margin: 5px;
 }
 

@@ -41,7 +41,7 @@ export default function Teams() {
    ],
    []
  )
-    console.log(standing_data)
+    // console.log(standing_data)
     if (isLoading) {
         return <span>Loading...</span>
       }
@@ -55,8 +55,12 @@ export default function Teams() {
         <div className={s.content}>
             <h2>Teams</h2>
             <div className={s.parent}>
-                <ul>
-                {data.map((team) => {
+                <ul style={{ columns: 3 }}>
+                {data
+                  .sort((teamA, teamB) => {
+                    return teamA.name > teamB.name ? 1 : -1
+                  }) 
+                  .map((team) => {
                     return (
                         <li key={team.id}>
                             <Link href={`/teams/${encodeURIComponent(team.id)}`}>
