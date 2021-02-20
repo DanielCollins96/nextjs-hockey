@@ -38,14 +38,17 @@
 }
 
 .signup {
-    /* background: rgba(233, 212, 96, 0.5); */
     background: var(--primary);
     padding: 15px;
     border-radius: 10px;
-    border-color: yellow;
+    border: none;
     font-size: large;
-    /* text-transform: uppercase; */
     margin: 5px;
+    transition: box-shadow 180ms ease-in;
+}
+
+.signup:hover {
+    box-shadow: 0 0 5px tomato;
 }
 
 .logo {

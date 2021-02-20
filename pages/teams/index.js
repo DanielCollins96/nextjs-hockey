@@ -62,7 +62,7 @@ export default function Teams() {
                   }) 
                   .map((team) => {
                     return (
-                        <li key={team.id}>
+                        <li key={team.id} className={s.list}>
                             <Link href={`/teams/${encodeURIComponent(team.id)}`}>
                                 <a>{team.name}</a>
                             </Link>
