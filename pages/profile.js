@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Auth } from 'aws-amplify'
 import { useAuth } from '../contexts/Auth';
-import { withAuthenticator, AmplifySignOut, AmplifySignUp, AmplifySignIn, AmplifyAuthenticator } from '@aws-amplify/ui-react'
-import TextEditor from '../components/editor';
+import dynamic from 'next/dynamic'
+import { AmplifySignUp, AmplifySignIn, AmplifyAuthenticator } from '@aws-amplify/ui-react'
+const TextEditor = dynamic(() => import('../components/editor'));
 import s from "./profile.module.css";
 
 // https://docs.amplify.aws/ui/auth/authenticator/q/framework/react#custom-form-fields
 function Profile() {
-
   const { user } = useAuth();
-
+  
   return (
     <AmplifyAuthenticator usernameAlias="email">
       { user && <h2>Welcome, {user.attributes.email}</h2> }
