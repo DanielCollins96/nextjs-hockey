@@ -15,12 +15,12 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
     setIsOpen(true);
   }
 
-  const { CKEditor, Editor } = editorRef.current || {}
+  const { CKEditor, ClassicEditor } = editorRef.current || {}
 
   useEffect(() => {
     editorRef.current = {
       CKEditor: require('@ckeditor/ckeditor5-react').CKEditor,
-      Editor: require('ckeditor5-custom-build/build/ckeditor')
+      ClassicEditor: require('ckeditor5-custom-build/build/ckeditor.js')
     }
     setEditorLoaded(true)
   }, [])
@@ -28,7 +28,7 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
   const customStyles = {
     content : {
       
-      width: 'min(80vw, 500px)',
+      width                 : 'min(80vw, 500px)',
       top                   : '50%',
       left                  : '50%',
       transform             : 'translate(-50%, -50%)'
@@ -55,7 +55,7 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
         <button onClick={closeModal}>close</button>
         <form onSubmit={handleSubmit}>
           <CKEditor
-          editor={Editor}
+          editor={ClassicEditor}
           config={{toolbar: [ 'bold', 'italic','link', 'undo', 'redo', 'numberedList', 'bulletedList', 'imageUpload' ]}}
           onInit={editor => {
             // You can store the "editor" and use when it is needed.
