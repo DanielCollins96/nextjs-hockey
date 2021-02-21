@@ -1,66 +1,36 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { createEditor, Editor, Transforms, Text } from 'slate'
-import { Slate, Editable, withReact, useSlate } from 'slate-react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 const TextEditor = () => {
-    const initialState = [{type: 'paragraph', children: [{ text: ""}]}]
-    const editor = useMemo(() => withReact(createEditor()), [])
-    const [value, setValue] = useState(initialState)
-    const renderElement = useCallback(({ attributes, children, element }) => {
-      switch (element.type) {
-        case 'quote':
-          return <blockquote {...attributes}>{children}</blockquote>
-        case 'link':
-          return (
-            <a {...attributes} href={element.url}>
-              {children}
-            </a>
-          )
-        case 'bold':
-          return (
-            <strong {...attributes}>{children}</strong>
-          )
-        default:
-          return <p {...attributes}>{children}</p>
-      }
-    }, [])
+    const [value, setValue] = useState('')
+
 
     return (
-        <Slate
-          editor={editor}
-          value={value}
-          onChange={newValue => setValue(newValue)}
-        >
-          <Toolbar />
-          <Editable 
-            placeholder="Enter some plain text..."
-            renderElement={renderElement}
-            onKeyDown={e => {
-              if (!e.ctrlKey) {
-                return
-              }
-
-              if (e.key ===  'b') {
-                console.log('beeeeeee')
-                e.preventDefault();
-                Transforms.setNodes(
-                  editor,
-                  { bold: true },
-                  // Apply it to text nodes, and split the text node up if the
-                  // selection is overlapping only part of it.
-                  { match: n => Text.isText(n), split: true }
-                )   
-                console.log(`Big L: ${JSON.stringify(Editor)}`)        
-              }
-              // console.log(e)
-            }}
-          />
-        </Slate>
+        <div>
+            <CKEditor
+              editor={ ClassicEditor }
+              data="<p>Hello from CKEditor 5!</p>"
+              onReady={ editor => {
+                  // You can store the "editor" and use when it is needed.
+                  console.log( 'Editor is ready to use!', editor );
+              } }
+              onChange={ ( event, editor ) => {
+                  const data = editor.getData();
+                  console.log( { event, editor, data } );
+              } }
+              onBlur={ ( event, editor ) => {
+                  console.log( 'Blur.', editor );
+              } }
+              onFocus={ ( event, editor ) => {
+                  console.log( 'Focus.', editor );
+              } }
+            />
+        </div>
       )
 }
 
 const Toolbar = () => {
-  const editor = useSlate()
   return (
     <div>
       {/* <button active={isBoldActive(editor)}>B</button> */}
