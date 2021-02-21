@@ -8,13 +8,19 @@ import s from "./profile.module.css";
 // https://docs.amplify.aws/ui/auth/authenticator/q/framework/react#custom-form-fields
 function Profile() {
   const { user } = useAuth();
-  
+  const [posts, setPosts] = useState([]);
   return (
     <AmplifyAuthenticator usernameAlias="email">
       { user && <h2>Welcome, {user.attributes.email}</h2> }
       <div className={s.editor}>
         <TextEditor />
       </div>
+      {posts ? posts.map((post) => {
+        return <p>Hey</p> 
+      })
+      :
+       <p>whaaat</p>
+      }
       <AmplifySignIn 
         headerText="Sign In To Fuck Babes"
         slot="sign-in"
