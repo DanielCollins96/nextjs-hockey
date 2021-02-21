@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Auth } from 'aws-amplify'
 import { useAuth } from '../contexts/Auth';
 import { withAuthenticator, AmplifySignOut, AmplifySignUp, AmplifySignIn, AmplifyAuthenticator } from '@aws-amplify/ui-react'
-import Editor from '../components/editor';
+import TextEditor from '../components/editor';
 
 // https://docs.amplify.aws/ui/auth/authenticator/q/framework/react#custom-form-fields
 function Profile() {
@@ -12,7 +12,7 @@ function Profile() {
   return (
     <AmplifyAuthenticator usernameAlias="email">
       { user && <h1>Welcome, {user.attributes.email}</h1> }
-      <Editor />
+      <TextEditor />
       <AmplifySignIn 
         headerText="Sign In To Fuck Babes"
         slot="sign-in"
