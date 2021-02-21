@@ -49,3 +49,7 @@ font-size: 14px;
   --amplify-primary-shade: #006ec2;
   --primary: #90c4ec;
 }
+
+.ck-editor__editable_inline {
+  min-height: 150px !important;
+}
