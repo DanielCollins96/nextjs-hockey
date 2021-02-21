@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { createEditor, Editor, Transforms } from 'slate'
+import { createEditor, Editor, Transforms, Text } from 'slate'
 import { Slate, Editable, withReact, useSlate } from 'slate-react'
 
 const TextEditor = () => {
@@ -36,21 +36,20 @@ const TextEditor = () => {
             placeholder="Enter some plain text..."
             renderElement={renderElement}
             onKeyDown={e => {
-              if (!event.ctrlKey) {
+              if (!e.ctrlKey) {
                 return
               }
+
               if (e.key ===  'b') {
+                console.log('beeeeeee')
                 e.preventDefault();
-                // console.log(editor);  
-                const { selection } = editor
-                const [match] = Editor.nodes(editor, {
-                  match: n => n.type === 'code',
-                })  
                 Transforms.setNodes(
                   editor,
-                  { type: match ? 'paragraph' : 'bold' },
-                  { match: n => Editor.isBlock(editor, n) }
-                )    
+                  { bold: true },
+                  // Apply it to text nodes, and split the text node up if the
+                  // selection is overlapping only part of it.
+                  { match: n => Text.isText(n), split: true }
+                )   
                 console.log(`Big L: ${JSON.stringify(Editor)}`)        
               }
               // console.log(e)
