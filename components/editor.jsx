@@ -20,7 +20,7 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
   useEffect(() => {
     editorRef.current = {
       CKEditor: require('@ckeditor/ckeditor5-react').CKEditor,
-      ClassicEditor: require('ckeditor5-custom-build/build/ckeditor.js')
+      ClassicEditor: require('ckeditor5-custom-build/build/ckeditor')
     }
     setEditorLoaded(true)
   }, [])
