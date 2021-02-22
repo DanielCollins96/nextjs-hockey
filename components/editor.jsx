@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Modal from 'react-modal';
+// const Editor = dynamic(() => import("ckeditor5-custom-build/build/ckeditor"), { ssr: false });
+  // import Editor from 'ckeditor5-custom-build/build/ckeditor';
+
 
 export default function TextEditor ({modalButton = 'Create Post'}) {
   const editorRef = useRef()
