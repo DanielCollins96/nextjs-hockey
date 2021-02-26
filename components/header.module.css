@@ -19,7 +19,7 @@
 }
 
 .link:hover {
-    border-bottom: #000 3px solid;
+    border-bottom: #000 1px solid;
 }
 
 .list {
@@ -38,12 +38,12 @@
 }
 
 .signup {
-    background: var(--primary);
-    padding: 15px;
+    /* background: var(--primary); */
+    /* padding: 15px; */
     border-radius: 10px;
-    border: none;
-    font-size: large;
-    margin: 5px;
+    /* border: none; */
+    /* font-size: large; */
+    margin: 10px;
     transition: box-shadow 180ms ease-in;
 }
 

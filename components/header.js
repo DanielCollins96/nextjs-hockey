@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { useAuth } from '../contexts/Auth';
 import s from './header.module.css'
 import { Auth } from 'aws-amplify';
+import {Box, Flex, Heading, Text, Button} from '@chakra-ui/react';
+
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
 const Header = () => {
@@ -18,49 +20,54 @@ const Header = () => {
     }
 
     return (
-        <div className={s.navbar}>
-            <div className={s.navbar}>
-            <h2 className={s.logo}>Those stats fam &copy;</h2>
-            <nav>
-                <ul className={s.list}>
-                    <li className={s.list__item}>
-                        <Link href="/">
-                            <a className={s.link}>Home</a>
-                        </Link>
-                    </li>
-                    <li className={s.list__item}>
-                        <Link href="/players">
-                            <a className={s.link}>Players</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/teams">
-                            <a className={s.link}>Teams</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/chart">
-                            <a className={s.link}>Chart Maker</a>
-                        </Link>
-                    </li>
-                </ul>
-            </nav>
-            </div>
-
+        <Box as="header" width="full" height="4rem">
+            <Flex size="100%" align="center" justify="space-between">
+                <Flex size="100%" align="center">
+                    <Text fontSize="2xl" className={s.logo}>Those stats fam &copy;</Text>
+                    <nav>
+                        <ul className={s.list}>
+                            <li className={s.list__item}>
+                                <Link href="/">
+                                    <a className={s.link}>Home</a>
+                                </Link>
+                            </li>
+                            <li className={s.list__item}>
+                                <Link href="/players">
+                                    <a className={s.link}>Players</a>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/teams">
+                                    <a className={s.link}>Teams</a>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/chart">
+                                    <a className={s.link}>Chart Maker</a>
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+                </Flex>
             <nav>
                 <ul className={s.list}>
                     { !user ?
-                    <li className={s.list__item, s.signup}>
+                    <li className={s.signup}>
                         <Link href="/profile" >
-                            <a>Profile <FaUserCircle /></a>
+                            <Button component="a">
+                                Profile{" "}
+                                <FaUserCircle />
+                            </Button>
                         </Link>
                     </li>
                     :
-                    <button className={s.signup} onClick={signOutHandler}>Sign Out  <FaSignOutAlt /></button>
+                    <Button className={s.signup} onClick={signOutHandler}>Sign Out {" "} <FaSignOutAlt /></Button>
                     }
                 </ul>
             </nav> 
-        </div>
+            </Flex>
+
+        </Box>
 
     )
 };
