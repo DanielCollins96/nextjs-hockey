@@ -23,7 +23,7 @@ const Header = () => {
         <Box as="header" width="full" height="4rem">
             <Flex size="100%" align="center" justify="space-between">
                 <Flex size="100%" align="center">
-                    <Text fontSize="2xl" className={s.logo}>Those stats fam &copy;</Text>
+                    <Text fontSize="2xl" className={s.logo}>Stats Fam &copy;</Text>
                     <nav>
                         <ul className={s.list}>
                             <li className={s.list__item}>
@@ -52,16 +52,28 @@ const Header = () => {
             <nav>
                 <ul className={s.list}>
                     { !user ?
-                    <li className={s.signup}>
+                    <li>
                         <Link href="/profile" >
-                            <Button component="a">
-                                Profile{" "}
-                                <FaUserCircle />
+                            <Button 
+                                m={3}
+                                component="a" 
+                                colorScheme="blue" 
+                                size="md" 
+                                rightIcon={<FaUserCircle />}
+                            >
+                                Profile
                             </Button>
                         </Link>
                     </li>
                     :
-                    <Button className={s.signup} onClick={signOutHandler}>Sign Out {" "} <FaSignOutAlt /></Button>
+                    <Button 
+                    m={3}
+                        onClick={signOutHandler} 
+                        colorScheme="blue" 
+                        size="md" 
+                        rightIcon={<FaSignOutAlt />} 
+                        
+                        >Sign Out</Button>
                     }
                 </ul>
             </nav> 

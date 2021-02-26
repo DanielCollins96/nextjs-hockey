@@ -1,7 +1,8 @@
 import { useTable, useSortBy,useFilters } from 'react-table'
+import { Table, Thead, Tbody, Tr, Th, Td, chakra } from "@chakra-ui/react"
+import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons"
 
-
-export default function Table({ columns, data }) {
+export default function ReactTable({ columns, data }) {
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
@@ -19,37 +20,37 @@ export default function Table({ columns, data }) {
 
   // Render the UI for your table
   return (
-    <table {...getTableProps()}>
-      <thead>
+    <Table {...getTableProps()}>
+      <Thead>
         {headerGroups.map(headerGroup => (
-          <tr {...headerGroup.getHeaderGroupProps()}>
+          <Tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
-              <span>
+              <Th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
+              {/* <span>
                 {column.isSorted
                   ? column.isSortedDesc
                     ? ' 🔽'
                     : ' 🔼'
                   : ''}
-              </span>
-              </th>
+              </span> */}
+              </Th>
             ))}
-          </tr>
+          </Tr>
         ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
+      </Thead>
+      <Tbody {...getTableBodyProps()}>
         {rows.map((row, i) => {
           prepareRow(row)
           return (
-            <tr {...row.getRowProps()}>
+            <Tr {...row.getRowProps()}>
               {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                return <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
               })}
-            </tr>
+            </Tr>
           )
         })}
-      </tbody>
-    </table>
+      </Tbody>
+    </Table>
   )
 }
 

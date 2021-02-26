@@ -6,7 +6,7 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-  table {
+  /* table {
     border-spacing: 0;
     border: 1px solid black;
     }
@@ -17,7 +17,7 @@ body {
       padding: 0.25rem;
       border-bottom: 1px solid black;
       border-right: 1px solid black;
-    }
+    } */
 
 a {
   color: inherit;

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import Table from '../components/Table';
+import ReactTable from '../components/Table';
 import s from './chart.module.css';
 import makeData from '../components/makeData';
 
@@ -48,9 +48,8 @@ export default function Chart() {
   const data = useMemo(() => makeData(20), [])
 console.log(data)
     return (
-        <div className={s.content}>
-            hey
-            <Table columns={columns} data={data} />
+        <div>
+            <ReactTable columns={columns} data={data} />
         </div>
     )
 }
