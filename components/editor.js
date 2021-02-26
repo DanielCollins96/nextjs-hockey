@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Modal from 'react-modal';
+import Amplify, { API } from 'aws-amplify';
+
+import s from './editor.module.css';
 // const Editor = dynamic(() => import("ckeditor5-custom-build/build/ckeditor"), { ssr: false });
   // import Editor from 'ckeditor5-custom-build/build/ckeditor';
 
@@ -32,6 +35,7 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
     content : {
       
       width                 : 'min(80vw, 500px)',
+      height                : '60vh',
       top                   : '50%',
       left                  : '50%',
       transform             : 'translate(-50%, -50%)'
@@ -44,6 +48,7 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
     // ...
     console.log(e)
     console.log(text)
+    closeModal(true);
   };
 
   return editorLoaded ? (
@@ -55,8 +60,9 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <button onClick={closeModal}>close</button>
+        <button onClick={closeModal} className={s.button}>close</button>
         <form onSubmit={handleSubmit}>
+          <input type="text" className={s.title} name="title" placeholder="Add a Title" style={{}}/>
           <CKEditor
           editor={ClassicEditor}
           config={{toolbar: [ 'bold', 'italic','link', 'undo', 'redo', 'numberedList', 'bulletedList', 'imageUpload' ]}}
@@ -70,7 +76,7 @@ export default function TextEditor ({modalButton = 'Create Post'}) {
             setText(data)
           }}
           />
-          <button type="submit">Submit</button>
+          <button type="submit" className={s.button}>Submit</button>
         </form>
       </Modal>
     </div>

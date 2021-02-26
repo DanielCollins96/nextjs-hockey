@@ -3,12 +3,17 @@ import { useAuth } from '../contexts/Auth';
 import dynamic from 'next/dynamic'
 import { AmplifySignUp, AmplifySignIn, AmplifyAuthenticator } from '@aws-amplify/ui-react'
 const TextEditor = dynamic(() => import('../components/editor'));
+import Amplify, { API } from 'aws-amplify';
 import s from "./profile.module.css";
 
 // https://docs.amplify.aws/ui/auth/authenticator/q/framework/react#custom-form-fields
 function Profile() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    API.get('three', '/posts')
+  })
   return (
     <AmplifyAuthenticator usernameAlias="email">
       { user && <h2>Welcome, {user.attributes.email}</h2> }

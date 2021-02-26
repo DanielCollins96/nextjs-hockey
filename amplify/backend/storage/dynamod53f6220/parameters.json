@@ -1,0 +1,5 @@
+{
+    "tableName": "Posts",
+    "partitionKeyName": "Title",
+    "partitionKeyType": "S"
+}

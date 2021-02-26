@@ -1,0 +1,10 @@
+.title {
+    border: 1px gray solid;
+    margin: 5px 0;
+}
+
+.button {
+    margin: 5px 0;
+
+    padding: 5px 10px;
+}
