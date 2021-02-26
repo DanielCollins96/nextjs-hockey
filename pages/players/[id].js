@@ -8,7 +8,6 @@ import s from './player.module.css';
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
 const PlayerPage = ({id}) => {
-    console.log('why')
     console.log(id)
 
     const result = 
@@ -34,6 +33,8 @@ const PlayerPage = ({id}) => {
                 )
             })
             console.log(Object.keys(playerStats))
+            console.log(Object.stringify(playerStats))
+            console.log(Object.stringify(playerRes))
 
             return playerStats
             } 
