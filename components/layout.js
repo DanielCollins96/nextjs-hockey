@@ -14,7 +14,7 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
             </Head>
             <Header />
             {/* <main className={s.main}> */}
-            <Box as="main" bg='gray.50' h="100vh">
+            <Box as="main" bg='gray.100' h="100vh">
             { children }
             </Box>
             <footer className={s.footer}>

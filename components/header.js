@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { useAuth } from '../contexts/Auth';
 import s from './header.module.css'
 import { Auth } from 'aws-amplify';
-import {Box, Flex, Heading, Text, Button} from '@chakra-ui/react';
+import {Box, Flex, Heading, Text, Button, Input} from '@chakra-ui/react';
 
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
@@ -48,6 +48,7 @@ const Header = () => {
                             </li>
                         </ul>
                     </nav>
+                {/* <Input placeholder="Basic usage" /> */}
                 </Flex>
             <nav>
                 <ul className={s.list}>
