@@ -9,11 +9,13 @@
 
   .main {
     /* padding: 5rem 0; */
-    flex: 1;
     display: flex;
+    /* flex: 0 0 740px; */
+    /* max-width: ; */
+    /* background-color: black; */
     /* flex-direction: column; */
     justify-content: center;
-    align-items: flex-start; 
+    /* align-items: center;  */
   }
 
   .footer {

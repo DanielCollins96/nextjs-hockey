@@ -20,7 +20,7 @@ const Header = () => {
     }
 
     return (
-        <Box as="header" width="full" height="4rem">
+        <Box as="header" w="full" h="4rem">
             <Flex size="100%" align="center" justify="space-between">
                 <Flex size="100%" align="center">
                     <Text fontSize="2xl" className={s.logo}>Stats Fam &copy;</Text>

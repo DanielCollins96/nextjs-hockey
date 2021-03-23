@@ -41,6 +41,7 @@
     "react-modal": "^3.12.1",
     "react-query": "^3.5.9",
     "react-table": "^7.6.2",
+    "react-ticker": "^1.2.2",
     "recharts": "1.8.5",
     "slate": "^0.59.0",
     "slate-react": "^0.59.0",
