@@ -20,36 +20,36 @@ const Header = () => {
     }
 
     return (
-        <Box as="header" w="full" h="4rem">
-            <Flex size="100%" align="center" justify="space-between">
-                <Flex size="100%" align="center">
-                    <Text fontSize="2xl" className={s.logo}>Stats Fam &copy;</Text>
-                    <nav>
-                        <ul className={s.list}>
-                            <li className={s.list__item}>
-                                <Link href="/">
-                                    <a className={s.link}>Home</a>
-                                </Link>
-                            </li>
-                            <li className={s.list__item}>
-                                <Link href="/players">
-                                    <a className={s.link}>Players</a>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/teams">
-                                    <a className={s.link}>Teams</a>
-                                </Link>
-                            </li>
-                            {/* <li>
-                                <Link href="/chart">
-                                    <a className={s.link}>Chart Maker</a>
-                                </Link>
-                            </li> */}
-                        </ul>
-                    </nav>
-                {/* <Input placeholder="Basic usage" /> */}
-                </Flex>
+        <Box as="header" w="full" >
+            <Flex size="100%" align="center" justify="space-between" direction="row" wrap="wrap">
+                <Text fontSize="2xl" className={s.logo}>Stats Fam &copy;</Text>
+                    <Flex size="100%" align="center" justify="center" >
+                        <nav>
+                            <ul className={s.list}>
+                                <li className={s.list__item}>
+                                    <Link href="/">
+                                        <a className={s.link}>Home</a>
+                                    </Link>
+                                </li>
+                                <li className={s.list__item}>
+                                    <Link href="/players">
+                                        <a className={s.link}>Players</a>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/teams">
+                                        <a className={s.link}>Teams</a>
+                                    </Link>
+                                </li>
+                                {/* <li>
+                                    <Link href="/chart">
+                                        <a className={s.link}>Chart Maker</a>
+                                    </Link>
+                                </li> */}
+                            </ul>
+                        </nav>
+                    {/* <Input placeholder="Basic usage" /> */}
+                    </Flex>
             <nav>
                 <ul className={s.list}>
                     { !user ?

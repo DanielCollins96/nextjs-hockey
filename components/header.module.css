@@ -49,6 +49,7 @@
     padding: 0;
     margin-left: 10px;
     list-style-type: none;
+    order: 1;
 }
 
 .list__item {
@@ -77,8 +78,10 @@
 }
 
 .logo {
+    z-index: 2;
     padding: 10px;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 
