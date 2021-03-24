@@ -41,11 +41,11 @@ const Header = () => {
                                     <a className={s.link}>Teams</a>
                                 </Link>
                             </li>
-                            <li>
+                            {/* <li>
                                 <Link href="/chart">
                                     <a className={s.link}>Chart Maker</a>
                                 </Link>
-                            </li>
+                            </li> */}
                         </ul>
                     </nav>
                 {/* <Input placeholder="Basic usage" /> */}
