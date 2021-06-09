@@ -16,7 +16,7 @@ function Profile() {
   })
   return (
     <AmplifyAuthenticator usernameAlias="email">
-      { user && <h2>Welcome, {user.attributes.email}</h2> }
+      { user && <h2>Welcome, {user?.attributes?.email}</h2> }
       <div className={s.editor}>
         <TextEditor />
       </div>
@@ -36,14 +36,14 @@ function Profile() {
             label: "Email",
             placeholder: "Please enter your Email",
             required: true,
-        
-        },
-        {
-          type: "password",
-          label: "Password",
-          placeholder: "Please enter your Password",
-          required: true,
-        },        ]}
+          },
+          {
+            type: "password",
+            label: "Password",
+            placeholder: "Please enter your Password",
+            required: true,
+          },
+        ]}
       />
       <AmplifySignUp
           slot="sign-up"
