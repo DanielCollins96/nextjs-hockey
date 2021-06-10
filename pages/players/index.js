@@ -29,16 +29,16 @@ export default function Players() {
                         <div>
                         <h2 style={{ textAlign: "center" }}>{team.name}</h2>
                         <ul style={{ columns: 3 }}>
-                            {team.roster.roster
+                            {team.roster?.roster
                                 .sort((playerA, playerB) => {
                                     return playerA.person.fullName > playerB.person.fullName ? 1 : -1
                                 })
                                 .map((person) => {
                                 return (
-                                    <li key={person.person.id}>
+                                    <li key={person.person?.id}>
                                         {/* <p>{person.person.fullName}</p> */}
-                                        <Link href={`/players/${encodeURIComponent(person.person.id)}`}>
-                                            <a>{person.person.fullName}</a>
+                                        <Link href={`/players/${encodeURIComponent(person.person?.id)}`}>
+                                            <a>{person.person?.fullName}</a>
                                         </Link>
                                     </li>
                                 )
