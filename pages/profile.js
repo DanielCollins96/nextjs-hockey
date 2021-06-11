@@ -30,7 +30,7 @@ function Profile() {
   return (
     <AmplifyAuthenticator usernameAlias="email">
       { user && <h2>Welcome, {user?.attributes?.email}</h2> }
-      <div className={s.editor}>
+      <div className="">
         <div>
           <label htmlFor="title">
             <input type="text" onChange={changePost} placeholder="Title" value={post?.title} name="title" id="title"/>

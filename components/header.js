@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { useAuth } from '../contexts/Auth';
-import s from './header.module.css'
 import { Auth } from 'aws-amplify';
 import {Box, Flex, Heading, Text, Button, Input} from '@chakra-ui/react';
 
@@ -20,38 +19,34 @@ const Header = () => {
     }
 
     return (
-        <Box as="header" w="full" >
-            <Flex size="100%" align="center" justify="space-between" direction="row" wrap="wrap">
-                <Text fontSize="2xl" className={s.logo}>Stats Fam &copy;</Text>
-                    <Flex size="100%" align="center" justify="center" >
-                        <nav>
-                            <ul className={s.list}>
-                                <li className={s.list__item}>
-                                    <Link href="/">
-                                        <a className={s.link}>Home</a>
-                                    </Link>
-                                </li>
-                                <li className={s.list__item}>
-                                    <Link href="/players">
-                                        <a className={s.link}>Players</a>
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/teams">
-                                        <a className={s.link}>Teams</a>
-                                    </Link>
-                                </li>
-                                {/* <li>
-                                    <Link href="/chart">
-                                        <a className={s.link}>Chart Maker</a>
-                                    </Link>
-                                </li> */}
-                            </ul>
-                        </nav>
-                    {/* <Input placeholder="Basic usage" /> */}
-                    </Flex>
+        <header className="w-full flex justify-between items-center">
+            <p className="text-2xl m-2">Stats Fam &copy;</p>
+            <nav className="flex">
+                <ul className="flex w-full gap-x-4">
+                    <li className="">
+                        <Link href="/">
+                            <a className="">Home</a>
+                        </Link>
+                    </li>
+                    <li className="">
+                        <Link href="/players">
+                            <a className="">Players</a>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link href="/teams">
+                            <a className="">Teams</a>
+                        </Link>
+                    </li>
+                    {/* <li>
+                        <Link href="/chart">
+                            <a className={s.link}>Chart Maker</a>
+                        </Link>
+                    </li> */}
+                </ul>
+            </nav>
             <nav>
-                <ul className={s.list}>
+                <ul className="">
                     { !user ?
                     <li>
                         <Link href="/profile" >
@@ -78,9 +73,7 @@ const Header = () => {
                     }
                 </ul>
             </nav> 
-            </Flex>
-
-        </Box>
+        </header>
 
     )
 };

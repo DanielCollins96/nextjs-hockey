@@ -3,7 +3,7 @@ import { Hydrate } from 'react-query/hydration'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { AuthProvider } from '../contexts/Auth';
 import { ChakraProvider } from "@chakra-ui/react"
-import Layout from '../components/layout';
+import Layout from '../components/Layout';
 
 import '../styles/globals.css'
 

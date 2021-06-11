@@ -1,13 +1,10 @@
 import { Box } from '@chakra-ui/react';
 import Head from 'next/head';
 import Header from './header';
-import s from './layout.module.css';
-// import styles from '../styles/Home.module.css'
-
 
 export default function Layout ({children, title = 'Hockey Stats'}) {
     return (
-        <div className={s.container}>
+        <div className="">
             <Head>
                 <title>Hockey</title>
                 <link rel="icon" href="/favicon.ico" />
@@ -17,7 +14,7 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
             <Box as="main" bg='gray.100' h="100vh">
             { children }
             </Box>
-            <footer className={s.footer}>
+            <footer className="">
                 <h3>Get Bent</h3>
             </footer>
         </div>
