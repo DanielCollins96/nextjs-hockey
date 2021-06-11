@@ -11,9 +11,9 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
             </Head>
             <Header />
             {/* <main className={s.main}> */}
-            <Box as="main" bg='gray.100' h="100vh">
+            <main  className="h-screen bg-gray-100 grid place-items-center">
             { children }
-            </Box>
+            </main>
             <footer className="">
                 <h3>Get Bent</h3>
             </footer>
