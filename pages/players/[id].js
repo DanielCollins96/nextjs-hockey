@@ -1,23 +1,22 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
-import {Box, Flex, Heading, Text, Button, Divider} from '@chakra-ui/react';
 import ReactTable from '../../components/Table';
-import s from './player.module.css';
+import { setNestedObjectValues } from 'formik';
 
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
 const PlayerPage = ({id}) => {
-    console.log(id)
-
+    const [player, setPlayer] = useState(null)
+    const [playerStats, setPlayerStats] = useState(null)
     const result = 
     useQueries
     ([
-        { queryKey: 'fetchPlayerStats', queryFn: async () => {
+        { queryKey: `fetch${id}Stats`, queryFn: async () => {
             const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}/stats?stats=yearByYear`);
             const playerRes = await res.json()
-            // console.log(typeof playerRes.stats[0])
-            // console.log(`playerss ${JSON.stringify(playerRes.stats[0])}`)
+            console.log(`PLAYER RES`)
+            console.log(playerRes)
             const playerStats = playerRes.stats[0].splits.map((szn) => {
                 return (
                     {
@@ -32,9 +31,8 @@ const PlayerPage = ({id}) => {
                     }
                 )
             })
-            console.log(Object.keys(playerStats))
-            console.log(Object.stringify(playerStats))
-            console.log(Object.stringify(playerRes))
+            console.log('fulll')
+            console.log(playerStats);
 
             return playerStats
             } 
@@ -46,7 +44,8 @@ const PlayerPage = ({id}) => {
             } 
         },
     ])
-    const { [0]: {data: stat_data, isLoading: stat_loading}, [1]: { data: person_data, isLoading: person_loading } } = result
+    setPlayerStats(result[0].data)
+    setPlayer(result[1].data)
 
     const columns = useMemo(
         () => [
@@ -84,37 +83,25 @@ const PlayerPage = ({id}) => {
              },
         ]
     )
-    console.log(typeof stat_data)
     const data = useMemo(
-        () => stat_data, []
+        () => playerStats, []
     )
-    console.log(stat_loading)
     return (
-        <div className={s.main}>
-            <Heading>Player Stats</Heading>
-            <Divider orientation="horizontal" />
-                {!person_loading && person_data ? (
-                    // <div>
-                    // <h2>{person_data.people[0].fullName}</h2>
-                    // <p>{person_data.people[0].birthDate}</p>
-                    // <p>{person_data.people[0].birthCountry}</p>
-                    // <p>{person_data.people[0].primaryNumber}</p>
-                    // <p>{person_data.people[0].currentAge}</p>
-                    // </div>
-                    <Box borderWidth="2px" p={3} m={2} display="flex" flexDir="column" alignItems="left"justifyContent="space-between"
-                        borderRadius="lg" >
-                     <h2>{person_data.people[0].fullName}</h2>
-                     <p>Birth Date: {person_data.people[0].birthDate}</p>
-                     <p>Nationality: {person_data.people[0].birthCountry}</p>
-                     <p>Primary Number: {person_data.people[0].primaryNumber}</p>
-                     <p>Age: {person_data.people[0].currentAge}</p>
-                    </Box>
+        <div className="">
+            <p className="text-2xl font-bold">Player Stats</p>
+                {/* {player ? (
+                    <div className="">
+                     <h2>{player.people[0].fullName}</h2>
+                     <p>Birth Date: {player.people[0].birthDate}</p>
+                     <p>Nationality: {player.people[0].birthCountry}</p>
+                     <p>Primary Number: {player.people[0].primaryNumber}</p>
+                     <p>Age: {player.people[0].currentAge}</p>
+                    </div>
                 ) :
                 <p>Loading...</p>    
-            }
+            } */}
             {/* {JSON.stringify(stat_data.stats[0].splits)} */}
-            <Divider orientation="horizontal" />
-            {!stat_loading && data ? <ReactTable columns={columns} data={data} /> : <div>Loaded</div>}
+            {data ? <ReactTable columns={columns} data={data} /> : <p>Lookin</p>}
             
         </div>
     )
