@@ -24,7 +24,7 @@ class Document extends NextDocument {
                     <link rel="icon" sizes="96x96" href="/favicons/favicon.ico" />
                     <meta name="theme-color" content="#319795"></meta>
                 </Head>
-                <body>
+                <body className="bg-gray-100">
                     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
                     <Main />
                     <NextScript />

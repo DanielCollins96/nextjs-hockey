@@ -1,6 +1,4 @@
 import { useTable, useSortBy,useFilters } from 'react-table'
-import { Table, Thead, Tbody, Tr, Th, Td, chakra } from "@chakra-ui/react"
-import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons"
 
 export default function ReactTable({ columns, data }) {
   // Use the state and functions returned from useTable to build your UI
@@ -20,37 +18,37 @@ export default function ReactTable({ columns, data }) {
 
   // Render the UI for your table
   return (
-    <Table {...getTableProps()}>
-      <Thead>
+    <table {...getTableProps()} className="border border-black table-fixed p-4 text-sm ">
+      <thead className="bg-blue-200">
         {headerGroups.map(headerGroup => (
-          <Tr {...headerGroup.getHeaderGroupProps()}>
+          <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              <Th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
-              {/* <span>
+              <th className="p-1"{...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
+              <span>
                 {column.isSorted
                   ? column.isSortedDesc
                     ? ' 🔽'
                     : ' 🔼'
                   : ''}
-              </span> */}
-              </Th>
+              </span>
+              </th>
             ))}
-          </Tr>
+          </tr>
         ))}
-      </Thead>
-      <Tbody {...getTableBodyProps()}>
+      </thead>
+      <tbody {...getTableBodyProps()} className="">
         {rows.map((row, i) => {
           prepareRow(row)
           return (
-            <Tr {...row.getRowProps()}>
+            <tr {...row.getRowProps()}>
               {row.cells.map(cell => {
-                return <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
+                return <td className="border-black border p-1" {...cell.getCellProps()}>{cell.render('Cell')}</td>
               })}
-            </Tr>
+            </tr>
           )
         })}
-      </Tbody>
-    </Table>
+      </tbody>
+    </table>
   )
 }
 

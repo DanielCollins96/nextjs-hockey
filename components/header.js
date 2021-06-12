@@ -19,23 +19,23 @@ const Header = () => {
     }
 
     return (
-        <header className="w-full flex justify-between items-center">
-            <p className="text-2xl m-2">Stats Fam &copy;</p>
-            <nav className="flex">
+        <header className="w-full bg-white grid grid-cols-2 shadow sm:grid-cols-3">
+            <p className="text-2xl m-2 self-center font-bold">Stats Fam &copy;</p>
+            <nav className="self-center justify-self-center order-3 col-span-full my-2 sm:my-0 sm:order-2 sm:col-auto">
                 <ul className="flex w-full gap-x-4">
                     <li className="">
                         <Link href="/">
-                            <a className="">Home</a>
+                            <a className="text-xl font-bold">Home</a>
                         </Link>
                     </li>
                     <li className="">
                         <Link href="/players">
-                            <a className="">Players</a>
+                            <a className="text-xl font-bold">Players</a>
                         </Link>
                     </li>
                     <li>
                         <Link href="/teams">
-                            <a className="">Teams</a>
+                            <a className="text-xl font-bold">Teams</a>
                         </Link>
                     </li>
                     {/* <li>
@@ -45,7 +45,7 @@ const Header = () => {
                     </li> */}
                 </ul>
             </nav>
-            <nav>
+            <nav className="self-center justify-self-end sm:order-2">
                 <ul className="">
                     { !user ?
                     <li>

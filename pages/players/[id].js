@@ -80,8 +80,8 @@ const PlayerPage = ({id}) => {
         () => playerStats, []
     )
     return (
-        <div className="">
-            <div className="flex flex-col items-center w-72 m-auto">
+        <div className="flex mt-2">
+            <div className="flex flex-col h-full justify-start items-center w-72 mt-2">
                     {player_status === 'success' ? (
                         <div className="">
                         <p className="text-2xl font-bold">{player.people[0].fullName}</p>
