@@ -1,53 +1,45 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
-import {Box, Flex, Heading, Text, Button, Divider} from '@chakra-ui/react';
 import ReactTable from '../../components/Table';
-import s from './player.module.css';
+import { setNestedObjectValues } from 'formik';
 
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
+
 const PlayerPage = ({id}) => {
-    console.log(id)
+    const fetchPlayer = async () => {
+        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}`);
+        const playerRes = await res.json()
+        return playerRes
+    }
+    
+    const fetchPlayerStats = async () => {
+        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}/stats?stats=yearByYear`);
+        const playerRes = await res.json()
+        const playerStats = playerRes.stats[0].splits.map((szn) => {
+            return (
+                {
+                    season: szn.season.substring(0,4)+'/'+szn.season.substring(4,8),
+                    team: szn.team.name,
+                    league: szn.league.name,
+                    gp: szn.stat.games,
+                    g: szn.stat.goals,
+                    a: szn.stat.assists,
+                    pts: szn.stat.points,
+                    pim: szn.stat.pim,
+                }
+            )
+        })
+        return playerStats
+    }
 
-    const result = 
-    useQueries
-    ([
-        { queryKey: 'fetchPlayerStats', queryFn: async () => {
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}/stats?stats=yearByYear`);
-            const playerRes = await res.json()
-            // console.log(typeof playerRes.stats[0])
-            // console.log(`playerss ${JSON.stringify(playerRes.stats[0])}`)
-            const playerStats = playerRes.stats[0].splits.map((szn) => {
-                return (
-                    {
-                        season: szn.season.substring(0,4)+'/'+szn.season.substring(4,8),
-                        team: szn.team.name,
-                        league: szn.league.name,
-                        gp: szn.stat.games,
-                        g: szn.stat.goals,
-                        a: szn.stat.assists,
-                        pts: szn.stat.points,
-                        pim: szn.stat.pim,
-                    }
-                )
-            })
-            console.log(Object.keys(playerStats))
-            console.log(Object.stringify(playerStats))
-            console.log(Object.stringify(playerRes))
+    const { data: player, status: player_status } = useQuery(`player-${id}`, fetchPlayer);
+    const { data: playerStats, status: stats_status } = useQuery(`playerStats-${id}`, fetchPlayerStats);
 
-            return playerStats
-            } 
-        },
-        { queryKey: 'fetchPlayer', queryFn: async () => {
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}`);
-            const playerRes = await res.json()
-            return playerRes
-            } 
-        },
-    ])
-    const { [0]: {data: stat_data, isLoading: stat_loading}, [1]: { data: person_data, isLoading: person_loading } } = result
-
+    console.log(playerStats)
+    console.log(player_status)
+    console.log(player)
     const columns = useMemo(
         () => [
              {
@@ -84,38 +76,26 @@ const PlayerPage = ({id}) => {
              },
         ]
     )
-    console.log(typeof stat_data)
     const data = useMemo(
-        () => stat_data, []
+        () => playerStats, []
     )
-    console.log(stat_loading)
     return (
-        <div className={s.main}>
-            <Heading>Player Stats</Heading>
-            <Divider orientation="horizontal" />
-                {!person_loading && person_data ? (
-                    // <div>
-                    // <h2>{person_data.people[0].fullName}</h2>
-                    // <p>{person_data.people[0].birthDate}</p>
-                    // <p>{person_data.people[0].birthCountry}</p>
-                    // <p>{person_data.people[0].primaryNumber}</p>
-                    // <p>{person_data.people[0].currentAge}</p>
-                    // </div>
-                    <Box borderWidth="2px" p={3} m={2} display="flex" flexDir="column" alignItems="left"justifyContent="space-between"
-                        borderRadius="lg" >
-                     <h2>{person_data.people[0].fullName}</h2>
-                     <p>Birth Date: {person_data.people[0].birthDate}</p>
-                     <p>Nationality: {person_data.people[0].birthCountry}</p>
-                     <p>Primary Number: {person_data.people[0].primaryNumber}</p>
-                     <p>Age: {person_data.people[0].currentAge}</p>
-                    </Box>
-                ) :
-                <p>Loading...</p>    
-            }
-            {/* {JSON.stringify(stat_data.stats[0].splits)} */}
-            <Divider orientation="horizontal" />
-            {!stat_loading && data ? <ReactTable columns={columns} data={data} /> : <div>Loaded</div>}
-            
+        <div className="">
+            <div className="flex flex-col items-center w-72 m-auto">
+                    {player_status === 'success' ? (
+                        <div className="">
+                        <p className="text-2xl font-bold">{player.people[0].fullName}</p>
+                        <p>Birth Date: {player.people[0].birthDate}</p>
+                        <p>Nationality: {player.people[0].birthCountry}</p>
+                        <p>Primary Number: {player.people[0].primaryNumber}</p>
+                        <p>Age: {player.people[0].currentAge}</p>
+                        </div>
+                    ) :
+                    <p>Loading...</p>    
+                }
+            </div>
+            {stats_status === 'success' ? <ReactTable columns={columns} data={playerStats} /> : <p>Loading...</p>}
+            {stats_status === 'error' ? <p>Error Fetching Stats.</p> : null}
         </div>
     )
 };

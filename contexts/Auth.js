@@ -17,9 +17,7 @@ function AuthProvider({children}) {
         // checkUser()
         return onAuthUIStateChange((nextAuthState, authData) => {
             setAuthState(nextAuthState);
-            console.log(authData);
-            console.log(authData);
-            console.log(typeof authData);
+            console.log('in Auth')
             setUser(authData)
         });
 

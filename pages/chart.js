@@ -46,8 +46,7 @@ export default function Chart() {
     []
   )
   const data = useMemo(() => makeData(20), [])
-console.log(data)
-    return (
+     return (
         <div>
             <ReactTable columns={columns} data={data} />
         </div>
