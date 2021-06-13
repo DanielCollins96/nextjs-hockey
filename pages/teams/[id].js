@@ -1,12 +1,13 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useQuery, useQueries } from 'react-query';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
   } from 'recharts';
-import s from './team.module.css';
 
-export default function TeamPage({id}) {
-
+export default function TeamPage() {
+    const router = useRouter()
+    const { id } = router.query
     const { data: team_data } = useQuery(`fetchTeam-${id}`, async () => {
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
         const teamRes = await res.json()
@@ -47,11 +48,8 @@ export default function TeamPage({id}) {
         {/* <p>{JSON.stringify(team_data)}</p> */}
         <div className="flex">
             {seasonsLoading ? 
-            <div className={s.spinner}>
-                <div className={s.bounce1}></div>
-                <div className={s.bounce2}></div>
-                <div className={s.bounce3}></div>
-            </div> :
+            <p>Loading...</p>    
+            :
             <div>
                 <div className="p-2">
                     <p className="text-lg text-center">Wins</p>
@@ -82,10 +80,3 @@ export default function TeamPage({id}) {
         </div>
     )
 };
-
-export async function getServerSideProps({params}) {
-    console.log(params)
-    return {
-        props: params
-    }
-}
