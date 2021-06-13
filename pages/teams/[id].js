@@ -78,3 +78,16 @@ export default function TeamPage({id}) {
         </div>
     )
 };
+
+export const getStaticPaths = async () => {
+    return {
+        paths: [],
+        fallback: true
+    }
+}
+
+export async function getStaticProps({params}) {
+    return {
+        props: params
+    }
+}
