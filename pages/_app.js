@@ -3,6 +3,8 @@ import { Hydrate } from 'react-query/hydration'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { AuthProvider } from '../contexts/Auth';
 import { ChakraProvider } from "@chakra-ui/react"
+import { supabase } from '../api'
+
 import Layout from '../components/Layout';
 
 import '../styles/globals.css'

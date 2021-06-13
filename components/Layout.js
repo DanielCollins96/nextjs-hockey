@@ -11,7 +11,7 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
             </Head>
             <Header />
             {/* <main className={s.main}> */}
-            <main  className="min-h-screen flex flex-col">
+            <main  className="min-h-screen flex flex-col px-3 sm:px-8">
             { children }
             </main>
             <footer className="">

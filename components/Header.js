@@ -32,11 +32,11 @@ const Header = () => {
                             <a className="text-xl">Teams</a>
                         </Link>
                     </li>
-                    {/* <li>
-                        <Link href="/chart">
-                            <a className={s.link}>Chart Maker</a>
+                    <li>
+                        <Link href="/create-post">
+                            <a className="text-xl">Create Post</a>
                         </Link>
-                    </li> */}
+                    </li>
                 </ul>
             </nav>
             <nav className="self-center justify-self-end sm:order-2">
