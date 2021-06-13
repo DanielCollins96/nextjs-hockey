@@ -32,12 +32,13 @@ export default function Players() {
       }
     return (
         <div>
-            <div className="relative w-5/6 max-w-md m-auto box-border">
+            <div className="relative w-5/6 max-w-sm m-auto box-border">
                 <label className="absolute left-0 top-0 font-bold m-3" htmlFor="filter">Search By Team</label>
                 <input onChange={inputChange} className="rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
             </div>
         <div className="flex flex-wrap justify-center mx-2 mx-4">
             {
+                filteredPlayers &&
                 filteredPlayers
                 .sort((teamA, teamB) => {
                     return teamA.name > teamB.name ? 1 : -1
@@ -45,7 +46,7 @@ export default function Players() {
                 .map((team) => {
                     return (
                         <div className="border border-black  rounded bg-white p-2 m-2">
-                            <h2 className="text-xl text-left">{team.name}</h2>
+                            <h2 className="text-xl text-left"><Link href={`/teams/${encodeURIComponent(team.id)}`}><a>{team.name}</a></Link></h2>
                             <ul style={{ columns: 3 }}>
                                 {team.roster?.roster
                                     .sort((playerA, playerB) => {

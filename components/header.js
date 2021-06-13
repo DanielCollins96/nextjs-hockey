@@ -33,11 +33,6 @@ const Header = () => {
                             <a className="text-xl font-bold">Players</a>
                         </Link>
                     </li>
-                    <li>
-                        <Link href="/teams">
-                            <a className="text-xl font-bold">Teams</a>
-                        </Link>
-                    </li>
                     {/* <li>
                         <Link href="/chart">
                             <a className={s.link}>Chart Maker</a>

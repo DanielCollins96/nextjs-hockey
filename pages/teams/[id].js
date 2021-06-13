@@ -3,7 +3,6 @@ import { useQuery, useQueries } from 'react-query';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
   } from 'recharts';
-import s from './team.module.css';
 
 export default function TeamPage({id}) {
 
@@ -47,11 +46,8 @@ export default function TeamPage({id}) {
         {/* <p>{JSON.stringify(team_data)}</p> */}
         <div className="flex">
             {seasonsLoading ? 
-            <div className={s.spinner}>
-                <div className={s.bounce1}></div>
-                <div className={s.bounce2}></div>
-                <div className={s.bounce3}></div>
-            </div> :
+            <p>Loading...</p>    
+            :
             <div>
                 <div className="p-2">
                     <p className="text-lg text-center">Wins</p>
