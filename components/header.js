@@ -19,13 +19,13 @@ const Header = () => {
     }
 
     return (
-        <header className="w-full bg-white grid grid-cols-2 shadow sm:grid-cols-3">
+        <header className="w-full bg-white flex">
             <Link href="/">
             <a className="self-center text-xl font-bold">
                 <p className="text-2xl m-2">NHL Stats Fam &copy;</p>
             </a>
             </Link>
-            <nav className="self-center justify-self-center order-3 col-span-full my-2 mr-auto sm:my-0 sm:order-2 sm:col-auto">
+            <nav className="self-center justify-self-center my-2 ml-2 mr-auto sm:my-0">
                 <ul className="flex w-full gap-x-4">
                     <li>
                         <Link href="/teams">

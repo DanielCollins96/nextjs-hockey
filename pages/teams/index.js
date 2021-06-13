@@ -33,8 +33,8 @@ export default function Teams() {
     return (
         <div>
             <div className="relative w-5/6 max-w-sm m-auto box-border">
-                <label className="absolute left-0 top-0 font-bold m-3" htmlFor="filter">Search By Team</label>
-                <input onChange={inputChange} className="rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
+                <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
+                <input onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
             </div>
         <div className="flex flex-wrap justify-center mx-2 mx-4">
             {
