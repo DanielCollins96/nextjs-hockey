@@ -78,10 +78,3 @@ export default function TeamPage({id}) {
         </div>
     )
 };
-
-export async function getServerSideProps({params}) {
-    console.log(params)
-    return {
-        props: params
-    }
-}

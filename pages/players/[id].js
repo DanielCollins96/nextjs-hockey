@@ -100,13 +100,5 @@ const PlayerPage = ({id}) => {
     )
 };
 
-export async function getServerSideProps ({params}) {
-    console.log(params)
-
-    return { 
-        props: params 
-    }
-}
-
 
 export default PlayerPage;
