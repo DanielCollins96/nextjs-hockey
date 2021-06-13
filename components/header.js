@@ -28,9 +28,9 @@ const Header = () => {
                             <a className="text-xl font-bold">Home</a>
                         </Link>
                     </li>
-                    <li className="">
-                        <Link href="/players">
-                            <a className="text-xl font-bold">Players</a>
+                    <li>
+                        <Link href="/teams">
+                            <a className="text-xl font-bold">Teams</a>
                         </Link>
                     </li>
                     {/* <li>

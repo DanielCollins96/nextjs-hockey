@@ -8,7 +8,7 @@ const fetchPlayers = async () => {
 
     return resJson.teams
 };
-export default function Players() {
+export default function Teams() {
     const [filteredPlayers, setFilteredPlayers] = useState([]);
     console.log(filteredPlayers)
     const { isLoading, isError, data: playerData, error } = useQuery('players', fetchPlayers);
