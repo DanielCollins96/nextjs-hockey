@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { useAuth } from '../contexts/Auth';
 import { Auth } from 'aws-amplify';
+import DropdownButton from './DropdownButton';
 import {Box, Flex, Heading, Text, Button, Input} from '@chakra-ui/react';
 
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
@@ -42,6 +43,7 @@ const Header = () => {
             <nav className="self-center justify-self-end sm:order-2">
                 <ul className="">
                     { !user ?
+                    <div>
                     <li>
                         <Link href="/profile" >
                             <Button 
@@ -50,22 +52,29 @@ const Header = () => {
                                 colorScheme="blue" 
                                 size="md" 
                                 rightIcon={<FaUserCircle />}
-                            >
+                                >
                                 Profile
                             </Button>
                         </Link>
                     </li>
+                    </div>
                     :
-                    <Button 
-                    m={3}
-                        onClick={signOutHandler} 
-                        colorScheme="blue" 
-                        size="md" 
-                        rightIcon={<FaSignOutAlt />} 
-                        
-                        >Sign Out</Button>
+                    <div className="flex bg-blue-900 items-center">
+                        <li>
+                            <DropdownButton />
+                        </li>
+                        <li>
+                            <Button 
+                                m={3}
+                                onClick={signOutHandler} 
+                                colorScheme="red" 
+                                size="md" 
+                                rightIcon={<FaSignOutAlt />} 
+                            >Sign Out</Button>
+                        </li>
+                    </div>
                     }
-                </ul>
+                    </ul>
             </nav> 
         </header>
 

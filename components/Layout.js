@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react';
 import Head from 'next/head';
-import Header from './header';
+import Header from './Header';
 
 export default function Layout ({children, title = 'Hockey Stats'}) {
     return (
