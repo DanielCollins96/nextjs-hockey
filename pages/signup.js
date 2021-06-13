@@ -23,10 +23,8 @@ export default function Signup() {
     
 
     const onSubmit = async (data) => {
-      console.log(data);
 
       try {
-        console.log(JSON.stringify(data))
         // const { email, username, password } = data;
         // console.log(data.picture.item(0))
         // const picture = data.picture.item(0)
