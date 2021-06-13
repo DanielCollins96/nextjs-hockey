@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 import ReactTable from '../../components/Table';
-import { setNestedObjectValues } from 'formik';
-
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
 
-const PlayerPage = ({id}) => {
+const PlayerPage = () => {
+    const router = useRouter()
+    const { id } = router.query
     const fetchPlayer = async () => {
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}`);
         const playerRes = await res.json()
@@ -37,9 +37,6 @@ const PlayerPage = ({id}) => {
     const { data: player, status: player_status } = useQuery(`player-${id}`, fetchPlayer);
     const { data: playerStats, status: stats_status } = useQuery(`playerStats-${id}`, fetchPlayerStats);
 
-    console.log(playerStats)
-    console.log(player_status)
-    console.log(player)
     const columns = useMemo(
         () => [
              {
@@ -82,7 +79,7 @@ const PlayerPage = ({id}) => {
     return (
         <div className="flex mt-2">
             <div className="flex flex-col h-full justify-start items-center w-56 p-2 ml-2">
-                    {player_status === 'success' ? (
+                    {player_status === 'success' && player ? (
                         <div className="">
                         <p className="text-2xl font-bold">{player.people[0].fullName}</p>
                         <p>Birth Date: {player.people[0].birthDate}</p>
@@ -99,19 +96,6 @@ const PlayerPage = ({id}) => {
         </div>
     )
 };
-
-export const getStaticPaths = async () => {
-    return {
-        paths: [],
-        fallback: true
-    }
-}
-
-export async function getStaticProps({params}) {
-    return { 
-        props: params 
-    }
-}
 
 
 export default PlayerPage;
