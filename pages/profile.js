@@ -13,8 +13,17 @@ const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false }
 function Profile(props) {
   // const { user } = useAuth();
   const { user } = Auth.useUser();
+  const [status, setStatus] = useState('');
   const [post, setPost] = useState(null);
   const [posts, setPosts] = useState([]);
+
+  async function fetchPosts() {
+    const { data, error } = await supabase
+      .from('countries')
+      .select()
+    setPosts(data)
+    setLoading(false)
+  }
 
   const changePost = (e) => {
     setPost(() => ({...post, [e.target.name] : e.target.value }))
@@ -24,11 +33,19 @@ function Profile(props) {
     console.log(post)
   }
 
+
+  console.log("user")
+  console.log(user)
   if(user){
+    const {email, id} = user;
     return (
       <div>
-        <h2>Welcome {user.email}</h2> 
-        <div className="">
+        <h2 className="p-4">Welcome {email}</h2> 
+        <div className="flex bg-red-200 p-4 flex-col sm:flex-row">
+        <aside className="flex-3">
+          <p className="text-xl">Profile</p>
+        </aside>
+        <div className="max-w-lg flex-1">
           <div>
             <label htmlFor="title">
               <input type="text" onChange={changePost} placeholder="Title" value={post?.title} name="title" id="title"/>
@@ -36,6 +53,7 @@ function Profile(props) {
             <SimpleMDE value={post?.content} onChange={value => setPost({...post, content: value})}/>
             <button onClick={savePost} type="submit">Save Post</button>
           </div>
+        </div>
         </div>
       </div>
     )

@@ -20,7 +20,7 @@ const Header = () => {
     }
 
     return (
-        <header className="w-full bg-white flex">
+        <header className="w-full bg-white flex px-2">
             <Link href="/">
             <a className="self-center text-xl font-bold">
                 <p className="text-2xl m-2">NHL Stats Fam &copy;</p>
@@ -33,37 +33,24 @@ const Header = () => {
                             <a className="text-xl">Teams</a>
                         </Link>
                     </li>
-                    <li>
-                        <Link href="/create-post">
-                            <a className="text-xl">Create Post</a>
-                        </Link>
-                    </li>
                 </ul>
             </nav>
             <nav className="self-center justify-self-end sm:order-2">
                 <ul className="">
                     { !user ?
-                    <div>
+                    <div className="flex items-center p-2 mx-1">
                     <li>
                         <Link href="/profile" >
-                            <Button 
-                                m={3}
-                                component="a" 
-                                colorScheme="blue" 
-                                size="md" 
-                                rightIcon={<FaUserCircle />}
-                                >
-                                Profile
-                            </Button>
+                            <DropdownButton />
                         </Link>
                     </li>
                     </div>
                     :
-                    <div className="flex bg-blue-900 items-center">
+                    <div className="flex items-center p-2 mx-1">
                         <li>
                             <DropdownButton />
                         </li>
-                        <li>
+                        {/* <li>
                             <Button 
                                 m={3}
                                 onClick={signOutHandler} 
@@ -71,7 +58,7 @@ const Header = () => {
                                 size="md" 
                                 rightIcon={<FaSignOutAlt />} 
                             >Sign Out</Button>
-                        </li>
+                        </li> */}
                     </div>
                     }
                     </ul>

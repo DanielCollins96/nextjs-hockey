@@ -7,21 +7,26 @@ import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
 
 const DropdownButton = () => {
+    console.log('DRAWEREING');
+    console.log(Auth);
     const [open, setOpen] = useState(false)
-    const { user } = Auth.useUser();
+    // const { user } = Auth.useUser();
+    const user = supabase.auth?.currentUser;
 
     const toggleOpen = () => {
         setOpen(!open)
     }
-
+console.log(supabase);
     if(!user) {
         return (
             <div>
-                <Link>
-                    <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-6 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500" id="menu-button" aria-expanded="true" aria-haspopup="true">
+                <Link href="/profile">
+                    <button type="button" 
+                        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-6 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500" 
+                        id="menu-button" aria-expanded="true" aria-haspopup="true">
+                    Login
+                    </button>
                 </Link>
-            Login
-            </button>
         </div>
         )
     }
@@ -49,17 +54,17 @@ const DropdownButton = () => {
                 --> */}
                 <div class={`z-40 origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none ${open ? '': 'hidden'}`} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-1" role="none">
-                    <Link href="/settings">
-                        <a class="text-gray-700 block px-4 py-2 text-sm active:bg-gray-100 active:text-gray-900" role="menuitem" tabindex="-1" id="menu-item-0">Account Settings</a>
+                    <Link href="/profile">
+                        <a class="text-gray-700 block px-4 py-2 text-sm active:bg-gray-100 active:text-gray-900" role="menuitem" tabindex="-1" id="menu-item-0">My Profile</a>
                     </Link>
-                    <Link href="">
-                        <a class="text-gray-700 block px-4 py-2 text-sm active:bg-gray-100 active:text-gray-900" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
+                    <Link href="/create-post">
+                        <a class="text-gray-700 block px-4 py-2 text-sm active:bg-gray-100 active:text-gray-900" role="menuitem" tabindex="-1" id="menu-item-1">Create Post</a>
                     </Link>
                 <form method="POST" action="#" role="none">
                     <button type="submit" 
                         class="text-gray-700 block w-full text-left px-4 py-2 text-sm" 
                         role="menuitem" tabindex="-1" id="menu-item-3"
-                        onClick={() => props.supabaseClient.auth.signOut()}>
+                        onClick={() => supabase.auth.signOut()}>
                         Sign Out
                     </button>
                 </form>
