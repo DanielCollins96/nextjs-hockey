@@ -4,6 +4,9 @@ import dynamic from 'next/dynamic';
 import "easymde/dist/easymde.min.css";
 import { Auth, Typography, Button } from "@supabase/ui";
 import { supabase } from '../api'
+import {formatDistance} from 'date-fns'
+import { ToastContainer, toast } from 'react-toastify';
+
 
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
@@ -19,11 +22,16 @@ function Profile(props) {
 
   async function fetchPosts() {
     const { data, error } = await supabase
-      .from('countries')
+      .from('posts')
       .select()
+      .limit(5)
+      .order('inserted_at', {ascending: false})
     setPosts(data)
-    setLoading(false)
   }
+
+  useEffect(() => {
+    fetchPosts()
+  }, [])
 
   const changePost = (e) => {
     setPost(() => ({...post, [e.target.name] : e.target.value }))
@@ -33,9 +41,6 @@ function Profile(props) {
     console.log(post)
   }
 
-
-  console.log("user")
-  console.log(user)
   if(user){
     const {email, id} = user;
     return (
@@ -43,16 +48,38 @@ function Profile(props) {
         <h2 className="p-4">Welcome {email}</h2> 
         <div className="flex bg-red-200 p-4 flex-col sm:flex-row">
         <aside className="flex-3">
-          <p className="text-xl">Profile</p>
+          <div>
+            <p className="text-xl">Recent Posts</p>
+            {
+             posts.length > 0 &&
+             <div className="max-h-5/6 overflow-scroll">
+               {posts.map(({title, content, inserted_at}) => {
+                 return (
+                   <div className="rounded border border-yellow-400 bg-yellow-100 p-2 m-1 overflow-scroll">
+                     <p className="">{title}</p>
+                     <p className="">{content}</p>
+                     <p className="">{formatDistance(new Date(inserted_at),new Date(),{ addSuffix: true })}</p>
+                   </div>
+                 )
+               })}
+             </div> 
+            }
+          </div>
         </aside>
         <div className="max-w-lg flex-1">
-          <div>
-            <label htmlFor="title">
-              <input type="text" onChange={changePost} placeholder="Title" value={post?.title} name="title" id="title"/>
-            </label>
-            <SimpleMDE value={post?.content} onChange={value => setPost({...post, content: value})}/>
-            <button onClick={savePost} type="submit">Save Post</button>
-          </div>
+          <p className="text-xl">Watch List</p>
+          {
+            posts.length > 0 && 
+            <div className="overflow-hidden max-h-full">
+              {/* {posts.map((country) => {
+                return(
+                  <div className="bg-blue-100 p-4">
+                    <p>{country.name}</p>
+                  </div>
+                  )
+              })} */}
+            </div>
+          }
         </div>
         </div>
       </div>

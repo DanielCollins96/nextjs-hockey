@@ -13,7 +13,8 @@ const [games, setGames] = useState([]);
 //   setGames(gameSchedule.dates[0]?.games);
 // },[])
 
-const [posts, setPosts] = useState([])
+const [userPosts, setUserPosts] = useState(null)
+// const [posts, setPosts] = useState(null)
 const [loading, setLoading] = useState(true)
 useEffect(() => {
   fetchPosts()
@@ -22,7 +23,9 @@ async function fetchPosts() {
   const { data, error } = await supabase
     .from('posts')
     .select()
-  setPosts(data)
+  console.log(typeof Object.entries(data));
+  console.log(data);
+  setUserPosts(data)
   setLoading(false)
 }
 
@@ -46,7 +49,7 @@ async function fetchPosts() {
           <div className="flex items-center flex-col">
       <h1 className="text-3xl font-semibold tracking-wide mt-6 mb-2">Posts</h1>
       {
-        posts.length ? posts.map(post => (
+        userPosts && userPosts.length ? userPosts.map(post => (
           <Link key={post.id} href={`/posts/${post.id}`}>
             <div className="cursor-pointer border-b border-gray-300	mt-8 pb-4">
               <h2 className="text-xl font-semibold">{post.title}</h2>
@@ -57,7 +60,7 @@ async function fetchPosts() {
         :
         <p className="text-2xl">No posts.</p>
       }
-      <div>{posts}</div>
+      <div>{JSON.stringify(userPosts)}</div>
     </div>
           </div>
     </div>

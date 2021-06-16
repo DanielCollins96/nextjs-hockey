@@ -4,6 +4,9 @@ import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import "easymde/dist/easymde.min.css"
 import { supabase } from '../api'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
 const initialState = { title: '', content: '' }
@@ -20,13 +23,20 @@ function CreatePost() {
     const user = supabase.auth.user()
     const id = uuid()
     post.id = id
-    const { data } = await supabase
+    const { error, data } = await supabase
       .from('posts')
       .insert([
           { title, content, user_id: user.id, user_email: user.email }
       ])
       .single()
-    router.push(`/posts/${data.id}`)
+    if(error) {
+      return alert('Error Submitting')
+    }
+    // alert('Post Created')
+    toast("Post Created Successfully");
+    setTimeout(() => {
+      router.push(`/profile`)
+    },2000)
   }
   return (
     <div>
@@ -36,7 +46,7 @@ function CreatePost() {
         name="title"
         placeholder="Title"
         value={post.title}
-        className="border-b pb-2 text-lg my-4 focus:outline-none w-full font-light text-gray-500 placeholder-gray-500 y-2"
+        className="border-b p-2 text-lg my-4 focus:outline-none w-full font-light text-gray-500 placeholder-gray-500 y-2"
       /> 
       <SimpleMDE
         value={post.content}
@@ -47,6 +57,7 @@ function CreatePost() {
         className="mb-4 bg-green-600 text-white font-semibold px-8 py-2 rounded-lg"
         onClick={createNewPost}
       >Create Post</button>
+      <ToastContainer />
     </div>
   )
 }
