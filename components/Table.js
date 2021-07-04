@@ -18,7 +18,7 @@ export default function ReactTable({ columns, data }) {
 
   // Render the UI for your table
   return (
-    <table {...getTableProps()} className="border border-black table-fixed p-4 text-sm ">
+    <table {...getTableProps()} className="border border-black table-fixed p-4 text-sm m-1">
       <thead className="bg-blue-200">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>

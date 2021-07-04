@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
-import Image from 'next/image'
+// import Image from 'next/image'
 import ReactTable from '../../components/Table';
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
@@ -62,15 +62,15 @@ const PlayerPage = () => {
                  accessor: 'gp'
              },
             {
-                 Header: 'Goals',
+                 Header: 'G',
                  accessor: 'g'
              },
             {
-                 Header: 'Assists',
+                 Header: 'A',
                  accessor: 'a'
              },
             {
-                 Header: 'Points',
+                 Header: 'P',
                  accessor: 'pts'
              },
              {
