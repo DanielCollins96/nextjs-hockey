@@ -14,6 +14,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
+## TODOs
+
+- [ ] Max width of player stats table
+- [ ] Sort the stats new to old
+- [ ] flex col on small screens, flex row sm and up
+- [ ] lot of profile page things
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

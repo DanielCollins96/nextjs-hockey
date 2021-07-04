@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
+import Image from 'next/image'
 import ReactTable from '../../components/Table';
 import { setNestedObjectValues } from 'formik';
 
@@ -31,6 +32,11 @@ const PlayerPage = ({id}) => {
                 }
             )
         })
+        console.log('qht')
+        console.log(playerStats)
+        console.log(playerStats.sort((a,b) => {
+            return b.season - a.season;
+        }))
         return playerStats
     }
 
@@ -80,8 +86,9 @@ const PlayerPage = ({id}) => {
         () => playerStats, []
     )
     return (
-        <div className="flex mt-2">
-            <div className="flex flex-col h-full justify-start items-center w-56 p-2 ml-2">
+        <div className="flex flex-col sm:flex-row ßmt-2">
+            <div className="flex  flex-col h-full justify-start items-center w-56 p-2 ml-2">
+                <img src={`http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />
                     {player_status === 'success' ? (
                         <div className="">
                         <p className="text-2xl font-bold">{player.people[0].fullName}</p>

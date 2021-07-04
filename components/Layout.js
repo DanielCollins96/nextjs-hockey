@@ -11,7 +11,7 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
             </Head>
             <Header />
             {/* <main className={s.main}> */}
-            <main  className="min-h-screen flex flex-col">
+            <main  className="overflow-auto min-h-screen flex flex-col">
             { children }
             </main>
             <footer className="">
