@@ -3,12 +3,12 @@ import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 import Image from 'next/image'
 import ReactTable from '../../components/Table';
-import { setNestedObjectValues } from 'formik';
-
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
 
-const PlayerPage = ({id}) => {
+const PlayerPage = () => {
+    const router = useRouter()
+    const { id } = router.query
     const fetchPlayer = async () => {
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}`);
         const playerRes = await res.json()
@@ -43,9 +43,6 @@ const PlayerPage = ({id}) => {
     const { data: player, status: player_status } = useQuery(`player-${id}`, fetchPlayer);
     const { data: playerStats, status: stats_status } = useQuery(`playerStats-${id}`, fetchPlayerStats);
 
-    console.log(playerStats)
-    console.log(player_status)
-    console.log(player)
     const columns = useMemo(
         () => [
              {
@@ -86,7 +83,7 @@ const PlayerPage = ({id}) => {
         () => playerStats, []
     )
     return (
-        <div className="flex flex-col sm:flex-row ßmt-2">
+        <div className="flex flex-col sm:flex-row mt-2">
             <div className="flex  flex-col h-full justify-start items-center w-56 p-2 ml-2">
                 <img src={`http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />
                     {player_status === 'success' ? (
@@ -106,14 +103,6 @@ const PlayerPage = ({id}) => {
         </div>
     )
 };
-
-export async function getServerSideProps ({params}) {
-    console.log(params)
-
-    return { 
-        props: params 
-    }
-}
 
 
 export default PlayerPage;
