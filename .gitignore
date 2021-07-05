@@ -7,6 +7,9 @@
 
 # testing
 /coverage
+data.json
+testing.js
+test_index.html
 
 # next.js
 /.next/

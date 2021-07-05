@@ -34,9 +34,16 @@ const PlayerPage = () => {
         })
         console.log('qht')
         console.log(playerStats)
-        console.log(playerStats.sort((a,b) => {
-            return b.season - a.season;
-        }))
+        playerStats.sort((a,b) => {
+            let fa = a.season.toLowerCase(),
+            fb = b.season.toLowerCase();
+            if (fa > fb) {
+                return -1;
+            }
+            if (fa < fb) {
+                return 1;
+            }
+        })
         return playerStats
     }
 
