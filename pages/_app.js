@@ -1,3 +1,4 @@
+import Head from 'next/head'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { Hydrate } from 'react-query/hydration'
 import { ReactQueryDevtools } from 'react-query/devtools'
@@ -21,6 +22,12 @@ function MyApp({ Component, pageProps }) {
       <Hydrate state={pageProps.dehydratedState}>
         <AuthProvider>
           <ChakraProvider>
+            <Head>
+            <meta title="Hockey Stats" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta name="description" content="National Hockey League Statistics" />
+            <meta name="theme-color" content="#319795"></meta>
+            </Head>
             <Layout>
               <Component {...pageProps} />
             </Layout>

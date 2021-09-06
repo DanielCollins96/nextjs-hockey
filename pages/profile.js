@@ -33,6 +33,7 @@ function Profile() {
       <div className="">
         <div>
           <label htmlFor="title">
+            Post Title
             <input type="text" onChange={changePost} placeholder="Title" value={post?.title} name="title" id="title"/>
           </label>
           <SimpleMDE value={post?.content} onChange={value => setPost({...post, content: value})}/>
