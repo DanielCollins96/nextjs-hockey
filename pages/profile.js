@@ -30,8 +30,10 @@ function Profile() {
   return (
     <AmplifyAuthenticator usernameAlias="email">
       <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">
-      { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
-        <div className="w-3/4 flex flex-col">
+        <div className="bg-white m-2 p-2">
+          { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
+        </div>
+        <div className="w-3/4 flex flex-col p-2">
           <label htmlFor="title" className="text-3xl mb-2">
             <input type="text" onChange={changePost} className="p-1" placeholder="Enter title..." value={post?.title} name="title" id="title"/>
           </label>
