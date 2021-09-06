@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useState } from 'react'
 import { useQuery, useQueries } from 'react-query';
+import ReactTable from '../../components/Table';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
   } from 'recharts';
 
 export default function TeamPage() {
+    const [seasonStats, setSeasonstats] = useState([])
     const router = useRouter()
     const { id } = router.query
     const { data: team_data } = useQuery(`fetchTeam-${id}`, async () => {
@@ -51,6 +54,9 @@ export default function TeamPage() {
             <p>Loading...</p>    
             :
             <div>
+                <div className="p-2">
+                {/* <ReactTable /> */}
+                </div>
                 <div className="p-2">
                     <p className="text-lg text-center">Wins</p>
                     <LineChart

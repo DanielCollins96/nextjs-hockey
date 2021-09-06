@@ -29,15 +29,14 @@ function Profile() {
 
   return (
     <AmplifyAuthenticator usernameAlias="email">
-      { user && <h2>Welcome, {user?.attributes?.email}</h2> }
-      <div className="">
-        <div>
-          <label htmlFor="title">
-            Post Title
-            <input type="text" onChange={changePost} placeholder="Title" value={post?.title} name="title" id="title"/>
+      <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">
+      { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
+        <div className="w-3/4 flex flex-col">
+          <label htmlFor="title" className="text-3xl mb-2">
+            <input type="text" onChange={changePost} className="p-1" placeholder="Enter title..." value={post?.title} name="title" id="title"/>
           </label>
           <SimpleMDE value={post?.content} onChange={value => setPost({...post, content: value})}/>
-          <button onClick={savePost} type="submit">Save Post</button>
+          <button className="bg-blue-200 p-3 rounded inline-block" onClick={savePost} type="submit">Save Post</button>
         </div>
       </div>
       {posts ? posts.map((post) => {
