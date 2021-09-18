@@ -19,6 +19,7 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 - [x] Max width of player stats table
 - [x] Sort the stats new to old
 - [x] flex col on small screens, flex row sm and up
+- [ ] user posting and file uploads
 - [ ] lot of profile page things
 - [ ] goalie stats
 - [ ] refresh of player/team page leads to 404
