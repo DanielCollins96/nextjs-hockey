@@ -44,26 +44,22 @@ const Header = () => {
                     { !user ?
                     <li>
                         <Link href="/profile" >
-                            <Button 
-                                m={3}
-                                component="a" 
-                                colorScheme="blue" 
-                                size="md" 
-                                rightIcon={<FaUserCircle />}
+                        {/* <button class="flex items-center justify-center rounded-md bg-black text-white" type="submit">Buy now</button> */}
+
+                            <button 
+                                className="bg-blue-400 flex items-center justify-center rounded-md m-3 p-3 font-bold"
                             >
                                 Profile
-                            </Button>
+                                <FaUserCircle className="ml-2"/>
+                            </button>
                         </Link>
                     </li>
                     :
-                    <Button 
-                    m={3}
-                        onClick={signOutHandler} 
-                        colorScheme="blue" 
-                        size="md" 
+                    <button 
+
                         rightIcon={<FaSignOutAlt />} 
                         
-                        >Sign Out</Button>
+                        >Sign Out</button>
                     }
                 </ul>
             </nav> 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/Auth';
-import { AmplifySignUp, AmplifySignIn, AmplifyAuthenticator } from '@aws-amplify/ui-react'
+import { AmplifySignUp, AmplifySignIn, AmplifyAuthenticator,AmplifyAuthContainer,withAuthenticator } from '@aws-amplify/ui-react'
 import Amplify, { API } from 'aws-amplify';
 import dynamic from 'next/dynamic';
 import "easymde/dist/easymde.min.css";
@@ -16,7 +16,7 @@ function Profile() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    API.get('three', '/posts')
+    API.get('three-staging', '/posts')
   })
 
   const changePost = (e) => {
@@ -28,7 +28,7 @@ function Profile() {
   }
 
   return (
-    <AmplifyAuthenticator usernameAlias="email">
+    <div>
       <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">
         <div className="bg-white m-2 p-2">
           { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
@@ -45,8 +45,8 @@ function Profile() {
         return <p>Hey</p> 
       })
       :
-       <p>whaaat</p>
-      }
+      <p>whaaat</p>
+    }
       <AmplifySignIn 
         headerText="Sign In"
         slot="sign-in"
@@ -65,7 +65,7 @@ function Profile() {
             required: true,
           },
         ]}
-      />
+        />
       <AmplifySignUp
           slot="sign-up"
           usernameAlias="email"
@@ -83,11 +83,10 @@ function Profile() {
               required: true,
             },
           ]}
-        />
-
-    </AmplifyAuthenticator>
+          />
+        </div>
   )
 }
 
-// export default withAuthenticator(Profile)
-export default Profile
+export default withAuthenticator(Profile)
+// export default Profile

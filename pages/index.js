@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Box, Flex,Text, Stack, Input } from '@chakra-ui/react';
 import Ticker from 'react-ticker';
 import {useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -7,18 +6,17 @@ import { format } from 'date-fns';
 
 export default function Home() {
 const [games, setGames] = useState([]);
-useEffect(async() => {
+useEffect(async () => {
   const data = await fetch('https://statsapi.web.nhl.com/api/v1/schedule');
   let gameSchedule = await data.json();
   console.log(gameSchedule.dates[0]?.games) 
   setGames(gameSchedule.dates[0]?.games);
   // console.log(format(games[0].gameDate, 'YYYY-MM-DD'))
 },[])
-console.log(format(new Date("2021-03-23T23:00:00Z"), 'ppp'))
-// console.log(games[0].gameDate)
+
   return (
-          <Box mt={1}>
-          <Flex justify="center">
+    <div className="mt-2">
+          <div className="flex justify-center">
           <motion.img 
             src="/ice-hockey-puck.svg" 
             alt="Puck" 
@@ -30,7 +28,7 @@ console.log(format(new Date("2021-03-23T23:00:00Z"), 'ppp'))
             whileTap={{ scale: 0.9 }}
             drag={true}
             />
-          </Flex>
-    </Box>
+          </div>
+    </div>
   )
 }
