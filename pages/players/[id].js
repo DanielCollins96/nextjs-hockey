@@ -92,7 +92,7 @@ const PlayerPage = () => {
     return (
         <div className="flex flex-col sm:flex-row mt-2">
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
-                <img src={`https://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />
+                <img src={`http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />
                     {player_status === 'success' ? (
                         <div className="w-56 p-1 m-1">
                         <p className="text-2xl font-bold">{player.people[0].fullName}</p>

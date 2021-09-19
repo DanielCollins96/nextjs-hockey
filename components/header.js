@@ -56,10 +56,12 @@ const Header = () => {
                     </li>
                     :
                     <button 
-
-                        rightIcon={<FaSignOutAlt />} 
-                        
-                        >Sign Out</button>
+                        onClick={signOutHandler}
+                        className="bg-blue-400 flex items-center justify-center rounded-md m-3 p-3 font-bold"
+                        >
+                        Sign Out
+                        <FaSignOutAlt className="ml-2"/>
+                    </button>
                     }
                 </ul>
             </nav> 
