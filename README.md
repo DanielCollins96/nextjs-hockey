@@ -1,5 +1,19 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## TODOs
+
+- [x] Max width of player stats table
+- [x] Sort the stats new to old
+- [x] flex col on small screens, flex row sm and up
+- [ ] user posting and file uploads
+- [ ] lot of profile page things
+- [ ] teams expand players, add logos
+- [ ] add links into tables
+- [ ] add forum to team page and news stories
+- [ ] add tags to posts
+- [ ] goalie stats
+- [ ] refresh of player/team page leads to 404
+- [ ] updated navbar account button and teams style
 ## Getting Started
 
 First, run the development server:
@@ -13,17 +27,6 @@ yarn dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-## TODOs
-
-- [x] Max width of player stats table
-- [x] Sort the stats new to old
-- [x] flex col on small screens, flex row sm and up
-- [ ] user posting and file uploads
-- [ ] lot of profile page things
-- [ ] goalie stats
-- [ ] refresh of player/team page leads to 404
-- [ ] updated navbar account button and teams style
 
 ## Learn More
 

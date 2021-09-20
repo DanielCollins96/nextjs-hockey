@@ -1,6 +1,8 @@
 import {useState, useCallback} from "react";
 import { MdExpandMore, MdExpandLess } from "react-icons/md";
 import Link from 'next/link'
+import Image from 'next/image'
+
 
 
 export default function TeamBox({team}) {
@@ -8,12 +10,16 @@ export default function TeamBox({team}) {
 
   return (
     <div>
-      <div className={`overflow-hidden border border-black rounded bg-white p-2 m-2 ${active ? 'h-auto max-h-96': 'max-h-24'} transition-maxHeight duration-500 ease-in-out`}>
+      <div className={`overflow-hidden border border-black rounded bg-white p-2 m-2 ${active ? 'h-auto max-h-96': 'max-h-28'} transition-maxHeight duration-500 ease-in-out`}>
         <div className="flex justify-between items-center">
         <h2 className="text-xl text-left">
-          <Link href={`/teams/${encodeURIComponent(team.id)}`}>
-            <a>{team.name}</a>
+          <div className="flex">
+
+          <Image src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
+          <Link href={`/teams/${encodeURIComponent(team.id)}`} >
+            <a className="ml-3">{team.name}</a>
           </Link>
+          </div>
         </h2>
         <div className="p-1" onClick={() => setActive(v => !v)}>
           {

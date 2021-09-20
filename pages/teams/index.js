@@ -10,7 +10,7 @@ const fetchPlayers = async () => {
 };
 export default function Teams() {
     const [filteredPlayers, setFilteredPlayers] = useState([]);
-    const { isLoading, isError, data: playerData, error } = useQuery('players', fetchPlayers);
+    const { isLoading, isError, data: playerData, error } = useQuery('team-rosters', fetchPlayers);
 
     useEffect(() => {
         setFilteredPlayers(playerData)
