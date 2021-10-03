@@ -14,7 +14,7 @@ export default function TeamBox({team}) {
         <div className="flex justify-between items-center">
         <h2 className="text-xl text-left p-2">
           <div className="flex">
-          <Image src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
+          <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
           <Link href={`/teams/${encodeURIComponent(team.id)}`} >
             <a className="ml-3">{team.name}</a>
           </Link>
