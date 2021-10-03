@@ -6,7 +6,7 @@ import ReactTable from '../../components/Table';
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
 
-const PlayerPage = () => {
+const Players = () => {
     const router = useRouter()
     const { id } = router.query
     const fetchPlayer = async () => {
@@ -32,8 +32,7 @@ const PlayerPage = () => {
                 }
             )
         })
-        console.log('qht')
-        console.log(playerStats)
+        console.log({playerStats})
         playerStats.sort((a,b) => {
             let fa = a.season.toLowerCase(),
             fb = b.season.toLowerCase();
@@ -112,4 +111,4 @@ const PlayerPage = () => {
 };
 
 
-export default PlayerPage;
+export default Players;
