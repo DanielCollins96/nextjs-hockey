@@ -14,7 +14,7 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
             { children }
             </main>
             <footer className="">
-                <h3>Get Bent</h3>
+                <h3>Hackey</h3>
             </footer>
         </div>
     )
