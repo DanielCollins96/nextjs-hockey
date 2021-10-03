@@ -35,7 +35,7 @@ export default function Teams() {
                 <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
                 <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
             </div>
-            <div className="flex flex-wrap justify-center mx-2 mx-4">
+            <div className="flex flex-wrap justify-center my-2 mx-4">
                 {
                     filteredPlayers &&
                     filteredPlayers

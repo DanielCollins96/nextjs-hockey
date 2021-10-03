@@ -10,11 +10,10 @@ export default function TeamBox({team}) {
 
   return (
     <div>
-      <div className={`overflow-hidden border border-black rounded bg-white p-2 m-2 ${active ? 'h-auto max-h-96': 'max-h-28'} transition-maxHeight duration-500 ease-in-out`}>
+      <div className={`relative overflow-hidden border border-black rounded bg-white  m-2 ${active ? 'h-auto max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
         <div className="flex justify-between items-center">
-        <h2 className="text-xl text-left">
+        <h2 className="text-xl text-left p-2">
           <div className="flex">
-
           <Image src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
           <Link href={`/teams/${encodeURIComponent(team.id)}`} >
             <a className="ml-3">{team.name}</a>
@@ -27,7 +26,7 @@ export default function TeamBox({team}) {
           }
         </div>
         </div>
-        <ul style={{ columns: 3 }}>
+        <ul style={{ columns: 3 }} className="p-1" >
           {team.roster?.roster
             .sort((playerA, playerB) => {
               return playerA.person.fullName > playerB.person.fullName ? 1 : -1;
@@ -45,6 +44,7 @@ export default function TeamBox({team}) {
               );
             })}
         </ul>
+        <div className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 ${active ? "hidden" : ""}`}>...</div>
       </div>
     </div>
   );
