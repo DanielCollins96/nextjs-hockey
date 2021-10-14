@@ -16,11 +16,11 @@ export default function TeamBox({team}) {
           <div className="flex">
           <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
           <Link href={`/teams/${encodeURIComponent(team.id)}`} >
-            <a className="ml-3">{team.name}</a>
+            <a className="ml-3 pr-3">{team.name}</a>
           </Link>
           </div>
         </h2>
-        <div className="p-1" onClick={() => setActive(v => !v)}>
+        <div className="pl-20 pr-2" onClick={() => setActive(v => !v)}>
           {
             active ? <MdExpandLess size={24}/> : <MdExpandMore size={24}/>
           }
@@ -44,7 +44,7 @@ export default function TeamBox({team}) {
               );
             })}
         </ul>
-        <div className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 ${active ? "hidden" : ""}`}>...</div>
+        <div onClick={() => setActive(v => !v)} className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 ${active ? "hidden" : ""}`}>...</div>
       </div>
     </div>
   );
