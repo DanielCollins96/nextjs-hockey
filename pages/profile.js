@@ -29,17 +29,22 @@ function Profile() {
 
   return (
     <div>
-      { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
       <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">
         <div className="bg-white m-2 p-2">
           { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
+          <div className="bg-red-200 p-12">My Bio</div>
         </div>
-        <div className="w-3/4 flex flex-col p-2">
-          <label htmlFor="title" className="text-3xl mb-2">
-            <input type="text" onChange={changePost} className="p-1" placeholder="Enter title..." value={post?.title} name="title" id="title"/>
-          </label>
-          <SimpleMDE value={post?.content} onChange={value => setPost({...post, content: value})}/>
-          <button className="bg-blue-200 p-3 rounded inline-block" onClick={savePost} type="submit">Save Post</button>
+          <div className="w-3/4 flex flex-col p-2">
+            <div id="post_box" className="border rounded-b p-1">
+              <label htmlFor="title" className="text-3xl mb-2">
+                <input type="text" onChange={changePost} className="p-1" placeholder="Enter title..." value={post?.title} name="title" id="title"/>
+              </label>
+              <SimpleMDE value={post?.content} onChange={value => setPost({...post, content: value})}/>
+              <button className="bg-blue-200 px-3 py-1 rounded inline-block mb-2" onClick={savePost} type="submit">Save Post</button>
+            </div>
+            <div id="settings">
+              <p>LOLOLOL</p>
+            </div>
         </div>
       </div>
     </div>
