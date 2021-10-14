@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { useAuth } from '../contexts/Auth';
 import { Auth } from 'aws-amplify';
-import {Box, Flex, Heading, Text, Button, Input} from '@chakra-ui/react';
-
+import ProfileButton from './ProfileButton'
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
 const Header = () => {
@@ -19,52 +18,42 @@ const Header = () => {
     }
 
     return (
-        <header className="w-full bg-white flex">
+        <header className="w-full bg-white flex justify-between ml-1 py-3">
             <Link href="/">
-            <a className="self-center text-xl font-bold">
-                <p className="text-2xl m-2">NHL Stats Fam &copy;</p>
-            </a>
+                <a className="self-center text-xl font-bold">
+                    <p className="text-xl m-2">NHL Stats Home &copy;</p>
+                </a>
             </Link>
-            <nav className="self-center justify-self-center my-2 ml-2 mr-auto sm:my-0">
-                <ul className="flex w-full gap-x-4">
-                    <li>
+            <nav className="self-center my-2 mr-2 sm:my-0">
+                <ul className="flex">
+                    <li className="my-auto px-2">
                         <Link href="/teams">
                             <a className="text-xl">Teams</a>
                         </Link>
                     </li>
-                    {/* <li>
-                        <Link href="/chart">
-                            <a className={s.link}>Chart Maker</a>
+                    <li className="my-auto px-3 py-1">
+                        <Link href="/players">
+                            <a className="text-xl">Players</a>
                         </Link>
-                    </li> */}
-                </ul>
-            </nav>
-            <nav className="self-center justify-self-end sm:order-2">
-                <ul className="">
+                    </li>
                     { !user ?
                     <li>
                         <Link href="/profile" >
-                        {/* <button class="flex items-center justify-center rounded-md bg-black text-white" type="submit">Buy now</button> */}
-
                             <button 
-                                className="bg-blue-400 flex items-center justify-center rounded-md m-3 p-3 font-bold"
+                                className="inline-flex justify-center w-full px-4 py-2 text-sm font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                             >
-                                Profile
-                                <FaUserCircle className="ml-2"/>
+                                Login
+                                <FaUserCircle className="ml-2 my-auto"/>
                             </button>
                         </Link>
                     </li>
                     :
-                    <button 
-                        onClick={signOutHandler}
-                        className="bg-blue-400 flex items-center justify-center rounded-md m-3 p-3 font-bold"
-                        >
-                        Sign Out
-                        <FaSignOutAlt className="ml-2"/>
-                    </button>
+                    <li>
+                        <ProfileButton signOutHandler={signOutHandler} />
+                    </li>
                     }
                 </ul>
-            </nav> 
+                </nav>
         </header>
 
     )

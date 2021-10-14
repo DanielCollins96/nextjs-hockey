@@ -13,6 +13,7 @@ function useAuth() {
 function AuthProvider({children}) {
     const [authState, setAuthState] = useState();
     const [user, setUser] = useState();
+    
     useEffect(() => {
         // checkUser()
         return onAuthUIStateChange((nextAuthState, authData) => {
