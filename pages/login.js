@@ -1,11 +1,23 @@
+import { withAuthenticator, AmplifySignUp, AmplifySignIn } from '@aws-amplify/ui-react'
 
-
-export default function Login() {
+function Login() {
 
     return (
-        <div>login</div>
+        <div className="flex justify-center">
+            <AmplifySignIn />
+            <AmplifySignUp 
+                slot="sign-up"
+                usernameAlias="email"
+                formFields={[
+                    { type: "username" },
+                    { type: "password" },
+                    { type: "email" }
+                ]}
+            />
+        </div>
     )
 }
 
 
+export default withAuthenticator(Login)
 

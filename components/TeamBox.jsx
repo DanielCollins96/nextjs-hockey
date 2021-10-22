@@ -20,9 +20,9 @@ export default function TeamBox({team}) {
           </Link>
           </div>
         </h2>
-        <div className="pl-20 pr-2" onClick={() => setActive(v => !v)}>
+        <div className="pl-8 sm:pl-16 pr-2" onClick={() => setActive(v => !v)}>
           {
-            active ? <MdExpandLess size={24}/> : <MdExpandMore size={24}/>
+            active ? <MdExpandMore size={24}/> : <MdExpandLess size={24}/>
           }
         </div>
         </div>

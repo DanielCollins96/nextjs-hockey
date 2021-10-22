@@ -4,7 +4,6 @@ import { AmplifySignUp, AmplifySignIn, AmplifyAuthenticator,AmplifyAuthContainer
 import Amplify, { API, graphqlOperation } from 'aws-amplify';
 import dynamic from 'next/dynamic';
 import "easymde/dist/easymde.min.css";
-import s from "./profile.module.css";
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
 
@@ -51,5 +50,5 @@ function Profile() {
   )
 }
 
-export default withAuthenticator(Profile)
-// export default Profile
+// export default withAuthenticator(Profile)
+export default Profile
