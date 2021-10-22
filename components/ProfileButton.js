@@ -1,10 +1,13 @@
 import { Menu, Transition } from '@headlessui/react'
 import Link from 'next/link'
+import { useAuth } from '../contexts/Auth';
+
 
 import {BsChevronDown} from 'react-icons/bs'
 
-export default function ProfileButton({signOutHandler}) {
+export default function ProfileButton() {
 
+    const { logout } = useAuth()
     return (
         <div className="text-right relative">
         <Menu as="div" className="relative inline-block text-left">
@@ -29,7 +32,7 @@ export default function ProfileButton({signOutHandler}) {
                         )}
                     </Menu.Item>
                     <Menu.Item>
-                        <button onClick={() => signOutHandler}>Logout</button>
+                        <button onClick={() => logout()}>Logout</button>
                     </Menu.Item>
                 </div>
             </Menu.Items>

@@ -11,39 +11,36 @@ function useAuth() {
 }
 
 function AuthProvider({children}) {
-    const [authState, setAuthState] = useState();
+
     const [user, setUser] = useState();
     
     useEffect(() => {
-        // checkUser()
-        return onAuthUIStateChange((nextAuthState, authData) => {
-            setAuthState(nextAuthState);
-            console.log('in Auth')
-            setUser(authData)
-        });
-
+        Auth.currentAuthenticatedUser()
+        .then(user => {
+            console.log(`user success ${user}`);
+            console.log(user);
+            setUser(user)
+        })
+        .catch((error) => {
+            console.log({error});
+            setUser(null)
+        })
       }, [])
 
-
-
-      async function checkUser() {
-        console.log('checking user...')
-        try {
-            const guy = await Auth.currentAuthenticatedUser()
-            console.log(`Good: ${guy}`)
-            setUser(guy)
-        } catch(err) {
-            console.log(`error: ${err}`)
-            setUser(null);
-        }
-      };
-
+    const logout = () => {
+        Auth.signOut()
+            .then((res) => {
+                console.log('fuckckckckk');
+                setUser(null)
+            })
+    }
 
     return (
         <Provider 
             value={{
                 user,
-                setUser
+                setUser,
+                logout
             }}>
             {children}
         </Provider>
