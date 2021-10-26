@@ -3,7 +3,9 @@ import * as Yup from 'yup';
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/router';
 import { Auth } from 'aws-amplify';
-import { withAuthenticator, AmplifySignOut } from "@aws-amplify/ui-react";
+import Link from 'next/link'
+import { useAuth } from '../contexts/Auth';
+
 
 const signupSchema = Yup.object().shape({
     username: Yup.string().required('Username is required'),
@@ -17,6 +19,10 @@ const signupSchema = Yup.object().shape({
 
 export default function Signup() {
     const router = useRouter();
+
+    const { signUp } = useAuth()
+
+
     const { register, handleSubmit } = useForm();
     const [loginLoading, setLoginLoading] = useState(false);
     
@@ -25,18 +31,13 @@ export default function Signup() {
 
       try {
         console.log(data);
-        const { email, password } = data;
-        // console.log(data.picture.item(0))
-        // const picture = data.picture.item(0)
-        const user = await Auth.signUp({
-          email, 
-          password, 
-        });
-        // console.log(Object.keys(picture))
-        console.log(user)
-        // // alert(user?.message)
-        // router.push('/dashboard');
+        let res = await signUp(data)
+        console.log(res);
+        if (res.username) {
+          // router.push('/profile');
+        }
       } catch (error) {
+        console.log('wtf');
         console.log(error);
         alert(error.message)
         setLoginLoading(false);
@@ -48,9 +49,11 @@ export default function Signup() {
     return (
         <div className="w-full max-w-sm mx-auto mt-12">
             <form onSubmit={handleSubmit(onSubmit)} class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <p className="mt-3 mb-6 font-bold tracking-wide text-lg">Sign up for an account</p>
+
               <div className="mb-4">
                 <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                <input type="email" {...register('email')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+                <input required type="email" {...register('email')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
               </div>
               <div className="mb-6">
                 <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password</label>
@@ -58,7 +61,7 @@ export default function Signup() {
               </div>
               <div className="flex items-center justify-between">
                 <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"type="submit">Submit</button>
-                <button className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">Forgot Password?</button>
+                <button className="inline-block align-baseline font- text-sm">Have an account? <Link href="/login"><a className="font-bold text-blue-500 hover:text-blue-800">Sign in</a></Link></button>
               </div>
             </form>
             <pre>

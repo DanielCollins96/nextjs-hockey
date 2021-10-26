@@ -1,6 +1,6 @@
 import { Auth } from 'aws-amplify';
 import { useState, createContext, useContext, useEffect } from 'react';
-import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
+
 
 const AuthContext = createContext();
 
@@ -27,6 +27,29 @@ function AuthProvider({children}) {
         })
       }, [])
 
+    const signUp = async (userInput) => {
+        let { email, password } = userInput
+        try {
+            const { user } = await Auth.signUp({
+                username: email,
+                password
+            })
+            return user
+        } catch (error) {
+            return error
+        }
+    }
+
+    async function signIn(userInput) {
+        let { email, password } = userInput
+        try {
+            const user = await Auth.signIn(email, password);
+            return user
+        } catch (error) {
+            return error
+        }
+    }
+
     const logout = () => {
         Auth.signOut()
             .then((res) => {
@@ -35,11 +58,15 @@ function AuthProvider({children}) {
             })
     }
 
+
+
     return (
         <Provider 
             value={{
                 user,
                 setUser,
+                signUp,
+                signIn,
                 logout
             }}>
             {children}
