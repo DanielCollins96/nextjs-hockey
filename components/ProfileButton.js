@@ -20,14 +20,14 @@ export default function ProfileButton() {
                     <Menu.Item>
                         {({active}) => (
                             <Link href="/messages">
-                                <a>Messages</a>
+                                <a className={`${active ? 'font-bold' : ''}`}>Messages</a>
                             </Link>
                         )}
                     </Menu.Item>
                     <Menu.Item>
                         {({active}) => (
                             <Link href="/profile">
-                                <a>My Account</a>
+                                <a className={`${active ? 'font-bold' : ''}`}>My Account</a>
                             </Link>
                         )}
                     </Menu.Item>
