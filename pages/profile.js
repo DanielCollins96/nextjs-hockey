@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/Auth';
-import { AmplifySignUp, AmplifySignIn, AmplifyAuthenticator,AmplifyAuthContainer,withAuthenticator } from '@aws-amplify/ui-react'
-import Amplify, { API, graphqlOperation } from 'aws-amplify';
+import { useRouter } from 'next/router';
+import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify';
 import dynamic from 'next/dynamic';
 import "easymde/dist/easymde.min.css";
 
@@ -10,13 +10,23 @@ const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false }
 
 // https://docs.amplify.aws/ui/auth/authenticator/q/framework/react#custom-form-fields
 function Profile() {
-  const { user } = useAuth();
+  const router = useRouter();
+
   const [post, setPost] = useState(null);
   const [posts, setPosts] = useState([]);
-
+  const [error, setError] = useState('');
+  
+  const { user, setUser } = useAuth();
+  
   useEffect(() => {
     API.get('three-staging', '/posts')
   })
+
+  useEffect(() => {
+    Auth.currentAuthenticatedUser()
+      .then(user => setUser(user))
+      .catch(() => router.push('/login'))
+  }, []);
 
   const changePost = (e) => {
     setPost(() => ({...post, [e.target.name] : e.target.value }))
@@ -24,6 +34,10 @@ function Profile() {
 
   const savePost = () => {
     console.log(post)
+  }
+  
+  if (!user) {
+    return <p className="text-xl m-auto">Login to view profile!</p>
   }
 
   return (

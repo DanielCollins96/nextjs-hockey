@@ -52,7 +52,7 @@ export default function LoginForm() {
                     <input type="password" {...register('password')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline"/>
                 </div>
                 <div className="mb-3 text-xs">
-                    <p>Forgot your password? <Link href="/signup"><a className="font-bold text-blue-600 hover:text-blue-800">Reset Password</a></Link></p>
+                    <p>Forgot your password? <Link href="/forgot-password"><a className="font-bold text-blue-600 hover:text-blue-800">Reset Password</a></Link></p>
                 </div>
                 <div className="mb-2 h-9">
                     {submitError ? 
