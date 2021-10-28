@@ -53,7 +53,7 @@ function AuthProvider({children}) {
     const logout = () => {
         Auth.signOut()
             .then((res) => {
-                console.log('fuckckckckk');
+                console.log(`logout res: ${res}`);
                 setUser(null)
             })
     }
