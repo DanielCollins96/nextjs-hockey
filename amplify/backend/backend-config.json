@@ -28,5 +28,12 @@
         }
       }
     }
+  },
+  "function": {
+    "nhlteams": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
   }
 }
