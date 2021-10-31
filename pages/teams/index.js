@@ -23,7 +23,7 @@ export default function Teams() {
         setFilteredPlayers(newList)
     }
     if (isLoading) {
-        return <span>Loading...</span>
+        return <p className="text-xl m-auto">Loading...</p>
       }
     
     if (isError) {

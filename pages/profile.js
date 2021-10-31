@@ -19,7 +19,7 @@ function Profile() {
   const { user, setUser } = useAuth();
   
   useEffect(() => {
-    API.get('three-staging', '/posts')
+    API.get('three', '/posts')
   })
 
   useEffect(() => {
@@ -37,9 +37,10 @@ function Profile() {
   }
   
   if (!user) {
-    return <p className="text-xl m-auto">Login to view profile!</p>
+    return <p className="text-xl mx-auto mt-12">Login to view profile!</p>
   }
 
+  console.log(Auth.userAttributes(user).then(res => console.log(res)));
   return (
     <div>
       <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">

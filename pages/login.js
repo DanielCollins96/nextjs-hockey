@@ -8,6 +8,14 @@ import LoginForm from '../components/LoginForm'
 
 function Login() {
 
+    const router = useRouter();
+
+    const { user } = useAuth();
+
+    if (user) {
+        return <p className="text-lg mx-auto mt-12">User Logged In</p>
+    }
+
     return (
         <div className="flex justify-center">
             <LoginForm />
