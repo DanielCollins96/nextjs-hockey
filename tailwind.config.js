@@ -6,6 +6,9 @@ module.exports = {
       transitionProperty: {
         'height': 'height',
         'maxHeight': 'maxHeight'
+      },
+      outline: {
+        red: '2px dotted red'
       }
     },
   },
