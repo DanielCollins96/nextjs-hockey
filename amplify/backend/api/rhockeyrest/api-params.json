@@ -1,0 +1,41 @@
+{
+  "paths": [
+    {
+      "name": "/teams/{team}",
+      "lambdaFunction": "nhlteams",
+      "privacy": {
+        "protected": true,
+        "auth": [
+          "/GET"
+        ],
+        "unauth": [
+          "/GET"
+        ]
+      },
+      "policyResourceName": "/teams/*"
+    }
+  ],
+  "resourceName": "rhockeyrest",
+  "apiName": "rhockeyrest",
+  "functionArns": [
+    {
+      "lambdaFunction": "nhlteams"
+    }
+  ],
+  "privacy": {
+    "auth": 1,
+    "unauth": 1,
+    "authRoleName": "amplify-three-staging-60858-authRole",
+    "unAuthRoleName": "amplify-three-staging-60858-unauthRole"
+  },
+  "dependsOn": [
+    {
+      "category": "function",
+      "resourceName": "nhlteams",
+      "attributes": [
+        "Name",
+        "Arn"
+      ]
+    }
+  ]
+}
