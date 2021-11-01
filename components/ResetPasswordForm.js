@@ -12,9 +12,10 @@ export default function ResetPasswordForm() {
     const [submitError, setSubmitError] = useState('')
 
     const { register, handleSubmit, formState } = useForm();
-    const { isSubmitting } = formState;
+    const [isLoading, setIsLoading] = useState(false)
 
     const onSubmit = async (event) => {
+        setIsLoading(true)
         setSubmitError('')
         const { email, code, new_password } = event
 
@@ -26,7 +27,11 @@ export default function ResetPasswordForm() {
             .catch(err => {
                 console.log(err)
                 setSubmitError(err.message)
-            });
+            })
+            .finally(() => {
+                console.log('finally')
+                setIsLoading(false)
+            })
     }
 
     return (
@@ -45,8 +50,8 @@ export default function ResetPasswordForm() {
                     <label htmlFor="password" className="block text-gray-700 text-sm font-semibold mb-2">New Password</label>
                     <input type="password" {...register('new_password')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight outline-red focus:outline-none  focus:ring focus:border-blue-300 focus:shadow-inner"/>
                 </div>
-                <button disabled={isSubmitting} className="uppercase w-24 bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-wide py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-20"type="submit">
-                    {isSubmitting ? <FaSpinner className="h-6 animate-spin m-auto" /> : 'Submit'}
+                <button className="uppercase w-24 bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-wide py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-20" type="submit">
+                    {isLoading ? <FaSpinner className="h-6 animate-spin m-auto" />  : 'Submit'}
                 </button>
                 {submitError && 
                 <div className="mt-3 bg-red-100 border text-sm border-red-400 text-red-700 px-3 py-2 rounded" role="alert">
