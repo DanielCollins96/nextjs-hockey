@@ -33,6 +33,7 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 ### Commands
 
 - `amplify console api`
+- `amplify codegen`
 
 ## Learn More
 
