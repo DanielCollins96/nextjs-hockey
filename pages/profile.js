@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/Auth';
 import { useRouter } from 'next/router';
+import { useQuery } from 'react-query';
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify';
-import * as queries from './graphql/queries';
-
-import dynamic from 'next/dynamic';
-// import {  }
-import "easymde/dist/easymde.min.css";
+import * as queries from '../src/graphql/queries';
+import * as mutations from '../src/graphql/mutations';
 import PostEditor from '../components/PostEditor';
 
-const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
 
-
-// https://docs.amplify.aws/ui/auth/authenticator/q/framework/react#custom-form-fields
 function Profile() {
   const router = useRouter();
   const [post, setPost] = useState(null);
@@ -20,10 +15,40 @@ function Profile() {
   const [error, setError] = useState('');
   
   const { user, setUser } = useAuth();
-  
-  useEffect(() => {
-    API.get('three', '/posts')
-  })
+  console.log(user);
+  const { data, isLoading, error: queryError } = useQuery('user', () => {
+    return API.graphql(graphqlOperation(queries.getUser, { id: user.id }));
+  });
+
+  useEffect(async () => {
+    console.log('what');
+    // API.get('three', '/posts')
+    // let posts = await API.graphql(graphqlOperation(queries.listPosts, {authToken: 'da2-sakwasgofnchrdi6gqv766ggtq'}))
+    console.log(process.env.GRAPHQL_API);
+    const response = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'x-api-key': 'da2-sakwasgofnchrdi6gqv766ggtq'
+      },
+      body: JSON.stringify({
+        query: `{  
+            listPosts {
+            nextToken
+            startedAt
+            items {
+              id
+              content
+              title
+            }
+          }
+        }`
+      })
+    })
+    console.log(response);
+    // setPosts(posts)
+  }, [])
 
   useEffect(() => {
     Auth.currentAuthenticatedUser()
@@ -36,6 +61,48 @@ function Profile() {
     return <p className="text-xl mx-auto mt-12">Login to view profile!</p>
   }
 
+  const savePost = async () => {
+    console.log(post);
+
+    try {
+
+    const createPost = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'x-api-key': 'da2-sakwasgofnchrdi6gqv766ggtq'
+      },
+      body: JSON.stringify({
+        query: `{
+          createPost(input: {title: "HUge cawk", content: "FUCK"}) {
+            id
+          }
+        }`
+      })
+    })
+    console.log(createPost);
+    setPost(null)
+  } catch (error) {
+    console.log(error);
+  }
+    // writeAPI()
+
+    const writeAPI = () => {
+      API.graphql(graphqlOperation(mutations.createPost, { input: { post } }))
+        .then(() => {
+          console.log('fuoerowerjpwoer yah');
+          setPost(null);
+          setError('');
+        })
+        .catch(err => {
+          console.log(err);
+          setError(err.message);
+        });
+    }
+    }
+  
+
   // console.log(Auth.userAttributes(user).then(res => console.log(res)));
   return (
     <div>
@@ -45,7 +112,7 @@ function Profile() {
           <div className="bg-red-200 p-12">My Bio</div>
         </div>
           <div className="w-3/4 flex flex-col p-2">
-            <PostEditor post={post} setPost={setPost}/>
+            <PostEditor post={post} setPost={setPost} savePost={savePost}/>
             <div id="settings">
               <p>LOLOLOL</p>
             </div>

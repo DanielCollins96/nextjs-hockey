@@ -4,15 +4,12 @@ import "easymde/dist/easymde.min.css";
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
 
-export default function PostEditor({post, setPost}) {
+export default function PostEditor({post, setPost, savePost}) {
 
     const changeTitle = (e) => {
         setPost(() => ({...post, [e.target.name] : e.target.value }))
     }
     
-    const savePost = () => {
-        console.log(post)
-    }
 
     return (
         <div id="post_box" className="border rounded-b p-1">
