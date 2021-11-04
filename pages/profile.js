@@ -20,12 +20,13 @@ function Profile() {
     return API.graphql(graphqlOperation(queries.getUser, { id: user.id }));
   });
 
-  useEffect(async () => {
+  useEffect(() => {
     console.log('what');
     // API.get('three', '/posts')
     // let posts = await API.graphql(graphqlOperation(queries.listPosts, {authToken: 'da2-sakwasgofnchrdi6gqv766ggtq'}))
     console.log(process.env.GRAPHQL_API);
-    const response = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
+    const loadPosts = async () => {
+      const response = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -47,7 +48,9 @@ function Profile() {
       })
     })
     console.log(response);
-    // setPosts(posts)
+    }
+    posts = loadPosts()
+    setPosts(posts)
   }, [])
 
   useEffect(() => {
@@ -61,12 +64,26 @@ function Profile() {
     return <p className="text-xl mx-auto mt-12">Login to view profile!</p>
   }
 
-  const savePost = async () => {
+  const savePost = () => {
     console.log(post);
     console.log(user.username);
     console.log('ave post');
-    try {
+    
+    const writeAPI = () => {
+      API.graphql(graphqlOperation(mutations.createPost, { input: { post } }))
+        .then(() => {
+          console.log('fuoerowerjpwoer yah');
+          setPost(null);
+          setError('');
+        })
+        .catch(err => {
+          console.log(err);
+          setError(err.message);
+        });
+    }
 
+    let rando = async () => {    
+  try {
     const createPost = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
       method: 'POST',
       headers: {
@@ -92,21 +109,9 @@ function Profile() {
     setPost(null)
   } catch (error) {
     console.log(error);
-  }
+  }}
     // writeAPI()
 
-    const writeAPI = () => {
-      API.graphql(graphqlOperation(mutations.createPost, { input: { post } }))
-        .then(() => {
-          console.log('fuoerowerjpwoer yah');
-          setPost(null);
-          setError('');
-        })
-        .catch(err => {
-          console.log(err);
-          setError(err.message);
-        });
-    }
     }
   
 

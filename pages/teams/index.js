@@ -42,7 +42,7 @@ export default function Teams() {
                     .sort((teamA, teamB) => {
                         return teamA.name > teamB.name ? 1 : -1
                     })                    
-                    .map((team) => <TeamBox team={team} />)
+                    .map((team) => <TeamBox team={team} key={team.id}/>)
                 }       
             </div>
         </div>

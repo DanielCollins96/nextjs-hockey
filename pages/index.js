@@ -6,11 +6,14 @@ import { format } from 'date-fns';
 
 export default function Home() {
 const [games, setGames] = useState([]);
-useEffect(async () => {
+useEffect(() => {
+  const loadGames = async () => {
   const data = await fetch('https://statsapi.web.nhl.com/api/v1/schedule');
   let gameSchedule = await data.json();
   console.log(gameSchedule.dates[0]?.games) 
   setGames(gameSchedule.dates[0]?.games);
+  }
+  loadGames();
   // console.log(format(games[0].gameDate, 'YYYY-MM-DD'))
 },[])
 
