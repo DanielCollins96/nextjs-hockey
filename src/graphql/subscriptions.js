@@ -5,6 +5,7 @@ export const onCreatePost = /* GraphQL */ `
   subscription OnCreatePost {
     onCreatePost {
       id
+      userId
       title
       content
       _version
@@ -19,6 +20,7 @@ export const onUpdatePost = /* GraphQL */ `
   subscription OnUpdatePost {
     onUpdatePost {
       id
+      userId
       title
       content
       _version
@@ -33,6 +35,7 @@ export const onDeletePost = /* GraphQL */ `
   subscription OnDeletePost {
     onDeletePost {
       id
+      userId
       title
       content
       _version

@@ -5,6 +5,7 @@ export const getPost = /* GraphQL */ `
   query GetPost($id: ID!) {
     getPost(id: $id) {
       id
+      userId
       title
       content
       _version
@@ -24,6 +25,7 @@ export const listPosts = /* GraphQL */ `
     listPosts(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        userId
         title
         content
         _version
@@ -52,6 +54,7 @@ export const syncPosts = /* GraphQL */ `
     ) {
       items {
         id
+        userId
         title
         content
         _version
