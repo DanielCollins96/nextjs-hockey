@@ -12,11 +12,13 @@
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
-    "emailVerificationSubject": "Your verification code",
-    "emailVerificationMessage": "Your verification code is {####}",
+    "emailVerificationSubject": "Forgot password code: {####}",
+    "emailVerificationMessage": "Your Account has requested a new password.\n\nForgot password code: {####}",
     "defaultPasswordPolicy": false,
-    "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": [],
+    "passwordPolicyMinLength": 6,
+    "passwordPolicyCharacters": [
+        "Requires Lowercase"
+    ],
     "requiredAttributes": [
         "email"
     ],
@@ -46,12 +48,13 @@
     "usernameAttributes": [
         "email"
     ],
-    "useDefault": "default",
+    "useDefault": "manual",
     "userPoolGroups": false,
     "userPoolGroupList": [],
     "adminQueries": false,
+    "thirdPartyAuth": false,
+    "authProviders": [],
     "usernameCaseSensitive": false,
     "dependsOn": [],
-    "hostedUI": false,
-    "authProviders": []
+    "hostedUI": false
 }
