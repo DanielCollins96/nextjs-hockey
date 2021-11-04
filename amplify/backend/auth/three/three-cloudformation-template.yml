@@ -139,14 +139,6 @@ Parameters:
     Type: String
             
   
-  thirdPartyAuth:
-    Type: String
-            
-        
-  authProviders:
-    Type: CommaDelimitedList
-      
-  
   usernameCaseSensitive:
     Type: String
             
@@ -154,11 +146,15 @@ Parameters:
   dependsOn:
     Type: CommaDelimitedList
       
-            
   
   hostedUI:
     Type: String
             
+            
+        
+  authProviders:
+    Type: CommaDelimitedList
+      
 Conditions:
   ShouldNotCreateEnvResources: !Equals [ !Ref env, NONE ]
   
@@ -232,7 +228,7 @@ Resources:
       Policies:
         PasswordPolicy:
           MinimumLength: !Ref passwordPolicyMinLength
-          RequireLowercase: true
+          RequireLowercase: false
           RequireNumbers: false
           RequireSymbols: false
           RequireUppercase: false

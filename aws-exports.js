@@ -19,18 +19,15 @@ const awsmobile = {
         "SMS"
     ],
     "aws_cognito_password_protection_settings": {
-        "passwordPolicyMinLength": 6,
-        "passwordPolicyCharacters": [
-            "REQUIRES_LOWERCASE"
-        ]
+        "passwordPolicyMinLength": 8,
+        "passwordPolicyCharacters": []
     },
     "aws_cognito_verification_mechanisms": [
         "EMAIL"
     ],
     "aws_appsync_graphqlEndpoint": "https://bnudyl5eybcajlmcfrhctcfrsi.appsync-api.us-east-1.amazonaws.com/graphql",
     "aws_appsync_region": "us-east-1",
-    "aws_appsync_authenticationType": "API_KEY",
-    "aws_appsync_apiKey": "da2-npttxeo2fjegrgidlltzbayzi4"
+    "aws_appsync_authenticationType": "API_KEY"
 };
 
 
