@@ -10,7 +10,7 @@ import PostEditor from '../components/PostEditor';
 
 function Profile() {
   const router = useRouter();
-  const [post, setPost] = useState(null);
+  const [post, setPost] = useState({title: '', content: ''});
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState('');
   
@@ -63,7 +63,8 @@ function Profile() {
 
   const savePost = async () => {
     console.log(post);
-
+    console.log(user.username);
+    console.log('ave post');
     try {
 
     const createPost = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
@@ -75,13 +76,19 @@ function Profile() {
       },
       body: JSON.stringify({
         query: `{
-          createPost(input: {title: "HUge cawk", content: "FUCK"}) {
+          createPost(input: {title: $title, content: $content, userId: $username}) {
             id
           }
-        }`
+        }`,
+        variables: {
+          title: post.title,
+          content: post.content,
+          username: user.username
+        }
       })
     })
     console.log(createPost);
+    console.log(createPost?.errors);
     setPost(null)
   } catch (error) {
     console.log(error);
