@@ -7,15 +7,20 @@ import ReactTable from '../../components/Table';
 
 
 const Players = () => {
+
     const router = useRouter()
     const { id } = router.query
+
     const fetchPlayer = async () => {
+
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}`);
         const playerRes = await res.json()
+
         return playerRes
     }
     
     const fetchPlayerStats = async () => {
+
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}/stats?stats=yearByYear`);
         const playerRes = await res.json()
         const playerStats = playerRes.stats[0].splits.map((szn) => {
@@ -33,6 +38,7 @@ const Players = () => {
             )
         })
         console.log({playerStats})
+
         playerStats.sort((a,b) => {
             let fa = a.season.toLowerCase(),
             fb = b.season.toLowerCase();
@@ -43,6 +49,7 @@ const Players = () => {
                 return 1;
             }
         })
+
         return playerStats
     }
 
@@ -83,11 +90,10 @@ const Players = () => {
                  Header: 'PIM',
                  accessor: 'pim'
              },
-             []
         ]
     )
     const data = useMemo(
-        () => [ playerStats, [] ]
+        () => playerStats
     )
     return (
         <div className="flex flex-col sm:flex-row mt-2">

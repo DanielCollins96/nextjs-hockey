@@ -12,7 +12,7 @@ function useAuth() {
 
 function AuthProvider({children}) {
 
-    const [user, setUser] = useState();
+    const [user, setUser] = useState(null);
     
     useEffect(() => {
         Auth.currentAuthenticatedUser()

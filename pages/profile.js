@@ -15,54 +15,24 @@ function Profile() {
   const [error, setError] = useState('');
   
   const { user, setUser } = useAuth();
+
   console.log(user);
-  const { data, isLoading, error: queryError } = useQuery('user', () => {
-    return API.graphql(graphqlOperation(queries.getUser, { id: user.id }));
-  });
-
-  useEffect(() => {
-    console.log('what');
-    // API.get('three', '/posts')
-    // let posts = await API.graphql(graphqlOperation(queries.listPosts, {authToken: 'da2-sakwasgofnchrdi6gqv766ggtq'}))
-    console.log(process.env.GRAPHQL_API);
-    const loadPosts = async () => {
-      const response = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'x-api-key': 'da2-sakwasgofnchrdi6gqv766ggtq'
-      },
-      body: JSON.stringify({
-        query: `{  
-            listPosts {
-            nextToken
-            startedAt
-            items {
-              id
-              content
-              title
-            }
-          }
-        }`
-      })
-    })
-    console.log(response);
-    }
-    posts = loadPosts()
-    setPosts(posts)
-  }, [])
-
-  useEffect(() => {
-    Auth.currentAuthenticatedUser()
-      .then(user => setUser(user))
-      .catch(() => router.push('/login'))
-  }, []);
-
   
-  if (!user) {
-    return <p className="text-xl mx-auto mt-12">Login to view profile!</p>
+  const fetchPosts = async () => {
+    const result = await API.graphql(graphqlOperation(queries.listPosts, { id: user.username }));
+    console.log('LOL');
+    console.log(result);
+    return result
   }
+  
+  const { data, isLoading, isError, error: userQueryError, status } = useQuery(`user - ${user?.username}`, fetchPosts, {enabled: !!user});
+  console.log({data});
+
+  // setPosts(data)
+  console.log({userQueryError});
+  console.log({status});
+  // console.log(Object.keys(queryError));
+
 
   const savePost = () => {
     console.log(post);
@@ -82,36 +52,40 @@ function Profile() {
         });
     }
 
-    let rando = async () => {    
-  try {
-    const createPost = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'x-api-key': 'da2-sakwasgofnchrdi6gqv766ggtq'
-      },
-      body: JSON.stringify({
-        query: `{
-          createPost(input: {title: $title, content: $content, userId: $username}) {
-            id
-          }
-        }`,
-        variables: {
-          title: post.title,
-          content: post.content,
-          username: user.username
-        }
-      })
-    })
-    console.log(createPost);
-    console.log(createPost?.errors);
-    setPost(null)
-  } catch (error) {
-    console.log(error);
-  }}
+  //   let rando = async () => {    
+  // try {
+  //   const createPost = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_API, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Accept': 'application/json',
+  //       'x-api-key': 'da2-sakwasgofnchrdi6gqv766ggtq'
+  //     },
+  //     body: JSON.stringify({
+  //       query: `{
+  //         createPost(input: {title: $title, content: $content, userId: $username}) {
+  //           id
+  //         }
+  //       }`,
+  //       variables: {
+  //         title: post.title,
+  //         content: post.content,
+  //         username: user.username
+  //       }
+  //     })
+  //   })
+  //   console.log(createPost);
+  //   console.log(createPost?.errors);
+  //   setPost(null)
+  // } catch (error) {
+  //   console.log(error);
+  // }}
     // writeAPI()
 
+    }
+
+    if (!user) {
+      return <p className="text-xl mx-auto mt-12">Login to view profile!</p>
     }
   
 
@@ -122,6 +96,8 @@ function Profile() {
         <div className="bg-white m-2 p-2">
           { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
           <div className="bg-red-200 p-12">My Bio</div>
+          {isError && <p>Error fetching posts: {JSON.stringify(userQueryError.errors)}</p>}
+          {userQueryError && <p>Error fetching posts2: {JSON.stringify(Object.keys(userQueryError))}</p>}
         </div>
           <div className="w-3/4 flex flex-col p-2">
             <PostEditor post={post} setPost={setPost} savePost={savePost}/>
