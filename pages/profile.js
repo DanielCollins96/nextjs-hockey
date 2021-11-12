@@ -11,7 +11,11 @@ import PostsList from '../components/PostsList';
 
 function Profile() {
   const router = useRouter();
-  const [post, setPost] = useState({title: '', content: ''});
+  const [post, setPost] = useState({
+    subject: '', 
+    content: '',
+    name: ''
+    });
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState('');
   
