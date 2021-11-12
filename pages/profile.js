@@ -25,12 +25,13 @@ function Profile() {
     return result
   }
   
-  const { data, isLoading, isError, error: userQueryError, status } = useQuery(`user - ${user?.username}`, fetchPosts, {enabled: !!user});
+  // const { data, isLoading, isError, error: userQueryError, status } = useQuery(`user - ${user?.username}`, fetchPosts, {enabled: !!user});
+  const { data, isLoading, isFetching } = useQuery(`user - ${user?.username}`, fetchPosts, {enabled: !!user});
   console.log({data});
 
   // setPosts(data)
-  console.log({userQueryError});
-  console.log({status});
+  // console.log({userQueryError});
+  // console.log({status});
   // console.log(Object.keys(queryError));
 
 
@@ -96,8 +97,8 @@ function Profile() {
         <div className="bg-white m-2 p-2">
           { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
           <div className="bg-red-200 p-12">My Bio</div>
-          {isError && <p>Error fetching posts: {JSON.stringify(userQueryError.errors)}</p>}
-          {userQueryError && <p>Error fetching posts2: {JSON.stringify(Object.keys(userQueryError))}</p>}
+          {/* {isError && <p>Error fetching posts: {JSON.stringify(userQueryError.errors)}</p>}
+          {userQueryError && <p>Error fetching posts2: {JSON.stringify(Object.keys(userQueryError))}</p>} */}
         </div>
           <div className="w-3/4 flex flex-col p-2">
             <PostEditor post={post} setPost={setPost} savePost={savePost}/>
