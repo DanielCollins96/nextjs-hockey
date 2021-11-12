@@ -8,9 +8,9 @@ export default function messages() {
     const { user, setUser } = useAuth();
 
     const fetchPosts = async () => {
-
+        console.log('lololol');
         try {
-            const result = await API.graphql(graphqlOperation(queries.listPosts, { id: user.username }));
+            const result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: "4311415d-350d-447f-9b2f-acfa20bc7da0"}} }));
             console.log(result);
             return result
         } catch (err) {

@@ -9,7 +9,10 @@ module.exports = {
       },
       outline: {
         red: '2px dotted red'
-      }
+      },
+      minHeight: (theme) => ({
+        ...theme('spacing'),
+      }),
     },
   },
   variants: {
