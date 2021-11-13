@@ -1,18 +1,65 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreatePost = /* GraphQL */ `
-  subscription OnCreatePost {
-    onCreatePost {
+export const onCreateComment = /* GraphQL */ `
+  subscription OnCreateComment {
+    onCreateComment {
       id
-      userId
-      title
-      content
+      PostID
+      UserID
+      Content
       _version
       _deleted
       _lastChangedAt
       createdAt
       updatedAt
+    }
+  }
+`;
+export const onUpdateComment = /* GraphQL */ `
+  subscription OnUpdateComment {
+    onUpdateComment {
+      id
+      PostID
+      UserID
+      Content
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteComment = /* GraphQL */ `
+  subscription OnDeleteComment {
+    onDeleteComment {
+      id
+      PostID
+      UserID
+      Content
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onCreatePost = /* GraphQL */ `
+  subscription OnCreatePost {
+    onCreatePost {
+      id
+      userId
+      subject
+      content
+      name
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
     }
   }
 `;
@@ -21,13 +68,15 @@ export const onUpdatePost = /* GraphQL */ `
     onUpdatePost {
       id
       userId
-      title
+      subject
       content
+      name
       _version
       _deleted
       _lastChangedAt
       createdAt
       updatedAt
+      owner
     }
   }
 `;
@@ -36,13 +85,15 @@ export const onDeletePost = /* GraphQL */ `
     onDeletePost {
       id
       userId
-      title
+      subject
       content
+      name
       _version
       _deleted
       _lastChangedAt
       createdAt
       updatedAt
+      owner
     }
   }
 `;

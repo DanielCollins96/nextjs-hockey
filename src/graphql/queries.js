@@ -1,18 +1,87 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getPost = /* GraphQL */ `
-  query GetPost($id: ID!) {
-    getPost(id: $id) {
+export const getComment = /* GraphQL */ `
+  query GetComment($id: ID!) {
+    getComment(id: $id) {
       id
-      userId
-      title
-      content
+      PostID
+      UserID
+      Content
       _version
       _deleted
       _lastChangedAt
       createdAt
       updatedAt
+    }
+  }
+`;
+export const listComments = /* GraphQL */ `
+  query ListComments(
+    $filter: ModelCommentFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listComments(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        PostID
+        UserID
+        Content
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncComments = /* GraphQL */ `
+  query SyncComments(
+    $filter: ModelCommentFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncComments(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        PostID
+        UserID
+        Content
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getPost = /* GraphQL */ `
+  query GetPost($id: ID!) {
+    getPost(id: $id) {
+      id
+      userId
+      subject
+      content
+      name
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
     }
   }
 `;
@@ -26,13 +95,15 @@ export const listPosts = /* GraphQL */ `
       items {
         id
         userId
-        title
+        subject
         content
+        name
         _version
         _deleted
         _lastChangedAt
         createdAt
         updatedAt
+        owner
       }
       nextToken
       startedAt
@@ -55,13 +126,15 @@ export const syncPosts = /* GraphQL */ `
       items {
         id
         userId
-        title
+        subject
         content
+        name
         _version
         _deleted
         _lastChangedAt
         createdAt
         updatedAt
+        owner
       }
       nextToken
       startedAt
