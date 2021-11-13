@@ -47,13 +47,18 @@ function Profile() {
       API.graphql(graphqlOperation(mutations.createPost, { input: { ...post, userId: user.username } }))
         .then(() => {
           console.log('fuoerowerjpwoer yah');
-          setPost(null);
+          setPost({
+            subject: '', 
+            content: '',
+            name: ''
+            })
           setError('');
         })
         .catch(err => {
           console.log(err);
           setError(err.message);
         });
+
     }
 
 
