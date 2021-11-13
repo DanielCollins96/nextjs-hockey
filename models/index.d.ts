@@ -16,8 +16,9 @@ export declare class Comment {
 export declare class Post {
   readonly id: string;
   readonly userId: string;
-  readonly title: string;
+  readonly subject?: string;
   readonly content: string;
+  readonly name?: string;
   constructor(init: ModelInit<Post>);
   static copyOf(source: Post, mutator: (draft: MutableModel<Post>) => MutableModel<Post> | void): Post;
 }
