@@ -9,7 +9,6 @@ export default function PostEditor({post, setPost, savePost}) {
     const changeValue = (e) => {
         setPost(() => ({...post, [e.target.name] : e.target.value }))
     }
-    
 
     return (
         <div id="post_box" className="border rounded-b p-1 flex flex-col">

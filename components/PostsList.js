@@ -39,7 +39,7 @@ const Post = ({post}) => {
     return (
         <div className="p-1 m-1 border flex flex-col bg-white">
             <div className="flex justify-between mb-1">
-            <p className="">{post.name}</p>
+            <p className="font-bold">{post.name}</p>
             <p className="">{formatDistance(new Date(post.updatedAt), new Date())} ago</p>
             {/* <p className="">{post.updatedAt}</p> */}
             </div>

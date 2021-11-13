@@ -5,7 +5,6 @@ import { useAuth } from '../contexts/Auth';
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FaSpinner } from "react-icons/fa";
-import { ToastProvider } from 'react-toast-notifications'
 import RequestResetForm from '../components/RequestResetForm'
 
 
@@ -20,9 +19,6 @@ export default function ForgotPassword() {
 
     return (
         <div className="mx-auto mt-10 px-3">
-            <ToastProvider
-                placement="top-center"
-            >
             <RequestResetForm />
             <div className="flex flex-col gap-1 mt-6">
                 <Link href="/reset-verification">
@@ -32,7 +28,6 @@ export default function ForgotPassword() {
                     <a className=" underline hover:no-underline">Back to login</a>
                 </Link>
             </div>
-            </ToastProvider>
         </div>
     )
 }

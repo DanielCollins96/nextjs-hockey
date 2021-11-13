@@ -3,6 +3,10 @@ import { useAuth } from '../contexts/Auth';
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { ToastProvider, useToasts } from 'react-toast-notifications'
+import 'react-tabs/style/react-tabs.css';
+
 import * as queries from '../src/graphql/queries';
 import * as mutations from '../src/graphql/mutations';
 import PostEditor from '../components/PostEditor';
@@ -11,6 +15,9 @@ import PostsList from '../components/PostsList';
 
 function Profile() {
   const router = useRouter();
+  const { user, setUser } = useAuth();
+  console.log(user);
+
   const [post, setPost] = useState({
     subject: '', 
     content: '',
@@ -18,17 +25,14 @@ function Profile() {
     });
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
-  
-  const { user, setUser } = useAuth();
 
-  console.log(user);
-  // console.log(search);
+  const { addToast } = useToasts();
   
   const fetchPosts = async () => {
     try {
       const result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: user.username}} }))    
       console.log({result});
-      // console.log(result.data.listPosts.items);
+
       return result.data.listPosts.items
     } catch (err) {
       console.log('pooe');
@@ -41,16 +45,15 @@ function Profile() {
 
   let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
 
-  console.log(filteredPosts);
-
   const savePost = () => {
     console.log(post);
     console.log(user.username);
-    console.log('ave post');
+    console.log('Save post');
 
       API.graphql(graphqlOperation(mutations.createPost, { input: { ...post, userId: user.username } }))
         .then(() => {
-          console.log('fuoerowerjpwoer yah');
+          console.log('Save Success');
+          addToast(`Post saved`, { appearance: 'success', autoDismiss: true });
           setPost({
             subject: '', 
             content: '',
@@ -80,19 +83,34 @@ function Profile() {
           <div className="bg-red-200 p-12">My Bio</div>
         </div>
           <div className="w-11/12 sm:w-3/4 flex flex-col p-2 gap-2">
-            <PostsList 
-              posts={filteredPosts} 
-              search={search} 
-              setSearch={setSearch}
-            />
-            <PostEditor 
-              post={post} 
-              setPost={setPost} 
-              savePost={savePost}
-            />
-            <div id="settings">
-              <p>LOLOLOL</p>
+            <Tabs>
+              <TabList className="flex gap-3" activeTabClassName="bg-red-300">
+                <Tab>Posts</Tab>
+                <Tab>Settings</Tab>
+                <Tab>Create Post</Tab>
+              </TabList>
+              <div className="border border-black min-h-72">
+              <TabPanel>
+                <PostsList 
+                  posts={filteredPosts} 
+                  search={search} 
+                  setSearch={setSearch}
+                  />
+              </TabPanel>
+              <TabPanel>
+                <div id="settings">
+                  <p>LOLOLOL</p>
+                </div>  
+              </TabPanel>
+              <TabPanel>
+                <PostEditor 
+                  post={post} 
+                  setPost={setPost} 
+                  savePost={savePost}
+                  />
+              </TabPanel>
             </div>
+            </Tabs>
         </div>
       </div>
     </div>
