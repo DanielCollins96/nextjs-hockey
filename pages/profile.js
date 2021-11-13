@@ -16,12 +16,13 @@ function Profile() {
     content: '',
     name: ''
     });
-  const [posts, setPosts] = useState([]);
+  const [search, setSearch] = useState('');
   const [error, setError] = useState('');
   
   const { user, setUser } = useAuth();
 
   console.log(user);
+  // console.log(search);
   
   const fetchPosts = async () => {
     try {
@@ -36,8 +37,11 @@ function Profile() {
   }
   
   const { data: userPosts, isLoading, isFetching } = useQuery(`user - ${user?.username}`, fetchPosts, {enabled: !!user});
-  // console.log({data});
+  console.log({userPosts});
 
+  let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
+
+  console.log(filteredPosts);
 
   const savePost = () => {
     console.log(post);
@@ -74,12 +78,18 @@ function Profile() {
         <div className="bg-white m-2 p-2">
           { user && <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2> }
           <div className="bg-red-200 p-12">My Bio</div>
-          {/* {isError && <p>Error fetching posts: {JSON.stringify(userQueryError.errors)}</p>}
-          {userQueryError && <p>Error fetching posts2: {JSON.stringify(Object.keys(userQueryError))}</p>} */}
         </div>
-          <div className="w-11/12 sm:w-3/4 flex flex-col p-2">
-            <PostsList posts={userPosts}/>
-            <PostEditor post={post} setPost={setPost} savePost={savePost}/>
+          <div className="w-11/12 sm:w-3/4 flex flex-col p-2 gap-2">
+            <PostsList 
+              posts={filteredPosts} 
+              search={search} 
+              setSearch={setSearch}
+            />
+            <PostEditor 
+              post={post} 
+              setPost={setPost} 
+              savePost={savePost}
+            />
             <div id="settings">
               <p>LOLOLOL</p>
             </div>
