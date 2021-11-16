@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../contexts/Auth';
 import LoginForm from '../components/LoginForm'
-import { ToastProvider } from 'react-toast-notifications'
 
 
 function Login() {
@@ -19,9 +18,7 @@ function Login() {
 
     return (
         <div className="flex justify-center">
-            <ToastProvider>
-                <LoginForm />
-            </ToastProvider>
+            <LoginForm />
         </div>
     )
 }
