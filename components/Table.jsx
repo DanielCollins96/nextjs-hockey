@@ -12,6 +12,14 @@ export default function ReactTable({ columns, data }) {
     {
       columns,
       data,
+      initialState: {
+        sortBy: [
+          {
+            id: 'season',
+            desc: true,
+          },
+        ]
+      }
     },
     useSortBy
   )
