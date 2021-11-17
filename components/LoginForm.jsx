@@ -2,7 +2,7 @@ import {useState} from 'react'
 import { useForm } from "react-hook-form";
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 import { FaSpinner } from "react-icons/fa";
 import { useToasts } from 'react-toast-notifications'
 
@@ -14,7 +14,7 @@ export default function LoginForm() {
 
     const { addToast } = useToasts()
 
-    const { signIn, setUser } = useAuth();
+    const { signIn, setUser } = UseAuth();
 
     const { register, handleSubmit, formState } = useForm();
     const { isSubmitting } = formState;

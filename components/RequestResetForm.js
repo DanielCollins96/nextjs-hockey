@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import { Auth } from 'aws-amplify';
 import { useForm } from "react-hook-form";
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FaSpinner } from "react-icons/fa";
@@ -18,7 +18,7 @@ export default function RequestResetForm() {
     
         const { addToast } = useToasts()
         
-        const { authState, setAuthState } = useAuth()
+        const { authState, setAuthState } = UseAuth()
         
         const onSubmit = async (data) => {
             setIsLoading(true)

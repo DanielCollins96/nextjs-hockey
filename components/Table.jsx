@@ -50,10 +50,12 @@ export default function ReactTable({ columns, data }) {
       <tbody {...getTableBodyProps()} className="">
         {rows.map((row, i) => {
           prepareRow(row)
+          const { key, ...restRowProps } = row.getRowProps()
           return (
-            <tr {...row.getRowProps()}>
+            <tr key={key} {...restRowProps}>
               {row.cells.map(cell => {
-                return <td className="border-black border p-1" {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                const { key, ...restCellProps } = cell.getCellProps()
+                return <td className="border-black border p-1" key={key} {...restCellProps}>{cell.render('Cell')}</td>
               })}
             </tr>
           )

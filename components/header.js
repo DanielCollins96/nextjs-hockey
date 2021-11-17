@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 import { Auth } from 'aws-amplify';
 import ProfileButton from './ProfileButton'
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
 const Header = () => {
     
-    const { user, setUser } = useAuth();
+    const { user, setUser } = UseAuth();
 
     return (
         <header className="w-full bg-white flex justify-between ml-1 py-2">

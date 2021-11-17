@@ -1,13 +1,13 @@
 import { Menu, Transition } from '@headlessui/react'
 import Link from 'next/link'
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 
 
 import {BiChevronDown} from 'react-icons/bi'
 
 export default function ProfileButton() {
 
-    const { logout } = useAuth()
+    const { logout } = UseAuth()
     return (
         <div className="text-right relative">
         <Menu as="div" className="relative inline-block text-left">

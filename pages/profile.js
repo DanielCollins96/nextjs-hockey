@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify';
@@ -15,7 +15,7 @@ import PostsList from '../components/PostsList';
 
 function Profile() {
   const router = useRouter();
-  const { user, setUser } = useAuth();
+  const { user, setUser } = UseAuth();
   console.log(user);
 
   const [post, setPost] = useState({

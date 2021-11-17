@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { Auth } from 'aws-amplify';
 import Link from 'next/link'
 import { FaSpinner } from "react-icons/fa";
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 
 
 export default function Signup() {
@@ -13,7 +13,7 @@ export default function Signup() {
 
     const [submitError, setSubmitError] = useState('')
 
-    const { signUp, setUser, user } = useAuth()
+    const { signUp, setUser, user } = UseAuth()
 
     const { register, handleSubmit, formState } = useForm();
     const { isSubmitting } = formState;

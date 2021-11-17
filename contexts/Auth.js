@@ -6,7 +6,7 @@ const AuthContext = createContext();
 
 const { Provider } = AuthContext;
 
-function useAuth() {
+function UseAuth() {
     return useContext(AuthContext);
 }
 
@@ -75,4 +75,4 @@ function AuthProvider({children}) {
 }
 
 
-export {useAuth, AuthProvider, AuthContext}; 
+export {UseAuth, AuthProvider, AuthContext}; 

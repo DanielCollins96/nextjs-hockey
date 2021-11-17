@@ -1,11 +1,11 @@
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify';
-import { useAuth } from '../contexts/Auth';
+import { UseAuth } from '../contexts/Auth';
 import * as queries from '../src/graphql/queries';
 import { useQuery } from "react-query";
 
 export default function messages() {
 
-    const { user, setUser } = useAuth();
+    const { user, setUser } = UseAuth();
 
     const fetchPosts = async () => {
         console.log('lololol');
