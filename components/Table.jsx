@@ -1,3 +1,4 @@
+import { keys } from '@material-ui/core/styles/createBreakpoints'
 import { useTable, useSortBy,useFilters } from 'react-table'
 
 export default function ReactTable({ columns, data }) {
@@ -28,9 +29,11 @@ export default function ReactTable({ columns, data }) {
   return (
     <table {...getTableProps()} className="border border-black table-fixed p-4 text-sm m-1">
       <thead className="bg-blue-200">
-        {headerGroups.map(headerGroup => (
-          <tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
+        {headerGroups.map((headerGroup) => {
+          const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps()
+          return (         
+          <tr key={key} {...restHeaderGroupProps}>
+            {headerGroup.headers.map((column) => {
               <th className="p-1"{...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
               <span>
                 {column.isSorted
@@ -40,9 +43,9 @@ export default function ReactTable({ columns, data }) {
                   : ''}
               </span>
               </th>
-            ))}
+          })}
           </tr>
-        ))}
+  )})}
       </thead>
       <tbody {...getTableBodyProps()} className="">
         {rows.map((row, i) => {
