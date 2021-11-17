@@ -34,7 +34,7 @@ export default function ReactTable({ columns, data }) {
           return (         
           <tr key={key} {...restHeaderGroupProps}>
             {headerGroup.headers.map((column) => {
-              const { key, ...restColumnProps } = column.getHeaderProps()
+              const { key, ...restColumnProps } = column.getHeaderProps(column.getSortByToggleProps())
               return (
               <th className="p-1" key={key} {...restColumnProps}>{column.render('Header')}
               <span>
