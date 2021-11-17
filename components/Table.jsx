@@ -34,7 +34,9 @@ export default function ReactTable({ columns, data }) {
           return (         
           <tr key={key} {...restHeaderGroupProps}>
             {headerGroup.headers.map((column) => {
-              <th className="p-1"{...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
+              const { key, ...restColumnProps } = column.getHeaderProps()
+              return (
+              <th className="p-1" key={key} {...restColumnProps}>{column.render('Header')}
               <span>
                 {column.isSorted
                   ? column.isSortedDesc
@@ -43,6 +45,7 @@ export default function ReactTable({ columns, data }) {
                   : ''}
               </span>
               </th>
+              )
           })}
           </tr>
   )})}
