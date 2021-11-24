@@ -37,11 +37,14 @@ function Profile() {
     } catch (err) {
       console.log('pooe');
       console.error(err)
+      throw new Error(err)
     }
   }
   
-  const { data: userPosts, isLoading, isFetching } = useQuery(`user - ${user?.username}`, fetchPosts, {enabled: !!user});
+  const { data: userPosts, isLoading, isFetching, status } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
   console.log({userPosts});
+  console.log(status);
+  console.log(error);
 
   let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
 
@@ -92,6 +95,7 @@ function Profile() {
               <div className="border border-black min-h-72">
               <TabPanel>
                 <PostsList 
+                  error={status === 'error'}
                   posts={filteredPosts} 
                   search={search} 
                   setSearch={setSearch}

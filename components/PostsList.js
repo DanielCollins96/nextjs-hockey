@@ -2,8 +2,16 @@ import { useState } from 'react'
 import { formatDistance, format } from 'date-fns'
 import { BiSearch } from 'react-icons/bi'
 
-export default function PostsList({posts, search, setSearch}) {
+export default function PostsList({posts, search, setSearch, error}) {
 
+    if (error) {
+        return (
+            <div className="bg-red-300">
+                <p className="">Error retrieving posts.</p>
+            </div>
+        )
+    }
+    
     if (!posts) {
         return (
             <div className="bg-red-300">
@@ -11,6 +19,7 @@ export default function PostsList({posts, search, setSearch}) {
             </div>
         )
     }
+
     return (
         <di className="border">
             <div className="flex justify-between p-1">
