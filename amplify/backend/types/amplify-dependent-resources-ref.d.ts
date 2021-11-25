@@ -7,11 +7,7 @@ export type AmplifyDependentResourcesAttributes = {
             "UserPoolArn": "string",
             "UserPoolName": "string",
             "AppClientIDWeb": "string",
-            "AppClientID": "string",
-            "CreatedSNSRole": "string"
-        },
-        "userPoolGroups": {
-            "fb2GroupRole": "string"
+            "AppClientID": "string"
         }
     },
     "api": {
