@@ -13,13 +13,32 @@
     },
     "categories": {
       "auth": {
-        "three": {}
+        "three": {},
+        "userPoolGroups": {}
       },
       "function": {
         "nhlteams": {
           "deploymentBucketName": "amplify-three-staging-60858-deployment",
           "s3Key": "amplify-builds/nhlteams-45786d61636d6f525158-build.zip"
         }
+      }
+    }
+  },
+  "test": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-three-test-191731-authRole",
+      "UnauthRoleArn": "arn:aws:iam::510880872516:role/amplify-three-test-191731-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::510880872516:role/amplify-three-test-191731-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-three-test-191731-deployment",
+      "UnauthRoleName": "amplify-three-test-191731-unauthRole",
+      "StackName": "amplify-three-test-191731",
+      "StackId": "arn:aws:cloudformation:us-east-1:510880872516:stack/amplify-three-test-191731/dbd073a0-4d95-11ec-9f62-1266a81ce7ed",
+      "AmplifyAppId": "d358sf7b2vr19t"
+    },
+    "categories": {
+      "auth": {
+        "three": {}
       }
     }
   }

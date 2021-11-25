@@ -2,18 +2,13 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## TODOs
 
-- [x] Max width of player stats table
-- [x] Sort the stats new to old
-- [x] flex col on small screens, flex row sm and up
-- [ ] user posting and file uploads
-- [ ] lot of profile page things
-- [ ] teams expand players, add logos
+- [ ] user file uploads
 - [ ] add links into tables
 - [ ] add forum to team page and news stories
 - [ ] add tags to posts
 - [ ] goalie stats
 - [ ] refresh of player/team page leads to 404
-- [ ] updated navbar account button and teams style
+- [ ] update team page visuals
 ## Getting Started
 
 First, run the development server:
@@ -34,6 +29,10 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 
 - `amplify console api`
 - `amplify codegen`
+- `amplify console api`
+- `amplify mock api`
+- `amplify env add`
+- `amplify update auth`
 
 ## Learn More
 
