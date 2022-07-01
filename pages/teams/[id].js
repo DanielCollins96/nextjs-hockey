@@ -78,7 +78,7 @@ export default function TeamPage() {
     )
     console.log({yearly_data});
     return (
-        <div>
+        <div className=''>
         {
         !!team_data 
         ? 
@@ -95,13 +95,13 @@ export default function TeamPage() {
         {/* <p>{JSON.stringify(team_data)}</p> */}
         {/* <div className="flex"> */}
             {seasonsLoading ? 
-            <p>Loading...</p>    
+            <p className='grid place-self-center'>Loading...</p>    
             :
-            <div>
-                <div className="p-2">
+            <div className='flex flex-row'>
+                <div className="p-2 max-w-48">
                 {yearly_data && <ReactTable columns={table_columns} data={table_data} className="inline-block"/>}
                 </div>
-                <div className="p-2 flex flex-col absolute">
+                <div className="p-2 flex flex-col">
                     <p className="text-lg text-center">Wins by Season</p>
                     <LineChart
                         width={500}
