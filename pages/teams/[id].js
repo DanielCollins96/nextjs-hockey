@@ -11,23 +11,22 @@ import {
     const path = 'https://statsapi.web.nhl.com/api/v1/teams/'
     const teams = await fetch(path);
     const teamData = await teams.json();
-    const teamIds = teamData.teams.map(team => team.id);
-    console.log(teamIds);
+    let paths = teamData.teams.map((team) => ({
+        params: {id: team.id.toString()}
+    }))
     return {
-        paths: teamIds.map(id => ({ params: { id: id } })),
+        paths,
         fallback: false
     }
   }
-export async function getStaticProps({id}) {
+export async function getStaticProps({params}) {
     const fetchSeasons = async () => {
         let seasons = [];
-        // for (let i = parseInt(team_data[0].firstYearOfPlay,10); i < 2019; i++) {
-        for (let i = 2008; i <= 2021; i++) {
-            console.log(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${i}${i+1}`);
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${i}${i+1}`);
+        for (let i = 2010; i <= 2021; i++) {
+            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${params.id}?expand=team.stats&season=${i}${i+1}`);
             const seasonStats = await res.json()
             if (!!seasonStats.teams) {
-                console.log(typeof seasonStats.teams[0].teamStats[0])
+                // console.log(typeof seasonStats.teams[0].teamStats[0])
                 seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)}})
             }
         }
@@ -45,6 +44,7 @@ export async function getStaticProps({id}) {
     
     }
 
+    return fetchSeasons()
 }
 
 export default function TeamPage({yearly_data}) {
@@ -96,7 +96,7 @@ export default function TeamPage({yearly_data}) {
             },
         ]
     )
-    console.log({yearly_data});
+    console.log(!!yearly_data);
     return (
         <div className=''>
         {
@@ -114,7 +114,7 @@ export default function TeamPage({yearly_data}) {
         }
         {/* <p>{JSON.stringify(team_data)}</p> */}
         {/* <div className="flex"> */}
-            {true ? 
+            {!yearly_data ? 
             <p className='grid place-self-center'>Loading...</p>    
             :
             <div className='flex flex-col md:flex-row '>
