@@ -7,25 +7,26 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
   } from 'recharts';
 
-export default function TeamPage() {
-    const [seasonStats, setSeasonstats] = useState([])
-    const router = useRouter()
-    const { id } = router.query
-    const { data: team_data } = useQuery(`fetchTeam-${id}`, async () => {
-        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
-        const teamRes = await res.json()
-        return teamRes.teams
-    })
-    
+  export async function getStaticPaths() {
+    const path = 'https://statsapi.web.nhl.com/api/v1/teams/'
+    const teams = await fetch(path);
+    const teamData = await teams.json();
+    let paths = teamData.teams.map((team) => ({
+        params: {id: team.id.toString()}
+    }))
+    return {
+        paths,
+        fallback: false
+    }
+  }
+export async function getStaticProps({params}) {
     const fetchSeasons = async () => {
         let seasons = [];
-        // for (let i = parseInt(team_data[0].firstYearOfPlay,10); i < 2019; i++) {
-        for (let i = 2008; i <= 2020; i++) {
-            console.log(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${i}${i+1}`);
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}?expand=team.stats&season=${i}${i+1}`);
+        for (let i = 2010; i <= 2021; i++) {
+            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${params.id}?expand=team.stats&season=${i}${i+1}`);
             const seasonStats = await res.json()
             if (!!seasonStats.teams) {
-                console.log(typeof seasonStats.teams[0].teamStats[0])
+                // console.log(typeof seasonStats.teams[0].teamStats[0])
                 seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)}})
             }
         }
@@ -35,10 +36,29 @@ export default function TeamPage() {
             return season.value
             }
         })
-        return season_stats
+        return {
+            props: {
+                yearly_data: season_stats,
+            }
+        }
+    
     }
 
-    const { data: yearly_data, isLoading: seasonsLoading } = useQuery(['fetchSeasons', id], fetchSeasons, { enabled: !!team_data })
+    return fetchSeasons()
+}
+
+export default function TeamPage({yearly_data}) {
+    const [seasonStats, setSeasonstats] = useState([])
+    const router = useRouter()
+    const { id } = router.query
+    const { data: team_data } = useQuery(`fetchTeam-${id}`, async () => {
+        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
+        const teamRes = await res.json()
+        return teamRes.teams
+    })
+    
+
+    // const { data: yearly_data, isLoading: seasonsLoading } = useQuery(['fetchSeasons', id], fetchSeasons, { enabled: !!team_data })
 
     const table_data = useMemo(
         () => yearly_data
@@ -76,9 +96,9 @@ export default function TeamPage() {
             },
         ]
     )
-    console.log({yearly_data});
+    console.log(!!yearly_data);
     return (
-        <div>
+        <div className=''>
         {
         !!team_data 
         ? 
@@ -94,14 +114,14 @@ export default function TeamPage() {
         }
         {/* <p>{JSON.stringify(team_data)}</p> */}
         {/* <div className="flex"> */}
-            {seasonsLoading ? 
-            <p>Loading...</p>    
+            {!yearly_data ? 
+            <p className='grid place-self-center'>Loading...</p>    
             :
-            <div>
-                <div className="p-2">
+            <div className='flex flex-col md:flex-row '>
+                <div className="p-2 max-w-48">
                 {yearly_data && <ReactTable columns={table_columns} data={table_data} className="inline-block"/>}
                 </div>
-                <div className="p-2 flex flex-col absolute">
+                <div className="p-2 flex flex-col">
                     <p className="text-lg text-center">Wins by Season</p>
                     <LineChart
                         width={500}
@@ -109,7 +129,7 @@ export default function TeamPage() {
                         data={yearly_data}
                     >
                         <YAxis />
-                        <XAxis dataKey="value.year" />
+                        <XAxis dataKey="value.year"  />
                         <Tooltip />
                         <Legend />
                         <Line type="monotone" name="Wins" dataKey="wins" strokeWidth={2} stroke="#009966" />
