@@ -48,6 +48,20 @@ function Profile() {
 
   let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
 
+  const deletePost = async (id, _version) => {
+    alert(id)
+    try {
+      const result = await API.graphql(graphqlOperation(mutations.deletePost, {input: {id: id}}))
+      console.log({result});
+      addToast('Post deleted', { appearance: 'success', autoDismiss: true })
+    }
+    catch (err) {
+      console.log({err});
+      console.log(err.errors[0]?.message);
+      addToast('Error deleting post', { appearance: 'error', autoDismiss: true })
+    }
+  }
+
   const savePost = () => {
     console.log(post);
     console.log(user.username);
@@ -99,6 +113,7 @@ function Profile() {
                   posts={filteredPosts} 
                   search={search} 
                   setSearch={setSearch}
+                  deletePost={deletePost}
                   />
               </TabPanel>
               <TabPanel>

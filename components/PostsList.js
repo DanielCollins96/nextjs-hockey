@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { formatDistance, format } from 'date-fns'
 import { BiSearch } from 'react-icons/bi'
 
-export default function PostsList({posts, search, setSearch, error}) {
+export default function PostsList({posts, search, setSearch, error, deletePost}) {
 
     if (error) {
         return (
@@ -21,7 +21,7 @@ export default function PostsList({posts, search, setSearch, error}) {
     }
 
     return (
-        <di className="border">
+        <div className="border">
             <div className="flex justify-between p-1">
                 <div className="relative flex w-64">
                     <input className="p-1 w-full border-2 border-gray-300 rounded-l-lg focus:outline-none"
@@ -37,13 +37,13 @@ export default function PostsList({posts, search, setSearch, error}) {
                 <button className="px-3 py-1 border bg-white">Sort By Date</button>
             </div>
             {posts.map((post) => {
-                return <Post post={post} key={post.id} />
+                return <Post post={post} key={post.id} deletePost={deletePost} />
             })}
-        </di>
+        </div>
     )
 }
 
-const Post = ({post}) => {
+const Post = ({post, deletePost}) => {
 
     return (
         <div className="p-1 m-1 border flex flex-col bg-white">
@@ -51,6 +51,7 @@ const Post = ({post}) => {
             <p className="font-bold">{post.name}</p>
             <p className="">{formatDistance(new Date(post.updatedAt), new Date())} ago</p>
             {/* <p className="">{post.updatedAt}</p> */}
+            <button onClick={() => deletePost(post.id, post._version)}>delete</button>
             </div>
             <p className="">{post.content}</p>
         </div>

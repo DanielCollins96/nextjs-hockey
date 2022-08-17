@@ -16,7 +16,7 @@ import {
     }))
     return {
         paths,
-        fallback: false
+        fallback: false,
     }
   }
 export async function getStaticProps({params}) {
@@ -39,7 +39,8 @@ export async function getStaticProps({params}) {
         return {
             props: {
                 yearly_data: season_stats,
-            }
+            },
+            revalidate: 3600,
         }
     
     }
