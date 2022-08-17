@@ -24,18 +24,20 @@ function Profile() {
     name: ''
     });
   const [search, setSearch] = useState('');
+  const [postDateOrder, setPostDateOrder] = useState(false)
   const [error, setError] = useState('');
 
   const { addToast } = useToasts();
+
   
   const fetchPosts = async () => {
     try {
       const result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: user.username}} }))    
       console.log({result});
-
+      
       return result.data.listPosts.items
     } catch (err) {
-      console.log('pooe');
+      console.log('Error fetching posts');
       console.error(err)
       throw new Error(err)
     }
@@ -43,9 +45,16 @@ function Profile() {
   
   const { data: userPosts, isLoading, isFetching, status } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
   console.log({userPosts});
-  console.log(status);
-  console.log(error);
+  
+  const togglePostsDate = () => {
+    setPostDateOrder(!postDateOrder)
+    console.log(postDateOrder);
+    console.log('in toggl');
+    userPosts.sort((a, b) => {
+      return postDateOrder ? a.createdAt > b.createdAt ? -1 : 1 : a.createdAt < b.createdAt ? -1 : 1
+    })
 
+  }
   let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
 
   const deletePost = async (id, _version) => {
@@ -77,6 +86,7 @@ function Profile() {
             name: ''
             })
           setError('');
+          fetchPosts();
         })
         .catch(err => {
           console.log(err);
@@ -114,6 +124,7 @@ function Profile() {
                   search={search} 
                   setSearch={setSearch}
                   deletePost={deletePost}
+                  toggle={togglePostsDate}
                   />
               </TabPanel>
               <TabPanel>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { formatDistance, format } from 'date-fns'
 import { BiSearch } from 'react-icons/bi'
 
-export default function PostsList({posts, search, setSearch, error, deletePost}) {
+export default function PostsList({posts, search, setSearch, error, deletePost, toggle}) {
 
     if (error) {
         return (
@@ -34,7 +34,7 @@ export default function PostsList({posts, search, setSearch, error, deletePost})
                     </div>
                     {/* </button> */}
                 </div>
-                <button className="px-3 py-1 border bg-white">Sort By Date</button>
+                <button className="px-3 py-1 border bg-white" onClick={() => toggle()}>Sort By Date</button>
             </div>
             {posts.map((post) => {
                 return <Post post={post} key={post.id} deletePost={deletePost} />
