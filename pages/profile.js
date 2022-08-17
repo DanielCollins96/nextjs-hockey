@@ -58,7 +58,7 @@ function Profile() {
   let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
 
   const deletePost = async (id, _version) => {
-    alert(id)
+    alert('Are You Sure You Want To Delete This Post?')
     try {
       const result = await API.graphql(graphqlOperation(mutations.deletePost, {input: {id: id}}))
       console.log({result});
