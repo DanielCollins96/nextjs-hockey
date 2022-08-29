@@ -30,16 +30,16 @@ function MyApp({ Component, pageProps }) {
             <meta name="theme-color" content="#319795"></meta>
             </Head>
               <Script
-          strategy="lazyOnload"
-          src={`https://www.googletagmanager.com/gtag/js?id=G-1QC1B66EW7`}
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-LP1YV83204`}
         />
-            <Script id="" strategy="lazyOnload">
+            <Script id="gtag-init" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
 
-                gtag('config', 'G-1QC1B66EW7');
+                gtag('config', 'G-LP1YV83204');
               `}
             </Script>
             <Layout>
