@@ -105,6 +105,8 @@ export default function TeamPage({yearly_data, team_name}) {
         <div className=''>
             <Head>
                 <title>{team_name} Roster | the-nhl.com</title>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
+     crossOrigin="anonymous"></script>
             </Head>
         {
         !!team_data 

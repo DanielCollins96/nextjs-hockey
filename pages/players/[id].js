@@ -102,6 +102,8 @@ const Players = () => {
                 <title>
                    {player?.people[0]?.fullName ? player?.people[0]?.fullName : 'Player'} Hockey Stats and Profile | the-nhl.com
                 </title>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
+     crossOrigin="anonymous"></script>
             </Head>
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <img src={`http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />

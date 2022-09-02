@@ -36,6 +36,8 @@ export default function Teams() {
                <title>
                 NHL Rosters | the-nhl.com
                 </title> 
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
+     crossOrigin="anonymous"></script>
             </Head>
             <div className="relative w-5/6 max-w-sm m-auto box-border">
                 <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
