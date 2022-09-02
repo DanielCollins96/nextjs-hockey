@@ -5,7 +5,6 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
     return (
         <div className="">
             <Head>
-                <title>Hockey</title>
                 <link rel="icon" href="/images/ice-hockey-puck.svg" />
             </Head>
             <Header />

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import Head from 'next/head'
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 // import Image from 'next/image'
@@ -97,6 +98,11 @@ const Players = () => {
     )
     return (
         <div className="flex flex-col sm:flex-row mt-2">
+            <Head>
+                <title>
+                   {player?.people[0]?.fullName ? player?.people[0]?.fullName : 'Player'} Hockey Stats and Profile | the-nhl.com
+                </title>
+            </Head>
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <img src={`http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />
                     {player_status === 'success' ? (

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useState, useMemo } from 'react'
 import { useQuery, useQueries } from 'react-query';
@@ -27,7 +28,7 @@ export async function getStaticProps({params}) {
             const seasonStats = await res.json()
             if (!!seasonStats.teams) {
                 // console.log(typeof seasonStats.teams[0].teamStats[0])
-                seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)}})
+                seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)}, ...{'name': seasonStats.teams[0].name}})
             }
         }
         let season_reqs = await Promise.allSettled(seasons)
@@ -36,9 +37,11 @@ export async function getStaticProps({params}) {
             return season.value
             }
         })
+        let team_name = seasons[0]?.name || 'Team'
         return {
             props: {
                 yearly_data: season_stats,
+                team_name
             },
             revalidate: 3600,
         }
@@ -48,7 +51,7 @@ export async function getStaticProps({params}) {
     return fetchSeasons()
 }
 
-export default function TeamPage({yearly_data}) {
+export default function TeamPage({yearly_data, team_name}) {
     const [seasonStats, setSeasonstats] = useState([])
     const router = useRouter()
     const { id } = router.query
@@ -100,6 +103,9 @@ export default function TeamPage({yearly_data}) {
     console.log(!!yearly_data);
     return (
         <div className=''>
+            <Head>
+                <title>{team_name} Roster | the-nhl.com</title>
+            </Head>
         {
         !!team_data 
         ? 

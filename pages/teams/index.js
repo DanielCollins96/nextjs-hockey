@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox'; 
+import Head from 'next/head'
 
 const fetchPlayers = async () => {
     const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
@@ -31,6 +32,11 @@ export default function Teams() {
       }
     return (
         <div>
+            <Head>
+               <title>
+                NHL Rosters | the-nhl.com
+                </title> 
+            </Head>
             <div className="relative w-5/6 max-w-sm m-auto box-border">
                 <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
                 <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
