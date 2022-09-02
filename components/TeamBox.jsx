@@ -10,7 +10,7 @@ export default function TeamBox({team}) {
 
   return (
     <div>
-      <div className={`relative overflow-hidden border border-black rounded bg-white  m-2 ${active ? 'h-auto max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
+      <div className={`relative overflow-hidden border border-black rounded bg-white  m-2 ${active ? 'max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
         <div className="flex justify-between items-center">
         <h2 className="text-xl text-left p-2">
           <div className="flex">
@@ -20,10 +20,9 @@ export default function TeamBox({team}) {
           </Link>
           </div>
         </h2>
-        <div className="pl-8 sm:pl-16 pr-2" onClick={() => setActive(v => !v)}>
-          <MdAccessibility />
+        <div className="pl-8 sm:pl-16 pr-2 cursor-pointer" onClick={() => setActive(v => !v)}>
           {
-            active ? <MdExpandMore size={24}/> : <MdExpandLess size={24}/>
+            active ? <MdOutlineChevronLeft style={{"transition": "transform .3s","transform": "rotate(-90deg)"}}  size={24}/> : <MdOutlineChevronLeft style={{"transition": "transform .3s","transform": "rotate(0deg)"}} size={24}/>
           }
         </div>
         </div>
@@ -45,7 +44,7 @@ export default function TeamBox({team}) {
               );
             })}
         </ul>
-        <div onClick={() => setActive(v => !v)} className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 ${active ? "hidden" : ""}`}>...</div>
+        <div onClick={() => setActive(v => !v)} className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 cursor-pointer ${active ? "hidden" : ""}`}>...</div>
       </div>
     </div>
   );
