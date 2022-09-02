@@ -27,7 +27,7 @@ function MyApp({ Component, pageProps }) {
             <title>NHL Scores and Stats | the-nhl.com</title>
             <meta title="NHL Scores and Stats | the-nhl.com" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <meta name="description" content="National Hockey League Statistics" />
+            <meta name="description" content="the-nhl.com provides statistics for National Hockey League Teams and Players" />
             <meta name="theme-color" content="#319795"></meta>
             </Head>
               <Script
