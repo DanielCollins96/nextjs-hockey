@@ -24,7 +24,7 @@ function MyApp({ Component, pageProps }) {
         <AuthProvider>
           <ToastProvider>
             <Head>
-            <meta title="Hockey Stats" />
+            <meta title="NHL Scores and Stats | the-nhl.com" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <meta name="description" content="National Hockey League Statistics" />
             <meta name="theme-color" content="#319795"></meta>

@@ -1,5 +1,5 @@
 import {useState, useCallback} from "react";
-import { MdExpandMore, MdExpandLess } from "react-icons/md";
+import { MdExpandMore, MdExpandLess, MdOutlineChevronLeft, MdAccessibility } from "react-icons/md";
 import Link from 'next/link'
 // import Image from 'next/image'
 
@@ -21,6 +21,7 @@ export default function TeamBox({team}) {
           </div>
         </h2>
         <div className="pl-8 sm:pl-16 pr-2" onClick={() => setActive(v => !v)}>
+          <MdAccessibility />
           {
             active ? <MdExpandMore size={24}/> : <MdExpandLess size={24}/>
           }

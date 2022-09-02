@@ -12,9 +12,9 @@ class Document extends NextDocument {
         return (
             <Html lang="en">
                 <Head>
-                    <link rel="icon" sizes="96x96" href="/favicons/favicon.ico" />
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-     crossOrigin="anonymous"></script>
+                    <link rel="icon" sizes="96x96" href="/images/Hockey-Net.svg" />
+                    {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
+     crossOrigin="anonymous"></script> */}
                 </Head>
                 <body className="bg-gray-100">
                     <Main />
