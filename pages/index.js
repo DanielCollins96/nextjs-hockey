@@ -1,38 +1,41 @@
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router'
-import Ticker from 'react-ticker';
 import {useEffect, useState, useRef } from 'react';
-import { format } from 'date-fns';
-// import Puck from '../public/ice-hockey-puck.svg';
+import TeamBox from '../components/TeamBox'; 
 
-export default function Home() {
+
+export default function Home({teams}) {
 const router = useRouter();
-const [games, setGames] = useState([]);
+// const [games, setGames] = useState([]);
+const [searchedTeams, setSearchedTeams] = useState(teams);
 
 const inputRef = useRef();
 let refGuy = ''
-useEffect(() => {
-  console.log(inputRef.current.getClientRects())
-  let refGuy = inputRef.current;
-  const loadGames = async () => {
-    const data = await fetch('https://statsapi.web.nhl.com/api/v1/schedule');
-    const gameSchedule = await data.json();
-    setGames(gameSchedule.dates[0]?.games);
-  }
-  loadGames();
-  console.log('LOLOLO')
 
-  // console.log(format(games[0].gameDate, 'YYYY-MM-DD'))
-},[])
+// useEffect(() => {
+//   // console.log(inputRef.current.getClientRects())
+//   // let refGuy = inputRef.current;
+//   const loadGames = async () => {
+//     const data = await fetch('https://statsapi.web.nhl.com/api/v1/schedule');
+//     const gameSchedule = await data.json();
+//     setGames(gameSchedule.dates[0]?.games);
+//   }
+//   loadGames();
+// },[])
+
+const inputChange = (e) => {
+  let searchTerm = e.target.value
+  console.log(e.target.value);
+  let newList = searchedTeams.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
+  setSearchedTeams(newList)
+}
 
 function onUpdate(latest) {
   console.log(latest.x, latest.y)
 }
 
 function onPress() {
-  console.log('whaththahh');
   router.reload()
-  // window.location.reload(false);
 }
   return (
     <div className="">
@@ -71,8 +74,35 @@ function onPress() {
             </div>
         </div>
         <div>
-
+        <div className="relative w-5/6 max-w-sm m-auto box-border">
+                <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
+                <input autoFocus 
+                onChange={inputChange} 
+                className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
+            </div>
+            <div className="grid my-2 mx-4 md:grid-cols-2 xl:grid-cols-3">
+                {
+                    searchedTeams &&
+                    searchedTeams
+                    .sort((teamA, teamB) => {
+                        return teamA.name > teamB.name ? 1 : -1
+                    })                    
+                    .map((team) => <TeamBox team={team} key={team.id}/>)
+                }       
+            </div>
         </div>
     </div>
   )
+}
+
+export async function getStaticProps(){
+  const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
+  const resJson = await res.json();
+  const teams = resJson.teams
+  return {
+    props: {
+      teams,
+    }
+  }
+
 }
