@@ -11,5 +11,4 @@ type Post @model @auth(rules: [{allow: public, operations: [create, read]}, {all
   subject: String
   content: String!
   name: String
-}
- 
+} 
