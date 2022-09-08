@@ -29,8 +29,8 @@ function Profile() {
 
   const { addToast } = useToasts();
 
-  
   const fetchPosts = async () => {
+    console.log('fetching');
     try {
       const result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: user.username}} }))    
       console.log({result});
@@ -44,18 +44,17 @@ function Profile() {
   }
   
   const { data: userPosts, isLoading, isFetching, status, refetch } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
-  console.log({userPosts});
+    
+  const filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
+  
   
   const togglePostsDate = () => {
     setPostDateOrder(!postDateOrder)
-    console.log(postDateOrder);
-    console.log('in toggl');
     userPosts.sort((a, b) => {
       return postDateOrder ? a.createdAt > b.createdAt ? -1 : 1 : a.createdAt < b.createdAt ? -1 : 1
     })
 
   }
-  let filteredPosts = userPosts?.filter((post) => post.content.toUpperCase().includes(search.toUpperCase()) || search === '' )
 
   const deletePost = async (id, _version) => {
     alert('Are You Sure You Want To Delete This Post?')
@@ -67,7 +66,7 @@ function Profile() {
     catch (err) {
       console.log({err});
       console.log(err.errors[0]?.message);
-      addToast('Error deleting post', { appearance: 'error', autoDismiss: true })
+      addToast(`Error deleting post: ${err.errors[0]?.message}`, { appearance: 'error', autoDismiss: true })
     }
   }
 

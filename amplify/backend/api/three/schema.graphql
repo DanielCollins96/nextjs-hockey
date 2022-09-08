@@ -1,14 +1,15 @@
+type Post @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  userId: ID
+  subject: String
+  content: String
+  name: String
+}
+
 type Comment @model @auth(rules: [{allow: public}]) {
   id: ID!
   PostID: ID
   UserID: ID
   Content: String
 }
-
-type Post @model @auth(rules: [{allow: public, operations: [create, read]}, {allow: private}, {allow: owner, operations: [create, update, delete]}]) {
-  id: ID!
-  userId: ID!
-  subject: String
-  content: String!
-  name: String
-} 
+ 
