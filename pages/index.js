@@ -4,29 +4,25 @@ import {useEffect, useState, useRef } from 'react';
 import TeamBox from '../components/TeamBox'; 
 
 
+const fetchPlayers = async () => {
+  const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
+  const resJson = await res.json();
+
+  return resJson.teams
+};
+
 export default function Home({teams}) {
 const router = useRouter();
-// const [games, setGames] = useState([]);
+
 const [searchedTeams, setSearchedTeams] = useState(teams);
 
 const inputRef = useRef();
-let refGuy = ''
 
-// useEffect(() => {
-//   // console.log(inputRef.current.getClientRects())
-//   // let refGuy = inputRef.current;
-//   const loadGames = async () => {
-//     const data = await fetch('https://statsapi.web.nhl.com/api/v1/schedule');
-//     const gameSchedule = await data.json();
-//     setGames(gameSchedule.dates[0]?.games);
-//   }
-//   loadGames();
-// },[])
 
 const inputChange = (e) => {
   let searchTerm = e.target.value
   console.log(e.target.value);
-  let newList = searchedTeams.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
+  let newList = teams.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
   setSearchedTeams(newList)
 }
 

@@ -10,8 +10,19 @@ const fetchPlayers = async () => {
     return resJson.teams
 };
 export default function Teams() {
+    const [playerData, setPlayerData] = useState([]);
+    const [loading, setLoading] = useState(true)
     const [filteredPlayers, setFilteredPlayers] = useState([]);
-    const { isLoading, isError, data: playerData, error } = useQuery('team-rosters', fetchPlayers);
+    // const { isLoading, isError, data: playerData, error } = useQuery('team-rosters', fetchPlayers);
+
+    useEffect(() => {
+        fetchPlayers()
+        .then(res => {            
+            setPlayerData(res)
+            setLoading(false)
+        })
+        .catch(err => console.log(err))
+    },[])
 
     useEffect(() => {
         setFilteredPlayers(playerData)
@@ -23,13 +34,13 @@ export default function Teams() {
         let newList = playerData.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
         setFilteredPlayers(newList)
     }
-    if (isLoading) {
-        return <p className="text-xl m-auto">Loading...</p>
-      }
+    // if (isLoading) {
+    //     return <p className="text-xl m-auto">Loading...</p>
+    //   }
     
-    if (isError) {
-        return <span>Error: {error.message}</span>
-      }
+    // if (isError) {
+    //     return <span>Error: {error.message}</span>
+    //   }
     return (
         <div>
             <Head>
