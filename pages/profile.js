@@ -43,7 +43,7 @@ function Profile() {
     }
   }
   
-  const { data: userPosts, isLoading, isFetching, status } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
+  const { data: userPosts, isLoading, isFetching, status, refetch } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
   console.log({userPosts});
   
   const togglePostsDate = () => {
@@ -86,7 +86,7 @@ function Profile() {
             name: ''
             })
           setError('');
-          fetchPosts();
+          refetch()
         })
         .catch(err => {
           console.log(err);
