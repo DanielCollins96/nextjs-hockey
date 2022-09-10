@@ -6,9 +6,9 @@ import { ModelInit, MutableModel } from "@aws-amplify/datastore";
 
 export declare class Post {
   readonly id: string;
-  readonly userId?: string | null;
+  readonly userId: string;
   readonly subject?: string | null;
-  readonly content?: string | null;
+  readonly content: string;
   readonly name?: string | null;
   constructor(init: ModelInit<Post>);
   static copyOf(source: Post, mutator: (draft: MutableModel<Post>) => MutableModel<Post> | void): Post;

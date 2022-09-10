@@ -16,7 +16,11 @@
         "expirationTime": 30
       }
     ],
-    "conflictResolution": {},
+    "conflictResolution": {
+      "defaultResolutionStrategy": {
+        "type": "AUTOMERGE"
+      }
+    },
     "apiName": "three"
   }
 }

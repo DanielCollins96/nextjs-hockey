@@ -9,6 +9,9 @@ export const onCreatePost = /* GraphQL */ `
       subject
       content
       name
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -22,6 +25,9 @@ export const onUpdatePost = /* GraphQL */ `
       subject
       content
       name
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -35,6 +41,9 @@ export const onDeletePost = /* GraphQL */ `
       subject
       content
       name
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -47,6 +56,9 @@ export const onCreateComment = /* GraphQL */ `
       PostID
       UserID
       Content
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -59,6 +71,9 @@ export const onUpdateComment = /* GraphQL */ `
       PostID
       UserID
       Content
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -71,6 +86,9 @@ export const onDeleteComment = /* GraphQL */ `
       PostID
       UserID
       Content
+      _version
+      _deleted
+      _lastChangedAt
       createdAt
       updatedAt
     }

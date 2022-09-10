@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { FaSpinner } from "react-icons/fa";
 import "easymde/dist/easymde.min.css";
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
 
 export default function PostEditor({post, setPost, savePost}) {
-
+    const [isLoading, setIsLoading] = useState(false)
     const changeValue = (e) => {
         setPost(() => ({...post, [e.target.name] : e.target.value }))
     }
@@ -14,7 +15,7 @@ export default function PostEditor({post, setPost, savePost}) {
         <div id="post_box" className="border rounded-b p-1 flex flex-col">
             <p className="text-2xl my-2">Create Post</p>
             {/* <div className="grid grid-cols-2 gap-1 place-items-center"> */}
-            <label htmlFor="name" className="text-lg my-1">
+            <label required htmlFor="name" className="text-lg my-1">
                 Name
             </label>
             <input type="text" onChange={changeValue} className="p-1 rounded" placeholder="Enter name..." value={post?.name} name="name" id="name"/>
@@ -32,7 +33,9 @@ export default function PostEditor({post, setPost, savePost}) {
                 onChange={value => setPost({...post, content: value})}
 
             /> */}
-            <button className="bg-blue-200 px-3 py-1 rounded inline-block my-2" onClick={savePost} type="submit">Save Post</button>
+            <button className="bg-blue-200 px-3 py-1 rounded inline-block my-2" onClick={savePost} type="submit">
+            {isLoading ? <FaSpinner className="m-auto h-6 animate-spin" /> : 'Save Post'}
+            </button>
         </div>
     )
 }
