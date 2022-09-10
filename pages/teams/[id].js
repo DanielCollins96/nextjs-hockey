@@ -43,7 +43,7 @@ export async function getStaticProps({params}) {
                 yearly_data: season_stats,
                 team_name
             },
-            revalidate: 3600,
+            revalidate: 86400,
         }
     
     }
