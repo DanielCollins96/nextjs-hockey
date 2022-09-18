@@ -14,12 +14,31 @@ export type AmplifyDependentResourcesAttributes = {
         "three": {
             "GraphQLAPIIdOutput": "string",
             "GraphQLAPIEndpointOutput": "string"
+        },
+        "restapithree": {
+            "RootUrl": "string",
+            "ApiName": "string",
+            "ApiId": "string"
         }
     },
     "storage": {
         "nhljsstorage": {
             "BucketName": "string",
             "Region": "string"
+        }
+    },
+    "function": {
+        "three70c5ffdc": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
+        },
+        "three5b4d821a": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
         }
     }
 }

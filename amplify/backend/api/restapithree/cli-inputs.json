@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "paths": {
+    "/teams": {
+      "name": "/teams",
+      "lambdaFunction": "three70c5ffdc",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    },
+    "/posts": {
+      "name": "/posts",
+      "lambdaFunction": "three5b4d821a",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  }
+}

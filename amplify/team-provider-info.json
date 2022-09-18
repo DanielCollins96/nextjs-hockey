@@ -9,7 +9,8 @@
       "UnauthRoleName": "amplify-three-staging-60858-unauthRole",
       "StackName": "amplify-three-staging-60858",
       "StackId": "arn:aws:cloudformation:us-east-1:510880872516:stack/amplify-three-staging-60858/ca280d10-71af-11eb-a73a-0aa443d7245f",
-      "AmplifyAppId": "d358sf7b2vr19t"
+      "AmplifyAppId": "d358sf7b2vr19t",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-three-staging-60858-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
     },
     "categories": {
       "auth": {
@@ -20,6 +21,14 @@
         "nhlteams": {
           "deploymentBucketName": "amplify-three-staging-60858-deployment",
           "s3Key": "amplify-builds/nhlteams-45786d61636d6f525158-build.zip"
+        },
+        "three70c5ffdc": {
+          "deploymentBucketName": "amplify-three-staging-60858-deployment",
+          "s3Key": "amplify-builds/three70c5ffdc-51336f366c53354f696b-build.zip"
+        },
+        "three5b4d821a": {
+          "deploymentBucketName": "amplify-three-staging-60858-deployment",
+          "s3Key": "amplify-builds/three5b4d821a-42654c366d6b304a3266-build.zip"
         }
       }
     }
