@@ -34,8 +34,11 @@ function Profile() {
     try {
       const result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: user.username}} }))    
       console.log({result});
-      
-      return result.data.listPosts.items
+      result = result.data.listPosts.items
+      result = result.filter((post) => {
+        return post._deleted == null
+      })
+      return result
     } catch (err) {
       console.log('Error fetching posts');
       console.error(err)
@@ -59,7 +62,7 @@ function Profile() {
   const deletePost = async (id, _version) => {
     alert('Are You Sure You Want To Delete This Post?')
     try {
-      const result = await API.graphql(graphqlOperation(mutations.deletePost, {input: {id: id}}))
+      const result = await API.graphql(graphqlOperation(mutations.deletePost, {input: {id: id, _version:_version}}))
       console.log({result});
       addToast('Post deleted', { appearance: 'success', autoDismiss: true })
     }
