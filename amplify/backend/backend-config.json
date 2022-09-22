@@ -49,7 +49,7 @@
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "three70c5ffdc",
+          "resourceName": "three5b4d821a",
           "attributes": [
             "Name",
             "Arn"
@@ -57,7 +57,7 @@
         },
         {
           "category": "function",
-          "resourceName": "three5b4d821a",
+          "resourceName": "threeepython",
           "attributes": [
             "Name",
             "Arn"
@@ -79,6 +79,11 @@
       "service": "Lambda"
     },
     "three5b4d821a": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "threeepython": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
