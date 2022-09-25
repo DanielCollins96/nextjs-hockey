@@ -14,7 +14,6 @@
     "@material-ui/core": "^4.12.3",
     "@supabase/supabase-js": "^1.22.6",
     "@supabase/ui": "^0.27.3",
-    "@tailwindcss/typography": "^0.4.1",
     "@vime/react": "^5.0.34",
     "aws-amplify": "^4.2.10",
     "axios": "^0.21.4",
@@ -44,11 +43,12 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
-    "autoprefixer": "^10.3.4",
+    "@tailwindcss/typography": "^0.5.7",
+    "autoprefixer": "^10.4.12",
     "eslint": "7.32.0",
     "eslint-config-next": "12.0.2",
     "eslint-config-prettier": "^8.3.0",
-    "postcss": "^8.3.6",
-    "tailwindcss": "^2.2.15"
+    "postcss": "^8.4.16",
+    "tailwindcss": "^3.1.8"
   }
 }
