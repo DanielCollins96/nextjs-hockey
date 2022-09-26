@@ -125,8 +125,8 @@ const Players = () => {
     )
 };
 
-export async function getStaticProps() {
+// export async function getStaticProps() {
     
-}
+// }
 
 export default Players;
