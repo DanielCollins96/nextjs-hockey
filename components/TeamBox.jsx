@@ -26,14 +26,14 @@ export default function TeamBox({team}) {
           }
         </div>
         </div>
-        <ul style={{ columns: 3 }} className="p-1" >
+        <ul  className="grid grid-cols-3 divide-x divide-y" >
           {team.roster?.roster
             .sort((playerA, playerB) => {
               return playerA.person.fullName > playerB.person.fullName ? 1 : -1;
             })
             .map((person) => {
               return (
-                <li key={person.person?.id}>
+                <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
                   {/* <p>{person.person.fullName}</p> */}
                   <Link
                     href={`/players/${encodeURIComponent(person.person?.id)}`}

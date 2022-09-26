@@ -55,7 +55,7 @@ export default function ReactTable({ columns, data }) {
           prepareRow(row)
           const { key, ...restRowProps } = row.getRowProps()
           return (
-            <tr key={key} {...restRowProps}>
+            <tr key={key} {...restRowProps} className="odd:bg-slate-200">
               {row.cells.map(cell => {
                 const { key, ...restCellProps } = cell.getCellProps()
                 return <td className="border-black border p-1" key={key} {...restCellProps}>{cell.render('Cell')}</td>
