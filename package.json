@@ -38,7 +38,7 @@
     "react-tabs": "^3.2.3",
     "react-ticker": "^1.2.2",
     "react-toast-notifications": "^2.5.1",
-    "recharts": "1.8.5",
+    "recharts": "2.1.14",
     "uuid": "^8.3.2",
     "yup": "^0.32.9"
   },
