@@ -60,6 +60,6 @@ export async function getStaticProps() {
         props: {
             playerData: teams
         },
-        revalidate: 86400
+        revalidate: 3600
     }
 }
