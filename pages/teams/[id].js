@@ -66,6 +66,7 @@ export default function TeamPage({yearly_data, team_name}) {
 
     const table_data = useMemo(
         () => yearly_data
+        , []
     )
 
     const table_columns = useMemo(
@@ -98,7 +99,8 @@ export default function TeamPage({yearly_data, team_name}) {
                 Header: 'Goals Against Per Game',
                 accessor: 'goalsAgainstPerGame',
             },
-        ]
+        ],
+        []
     )
     console.log(!!yearly_data);
     return (

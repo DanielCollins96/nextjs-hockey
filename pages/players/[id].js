@@ -91,11 +91,12 @@ const Players = () => {
                  Header: 'PIM',
                  accessor: 'pim'
              },
-        ]
+        ],
+        []
     )
     const data = useMemo(
         () => playerStats
-    )
+    , [])
     return (
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
