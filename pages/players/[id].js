@@ -85,7 +85,21 @@ const Players = () => {
              },
             {
                  Header: 'P',
-                 accessor: 'pts'
+                 accessor: 'pts',
+                 Footer: info => {
+                    // Only calculate total visits if rows change
+                    const total = useMemo(
+                      () =>
+                        info.rows
+                        .filter((row) => {
+                            return row.values.league.includes('National Hockey League')
+                        })
+                        .reduce((sum, row) => row.values.pts + sum, 0),
+                      [info.rows]
+                    )
+      
+                    return <>{total}</>
+                  },
              },
              {
                  Header: 'PIM',
