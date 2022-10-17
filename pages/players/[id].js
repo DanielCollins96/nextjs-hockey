@@ -20,11 +20,28 @@ const Players = () => {
         return playerRes
     }
     
-    const fetchPlayerStats = async () => {
-
+    const fetchPlayerStats = async (position) => {
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/people/${id}/stats?stats=yearByYear`);
         const playerRes = await res.json()
-        const playerStats = playerRes.stats[0].splits.map((szn) => {
+        const playerStats = {}
+        if (position == 'G') {
+            playerStats = playerRes.stats[0].splits.map((szn) => {
+              return (
+                  {
+                      season: szn.season.substring(0,4)+'/'+szn.season.substring(4,8),
+                      team: szn.team.name,
+                      league: szn.league.name,
+                      gp: szn.stat.games,
+                      w: szn.stat.wins,
+                      l: szn.stat.losses,
+                      gaa: szn.stat.goalAgainstAverage,
+                      svPct: szn.stat.savePercentage,
+                      so: szn.stat.shutouts,
+                  }
+              )
+          })
+        } else {
+            playerStats = playerRes.stats[0].splits.map((szn) => {
             return (
                 {
                     season: szn.season.substring(0,4)+'/'+szn.season.substring(4,8),
@@ -38,6 +55,7 @@ const Players = () => {
                 }
             )
         })
+        }
         console.log({playerStats})
 
         playerStats.sort((a,b) => {
@@ -53,10 +71,151 @@ const Players = () => {
 
         return playerStats
     }
-
     const { data: player, status: player_status } = useQuery(`player-${id}`, fetchPlayer);
-    const { data: playerStats, status: stats_status } = useQuery(`playerStats-${id}`, fetchPlayerStats);
+    const position = player?.people[0]?.primaryPosition?.code || 'fuck';
+    console.log({position});
+    const { data: playerStats, status: stats_status } = useQuery([`playerStats`, id], () => fetchPlayerStats(position), {enabled: !!player});
 
+    let playerStuff = position !== 'G' ? [
+      {
+        Header: 'G',
+        accessor: 'g',
+        Footer: info => {
+           // Only calculate total visits if rows change
+           const total = useMemo(
+             () =>
+               info.rows
+               .filter((row) => {
+                   return row.values.g !== null && row.values.league.includes('National Hockey League')
+               })
+               .reduce((sum, row) => row.values.g + sum, 0),
+             [info.rows]
+           )
+
+           return <>{total ? total : ''}</>
+         },
+    },
+   {
+        Header: 'A',
+        accessor: 'a',
+        Footer: info => {
+           // Only calculate total visits if rows change
+           const total = useMemo(
+             () =>
+               info.rows
+               .filter((row) => {
+                   return row.values.a !== null && row.values.league.includes('National Hockey League')
+               })
+               .reduce((sum, row) => row.values.a + sum, 0),
+             [info.rows]
+           )
+
+           return <>{total ? total : ''}</>
+         },
+    },
+      {
+        Header: 'P',
+        accessor: 'pts',
+        Footer: info => {
+           // Only calculate total visits if rows change
+           const total = useMemo(
+             () =>
+               info.rows
+               .filter((row) => {
+                   return row.values.pts !== null && row.values.league.includes('National Hockey League')
+               })
+               .reduce((sum, row) => row.values.pts + sum, 0),
+             [info.rows]
+           )
+
+           return <>{total ? total : ''}</>
+         },
+    },
+    {
+        Header: 'PIM',
+        accessor: 'pim',
+        Footer: info => {
+           // Only calculate total visits if rows change
+           const total = useMemo(
+             () =>
+               info.rows
+               .filter((row) => {
+                   return row.values.pim !== null && row.values.league.includes('National Hockey League')
+               })
+               .reduce((sum, row) => row.values.pim + sum, 0),
+             [info.rows]
+           )
+
+           return <>{total ? total : ''}</>
+         },
+    },
+    ] : [
+      {
+        Header: 'W',
+        accessor: 'w',
+        Footer: info => {
+          // Only calculate total visits if rows change
+          const total = useMemo(
+            () =>
+              info.rows
+              .filter((row) => {
+                  return row.values.w !== null && row.values.league.includes('National Hockey League')
+              })
+              .reduce((sum, row) => row.values.w + sum, 0),
+            [info.rows]
+          )
+
+          return <>{total ? total : ''}</>
+        },
+    },
+      {
+        Header: 'L',
+        accessor: 'l',
+        Footer: info => {
+          // Only calculate total visits if rows change
+          const total = useMemo(
+            () =>
+              info.rows
+              .filter((row) => {
+                  return row.values.l !== null && row.values.league.includes('National Hockey League')
+              })
+              .reduce((sum, row) => row.values.l + sum, 0),
+            [info.rows]
+          )
+
+          return <>{total ? total : ''}</>
+        },
+    },
+      {
+        Header: 'GAA',
+        accessor: 'gaa',
+        Cell: props => props.value?.toFixed(2),
+        Footer: '',
+    },
+      {
+        Header: 'SV%',
+        accessor: 'svPct',
+        Cell: props => props.value?.toFixed(3) || null,
+        // Footer: info => {
+        //   // Only calculate total visits if rows change
+        //   const total = useMemo(
+        //     () =>{
+        //       let nhlGames = info.rows
+        //         .filter((row) => {
+        //             return row.values.gp !== null && row.values.league.includes('National Hockey League')
+        //         })
+
+        //       return nhlGames  
+        //       .reduce((sum, row) => row.values.svPct + sum, 0) / nhlGames.length
+        //     },
+        //     [info.rows]
+        //   )
+
+        //   return <>{total ? total : ''}</>
+        // },
+   },
+    // },
+    ]
     const columns = useMemo(
         () => [
              {
@@ -65,12 +224,12 @@ const Players = () => {
              },
              {
                  Header: 'Team',
-                 accessor: 'team'
+                 accessor: 'team',
              },
             {
                  Header: 'League',
                  accessor: 'league',
-                 Footer: 'NHL'
+                 Footer: 'NHL',
              },
             {
                  Header: 'GP',
@@ -90,78 +249,7 @@ const Players = () => {
                     return <>{total ? total : ''}</>
                   },
              },
-            {
-                 Header: 'G',
-                 accessor: 'g',
-                 Footer: info => {
-                    // Only calculate total visits if rows change
-                    const total = useMemo(
-                      () =>
-                        info.rows
-                        .filter((row) => {
-                            return row.values.g !== null && row.values.league.includes('National Hockey League')
-                        })
-                        .reduce((sum, row) => row.values.g + sum, 0),
-                      [info.rows]
-                    )
-      
-                    return <>{total ? total : ''}</>
-                  },
-             },
-            {
-                 Header: 'A',
-                 accessor: 'a',
-                 Footer: info => {
-                    // Only calculate total visits if rows change
-                    const total = useMemo(
-                      () =>
-                        info.rows
-                        .filter((row) => {
-                            return row.values.a !== null && row.values.league.includes('National Hockey League')
-                        })
-                        .reduce((sum, row) => row.values.a + sum, 0),
-                      [info.rows]
-                    )
-      
-                    return <>{total ? total : ''}</>
-                  },
-             },
-            {
-                 Header: 'P',
-                 accessor: 'pts',
-                 Footer: info => {
-                    // Only calculate total visits if rows change
-                    const total = useMemo(
-                      () =>
-                        info.rows
-                        .filter((row) => {
-                            return row.values.pts !== null && row.values.league.includes('National Hockey League')
-                        })
-                        .reduce((sum, row) => row.values.pts + sum, 0),
-                      [info.rows]
-                    )
-      
-                    return <>{total ? total : ''}</>
-                  },
-             },
-             {
-                 Header: 'PIM',
-                 accessor: 'pim',
-                 Footer: info => {
-                    // Only calculate total visits if rows change
-                    const total = useMemo(
-                      () =>
-                        info.rows
-                        .filter((row) => {
-                            return row.values.pim !== null && row.values.league.includes('National Hockey League')
-                        })
-                        .reduce((sum, row) => row.values.pim + sum, 0),
-                      [info.rows]
-                    )
-      
-                    return <>{total ? total : ''}</>
-                  },
-             },
+            ...playerStuff
         ],
         []
     )
@@ -184,6 +272,7 @@ const Players = () => {
                         <p className="text-2xl font-bold">{player.people[0].fullName}</p>
                         <p>Birth Date: {player.people[0].birthDate}</p>
                         <p>Nationality: {player.people[0].birthCountry}</p>
+                        <p>Position: {player.people[0].primaryPosition.name}</p>
                         <p>Primary Number: {player.people[0].primaryNumber}</p>
                         <p>Age: {player.people[0].currentAge}</p>
                         </div>
