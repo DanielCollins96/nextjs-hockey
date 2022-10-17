@@ -69,19 +69,62 @@ const Players = () => {
              },
             {
                  Header: 'League',
-                 accessor: 'league'
+                 accessor: 'league',
+                 Footer: 'NHL'
              },
             {
                  Header: 'GP',
-                 accessor: 'gp'
+                 accessor: 'gp',
+                 Footer: info => {
+                    // Only calculate total visits if rows change
+                    const total = useMemo(
+                      () =>
+                        info.rows
+                        .filter((row) => {
+                            return row.values.gp !== null && row.values.league.includes('National Hockey League')
+                        })
+                        .reduce((sum, row) => row.values.gp + sum, 0),
+                      [info.rows]
+                    )
+      
+                    return <>{total ? total : ''}</>
+                  },
              },
             {
                  Header: 'G',
-                 accessor: 'g'
+                 accessor: 'g',
+                 Footer: info => {
+                    // Only calculate total visits if rows change
+                    const total = useMemo(
+                      () =>
+                        info.rows
+                        .filter((row) => {
+                            return row.values.g !== null && row.values.league.includes('National Hockey League')
+                        })
+                        .reduce((sum, row) => row.values.g + sum, 0),
+                      [info.rows]
+                    )
+      
+                    return <>{total ? total : ''}</>
+                  },
              },
             {
                  Header: 'A',
-                 accessor: 'a'
+                 accessor: 'a',
+                 Footer: info => {
+                    // Only calculate total visits if rows change
+                    const total = useMemo(
+                      () =>
+                        info.rows
+                        .filter((row) => {
+                            return row.values.a !== null && row.values.league.includes('National Hockey League')
+                        })
+                        .reduce((sum, row) => row.values.a + sum, 0),
+                      [info.rows]
+                    )
+      
+                    return <>{total ? total : ''}</>
+                  },
              },
             {
                  Header: 'P',
@@ -92,18 +135,32 @@ const Players = () => {
                       () =>
                         info.rows
                         .filter((row) => {
-                            return row.values.league.includes('National Hockey League')
+                            return row.values.pts !== null && row.values.league.includes('National Hockey League')
                         })
                         .reduce((sum, row) => row.values.pts + sum, 0),
                       [info.rows]
                     )
       
-                    return <>{total}</>
+                    return <>{total ? total : ''}</>
                   },
              },
              {
                  Header: 'PIM',
-                 accessor: 'pim'
+                 accessor: 'pim',
+                 Footer: info => {
+                    // Only calculate total visits if rows change
+                    const total = useMemo(
+                      () =>
+                        info.rows
+                        .filter((row) => {
+                            return row.values.pim !== null && row.values.league.includes('National Hockey League')
+                        })
+                        .reduce((sum, row) => row.values.pim + sum, 0),
+                      [info.rows]
+                    )
+      
+                    return <>{total ? total : ''}</>
+                  },
              },
         ],
         []
