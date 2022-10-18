@@ -72,10 +72,10 @@ const Players = () => {
         return playerStats
     }
     const { data: player, status: player_status } = useQuery(`player-${id}`, fetchPlayer);
-    const position = player?.people[0]?.primaryPosition?.code || 'fuck';
-    console.log({position});
-    const { data: playerStats, status: stats_status } = useQuery([`playerStats`, id], () => fetchPlayerStats(position), {enabled: !!player});
+    const position = player?.people[0]?.primaryPosition?.code || 'C';
 
+    const { data: playerStats, status: stats_status } = useQuery([`playerStats`, id], () => fetchPlayerStats(position), {enabled: !!player});
+    
     let playerStuff = position !== 'G' ? [
       {
         Header: 'G',
@@ -99,7 +99,6 @@ const Players = () => {
         Header: 'A',
         accessor: 'a',
         Footer: info => {
-           // Only calculate total visits if rows change
            const total = useMemo(
              () =>
                info.rows
@@ -117,7 +116,6 @@ const Players = () => {
         Header: 'P',
         accessor: 'pts',
         Footer: info => {
-           // Only calculate total visits if rows change
            const total = useMemo(
              () =>
                info.rows
@@ -135,7 +133,6 @@ const Players = () => {
         Header: 'PIM',
         accessor: 'pim',
         Footer: info => {
-           // Only calculate total visits if rows change
            const total = useMemo(
              () =>
                info.rows
@@ -154,7 +151,6 @@ const Players = () => {
         Header: 'W',
         accessor: 'w',
         Footer: info => {
-          // Only calculate total visits if rows change
           const total = useMemo(
             () =>
               info.rows
@@ -216,6 +212,7 @@ const Players = () => {
    },
     // },
     ]
+
     const columns = useMemo(
         () => [
              {
@@ -251,7 +248,7 @@ const Players = () => {
              },
             ...playerStuff
         ],
-        []
+        [position]
     )
     const data = useMemo(
         () => playerStats
