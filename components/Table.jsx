@@ -85,7 +85,7 @@ export default function ReactTable({ columns, data }) {
         {footerGroups.map((group, idx) => (
           <tr key={idx} {...group.getFooterGroupProps()} className="bg-slate-300 py-px text-center font-bold">
             {group.headers.map((column) => (
-              <td key={idx}{...column.getFooterProps()} className="border-black">{column.render("Footer")}</td>
+              <td key={idx}{...column.getFooterProps()} className="border-black px-1">{column.render("Footer")}</td>
             ))}
           </tr>
         ))}

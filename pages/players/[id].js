@@ -92,7 +92,7 @@ const Players = () => {
              [info.rows]
            )
 
-           return <>{total ? total : ''}</>
+           return <>{total ? total : 0}</>
          },
     },
    {
@@ -109,7 +109,7 @@ const Players = () => {
              [info.rows]
            )
 
-           return <>{total ? total : ''}</>
+           return <>{total ? total : 0}</>
          },
     },
       {
@@ -186,29 +186,53 @@ const Players = () => {
         Header: 'GAA',
         accessor: 'gaa',
         Cell: props => props.value?.toFixed(2),
-        Footer: '',
+        Footer: info => {
+          // Only calculate total visits if rows change
+          const total = useMemo(
+            () => {
+              let nhlGames = info.rows
+                .filter((row) => {
+                    return row.values.gp !== null && row.values.league.includes('National Hockey League')
+                })
+              let gamesPlayed = nhlGames.reduce((sum,row) => row.values.gp + sum, 0)
+
+              let totalSvPct = nhlGames
+                .reduce((sum, row) => (row.values.gaa * row.values.gp) + sum, 0)
+              let total = totalSvPct / gamesPlayed
+              console.log({total});
+              return total.toFixed(2)
+            },
+            [info.rows]
+          )
+
+          return <>{total ? total : 'no'}</>
+        },
     },
       {
         Header: 'SV%',
         accessor: 'svPct',
         Cell: props => props.value?.toFixed(3) || null,
-        // Footer: info => {
-        //   // Only calculate total visits if rows change
-        //   const total = useMemo(
-        //     () =>{
-        //       let nhlGames = info.rows
-        //         .filter((row) => {
-        //             return row.values.gp !== null && row.values.league.includes('National Hockey League')
-        //         })
+        Footer: info => {
+          // Only calculate total visits if rows change
+          const total = useMemo(
+            () => {
+              let nhlGames = info.rows
+                .filter((row) => {
+                    return row.values.gp !== null && row.values.league.includes('National Hockey League')
+                })
+              let gamesPlayed = nhlGames.reduce((sum,row) => row.values.gp + sum, 0)
 
-        //       return nhlGames  
-        //       .reduce((sum, row) => row.values.svPct + sum, 0) / nhlGames.length
-        //     },
-        //     [info.rows]
-        //   )
+              let totalSvPct = nhlGames
+                .reduce((sum, row) => (row.values.svPct * row.values.gp) + sum, 0)
+              let total = totalSvPct / gamesPlayed
+              console.log({total});
+              return total.toFixed(3)
+            },
+            [info.rows]
+          )
 
-        //   return <>{total ? total : ''}</>
-        // },
+          return <>{total ? total : 'no'}</>
+        },
    },
     // },
     ]
@@ -274,7 +298,7 @@ const Players = () => {
                         <p>Age: {player.people[0].currentAge}</p>
                         </div>
                     ) :
-                    <p>Loading...</p>    
+                    <p className='w-56'>Loading...</p>    
                 }
             </div>
             {stats_status === 'success' ? <ReactTable columns={columns} data={playerStats} /> : <p>Loading...</p>}
