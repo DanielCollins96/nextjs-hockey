@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react'
 import { useQuery, useQueries } from 'react-query';
 import ReactTable from '../../components/Table';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label,ResponsiveContainer
   } from 'recharts';
 
   export async function getStaticPaths() {
@@ -28,7 +28,7 @@ export async function getStaticProps({params}) {
             const seasonStats = await res.json()
             if (!!seasonStats.teams) {
                 // console.log(typeof seasonStats.teams[0].teamStats[0])
-                seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)}, ...{'name': seasonStats.teams[0].name}})
+                seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)},...{'place': seasonStats.teams[0].teamStats[0].splits[1].stat.wins}, ...{'name': seasonStats.teams[0].name}})
             }
         }
         let season_reqs = await Promise.allSettled(seasons)
@@ -99,6 +99,10 @@ export default function TeamPage({yearly_data, team_name}) {
                 Header: 'Goals Against Per Game',
                 accessor: 'goalsAgainstPerGame',
             },
+            {
+                Header: 'Place',
+                accessor: 'place',
+            },
         ],
         []
     )
@@ -128,17 +132,22 @@ export default function TeamPage({yearly_data, team_name}) {
             {!yearly_data ? 
             <p className='grid place-self-center'>Loading...</p>    
             :
-            <div className='flex flex-col md:flex-row '>
+            <div className='flex flex-col items-center justify-center lg:flex-row '>
                 <div className="p-2 max-w-48">
                 {yearly_data && <ReactTable columns={table_columns} data={table_data} className="inline-block"/>}
                 </div>
                 <div className="p-2 flex flex-col">
-                    <p className="text-lg text-center">Wins by Season</p>
+                    {/* <input type="" /> */}
+                    <ResponsiveContainer 
+                                            width={500}
+                                            height={300}>
+
+                    {/* <text className="text-lg text-center">Wins by Season</text> */}
+                    
                     <LineChart
-                        width={500}
-                        height={300}
+
                         data={yearly_data}
-                    >
+                        >
                         <YAxis />
                         <XAxis dataKey="value.year"  />
                         <Tooltip />
@@ -146,6 +155,7 @@ export default function TeamPage({yearly_data, team_name}) {
                         <Line type="monotone" name="Wins" dataKey="wins" strokeWidth={2} stroke="#009966" />
                         <Line type="monotone" name="OT Wins" dataKey="ot" strokeWidth={2} stroke="#11F" />
                     </LineChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
             }
