@@ -6,7 +6,6 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## TODOs
 
-- [ ] I cant get the teams to search right and load on the home page.
 - [ ] user file uploads
 - [ ] add links into tables
 - [ ] add forum to team page and news stories

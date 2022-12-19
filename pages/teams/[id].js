@@ -8,62 +8,18 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label,ResponsiveContainer
   } from 'recharts';
 
-  export async function getStaticPaths() {
-    const path = 'https://statsapi.web.nhl.com/api/v1/teams/'
-    const teams = await fetch(path);
-    const teamData = await teams.json();
-    let paths = teamData.teams.map((team) => ({
-        params: {id: team.id.toString()}
-    }))
-    return {
-        paths,
-        fallback: false,
-    }
-  }
-export async function getStaticProps({params}) {
-    const fetchSeasons = async () => {
-        let seasons = [];
-        for (let i = 2010; i <= 2021; i++) {
-            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${params.id}?expand=team.stats&season=${i}${i+1}`);
-            const seasonStats = await res.json()
-            if (!!seasonStats.teams) {
-                // console.log(typeof seasonStats.teams[0].teamStats[0])
-                seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)},...{'place': seasonStats.teams[0].teamStats[0].splits[1].stat.wins}, ...{'name': seasonStats.teams[0].name}})
-            }
-        }
-        let season_reqs = await Promise.allSettled(seasons)
-        let season_stats = season_reqs.map(season => {
-            if (season.status === 'fulfilled') {
-            return season.value
-            }
-        })
-        let team_name = seasons[0]?.name || 'Team'
-        return {
-            props: {
-                yearly_data: season_stats,
-                team_name
-            },
-            revalidate: 86400,
-        }
-    
-    }
 
-    return fetchSeasons()
-}
 
 export default function TeamPage({yearly_data, team_name}) {
-    const [seasonStats, setSeasonstats] = useState([])
     const router = useRouter()
     const { id } = router.query
+    const [xVal, setXVal] = useState('wins')
     const { data: team_data } = useQuery(`fetchTeam-${id}`, async () => {
         const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
         const teamRes = await res.json()
         return teamRes.teams
     })
     
-
-    // const { data: yearly_data, isLoading: seasonsLoading } = useQuery(['fetchSeasons', id], fetchSeasons, { enabled: !!team_data })
-
     const table_data = useMemo(
         () => yearly_data
         , []
@@ -106,7 +62,7 @@ export default function TeamPage({yearly_data, team_name}) {
         ],
         []
     )
-    console.log(!!yearly_data);
+
     return (
         <div className=''>
             <Head>
@@ -149,11 +105,13 @@ export default function TeamPage({yearly_data, team_name}) {
                         data={yearly_data}
                         >
                         <YAxis />
-                        <XAxis dataKey="value.year"  />
+                        <XAxis dataKey="year"  />
                         <Tooltip />
                         <Legend />
+                        <Line type="monotone" name="Points" dataKey="pts" strokeWidth={2} stroke="#000" />
                         <Line type="monotone" name="Wins" dataKey="wins" strokeWidth={2} stroke="#009966" />
                         <Line type="monotone" name="OT Wins" dataKey="ot" strokeWidth={2} stroke="#11F" />
+                        <Line type="monotone" name="Losses" dataKey="losses" strokeWidth={2} stroke="#FF0000" />
                     </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -163,3 +121,48 @@ export default function TeamPage({yearly_data, team_name}) {
         // </div>
     )
 };
+
+function test(value) {
+
+}
+
+export async function getStaticPaths() {
+    const path = 'https://statsapi.web.nhl.com/api/v1/teams/'
+    const teams = await fetch(path);
+    const teamData = await teams.json();
+    let paths = teamData.teams.map((team) => ({
+        params: {id: team.id.toString()}
+    }))
+    return {
+        paths,
+        fallback: false,
+    }
+  }
+export async function getStaticProps({params}) {
+    const fetchSeasons = async () => {
+        let seasons = [];
+        for (let i = 2010; i <= 2022; i++) {
+            const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${params.id}?expand=team.stats&season=${i}${i+1}`);
+            const seasonStats = await res.json()
+            if (!!seasonStats.teams) {
+                seasons.push({...seasonStats.teams[0].teamStats[0].splits[0].stat, ...{'year': i}, ...{'wins': parseInt(seasonStats.teams[0].teamStats[0].splits[0].stat.wins, 10)},...{'place': seasonStats.teams[0].teamStats[0].splits[1].stat.wins}, ...{'name': seasonStats.teams[0].name}})
+            }
+        }
+        let season_reqs = await Promise.allSettled(seasons)
+        let season_stats = season_reqs.map(season => {
+            if (season.status === 'fulfilled') {
+            return season.value
+            }
+        })
+        let team_name = seasons[0]?.name || 'Team'
+        return {
+            props: {
+                yearly_data: season_stats,
+                team_name
+            },
+            revalidate: 86400,
+        }
+    }
+
+    return fetchSeasons()
+}
