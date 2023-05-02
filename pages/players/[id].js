@@ -185,7 +185,7 @@ const Players = () => {
       {
         Header: 'GAA',
         accessor: 'gaa',
-        Cell: props => props.value?.toFixed(2),
+        Cell: props => props.value?.toFixed(2) || null,
         Footer: info => {
           // Only calculate total visits if rows change
           const total = useMemo(

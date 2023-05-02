@@ -9,9 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^1.2.16",
+    "@aws-amplify/ui-react": "^4.6.0",
     "@headlessui/react": "^1.4.1",
     "@material-ui/core": "^4.12.3",
+    "@sentry/nextjs": "^7.50.0",
     "@supabase/supabase-js": "^1.22.6",
     "@supabase/ui": "^0.27.3",
     "@vime/react": "^5.0.34",
@@ -38,7 +39,7 @@
     "react-tabs": "^3.2.3",
     "react-ticker": "^1.2.2",
     "react-toast-notifications": "^2.5.1",
-    "recharts": "1.8.5",
+    "recharts": "^2.5.0",
     "uuid": "^8.3.2",
     "yup": "^0.32.9"
   },
