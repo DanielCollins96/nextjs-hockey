@@ -77,7 +77,7 @@ export default function TeamPage({yearly_data, team_name}) {
                 <p className="text-lg">{team_data[0].name}</p>
                 <p>{team_data[0].firstYearOfPlay}</p>
                 <Link href={`${team_data[0].officialSiteUrl}`}>
-                    <a>{team_data[0].officialSiteUrl}</a>
+                    <a className='hover:text-blue-700'>{team_data[0].officialSiteUrl}</a>
                 </Link>
             </div>
             :

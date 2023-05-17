@@ -13,12 +13,13 @@ export default function TeamBox({team}) {
       <div className={`relative overflow-hidden border border-black rounded bg-white  m-2 ${active ? 'max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
         <div className="flex justify-between items-center">
         <h2 className="text-xl text-left p-2">
-          <div className="flex">
-          <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
+          {/* <div className="flex"> */}
           <Link href={`/teams/${encodeURIComponent(team.id)}`} >
-            <a className="ml-3 pr-3">{team.name}</a>
+            <a className="flex  gap-3 ml-3 pr-3 hover:text-blue-700">
+          <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
+            {team.name}</a>
           </Link>
-          </div>
+          {/* </div> */}
         </h2>
         <div className="pl-8 sm:pl-16 pr-2 cursor-pointer" onClick={() => setActive(v => !v)}>
           {
@@ -38,7 +39,7 @@ export default function TeamBox({team}) {
                   <Link
                     href={`/players/${encodeURIComponent(person.person?.id)}`}
                   >
-                    <a className="text-sm">{person.person?.fullName}</a>
+                    <a className="text-sm hover:text-blue-700">{person.person?.fullName}</a>
                   </Link>
                 </li>
               );

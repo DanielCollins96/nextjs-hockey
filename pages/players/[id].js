@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import Head from 'next/head'
+import Link from 'next/link';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 // import Image from 'next/image'
@@ -29,7 +30,9 @@ const Players = () => {
               return (
                   {
                       season: szn.season.substring(0,4)+'/'+szn.season.substring(4,8),
-                      team: szn.team.name,
+                      id: szn.team?.id,
+                      team: {name: szn.team.name, id: szn.team?.id},
+                      // team: szn.team.name,
                       league: szn.league.name,
                       gp: szn.stat.games,
                       w: szn.stat.wins,
@@ -45,7 +48,9 @@ const Players = () => {
             return (
                 {
                     season: szn.season.substring(0,4)+'/'+szn.season.substring(4,8),
-                    team: szn.team.name,
+                    team: {name: szn.team.name, id: szn.team?.id},
+
+                    // team: szn.team.name,
                     league: szn.league.name,
                     gp: szn.stat.games,
                     g: szn.stat.goals,
@@ -241,11 +246,12 @@ const Players = () => {
         () => [
              {
                  Header: 'Season',
-                 accessor: 'season' 
+                 accessor: 'season',
              },
              {
                  Header: 'Team',
                  accessor: 'team',
+                 Cell: props => props.row.original.team.id ? (<Link href={`/teams/${props.row.original.team.id}`} passHref ><a className=" hover:text-blue-700">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
              },
             {
                  Header: 'League',
