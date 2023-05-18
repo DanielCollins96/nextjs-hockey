@@ -4,20 +4,12 @@ import {useEffect, useState, useRef } from 'react';
 import TeamBox from '../components/TeamBox'; 
 
 
-const fetchPlayers = async () => {
-  const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
-  const resJson = await res.json();
-
-  return resJson.teams
-};
-
 export default function Home({teams}) {
 const router = useRouter();
 
 const [searchedTeams, setSearchedTeams] = useState(teams);
 
 const inputRef = useRef();
-
 
 const inputChange = (e) => {
   let searchTerm = e.target.value
@@ -76,7 +68,7 @@ function onPress() {
                 onChange={inputChange} 
                 className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
             </div>
-            <div className="grid my-2 mx-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid my-2 mx-2 md:grid-cols-2 xl:grid-cols-3">
                 {
                     searchedTeams &&
                     searchedTeams

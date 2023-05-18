@@ -39,7 +39,7 @@ export default function TeamBox({team}) {
                   <Link
                     href={`/players/${encodeURIComponent(person.person?.id)}`}
                   >
-                    <a className="text-sm hover:text-blue-700">{person.person?.fullName}</a>
+                    <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.person?.fullName}</a>
                   </Link>
                 </li>
               );

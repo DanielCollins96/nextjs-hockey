@@ -251,7 +251,7 @@ const Players = () => {
              {
                  Header: 'Team',
                  accessor: 'team',
-                 Cell: props => props.row.original.team.id ? (<Link href={`/teams/${props.row.original.team.id}`} passHref ><a className=" hover:text-blue-700">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
+                 Cell: props => props.row.original.team.id ? (<Link href={`/teams/${props.row.original.team.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
              },
             {
                  Header: 'League',
