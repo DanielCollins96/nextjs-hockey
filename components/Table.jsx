@@ -1,7 +1,7 @@
 import { keys } from '@material-ui/core/styles/createBreakpoints'
 import { useTable, useSortBy,useFilters } from 'react-table'
 
-export default function ReactTable({ columns, data }) {
+export default function ReactTable({ columns, data, sortBy = 'season' }) {
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
@@ -17,7 +17,7 @@ export default function ReactTable({ columns, data }) {
       initialState: {
         sortBy: [
           {
-            id: 'season',
+            id: sortBy,
             desc: true,
           },
         ]

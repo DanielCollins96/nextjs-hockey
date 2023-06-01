@@ -4,28 +4,29 @@ import { useRouter } from 'next/router'
 import { useState, useMemo } from 'react'
 import { useQuery, useQueries } from 'react-query';
 import ReactTable from '../../components/Table';
+import { getRoster } from '../../lib/queries'
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label,ResponsiveContainer
+    LineChart, Line, XAxis, YAxis, Tooltip, Legend,ResponsiveContainer
   } from 'recharts';
 
 
 
-export default function TeamPage({yearly_data, team_name}) {
+export default function TeamPage({yearly_data, team_name, team_data, rosters,seasons}) {
+    const [seasonId, setSeasonId] = useState('20222023')
     const router = useRouter()
     const { id } = router.query
-    const [xVal, setXVal] = useState('wins')
-    const { data: team_data } = useQuery(`fetchTeam-${id}`, async () => {
-        const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${id}`);
-        const teamRes = await res.json()
-        return teamRes.teams
-    })
-    
-    const table_data = useMemo(
+
+    const team_table_data = useMemo(
         () => yearly_data
         , []
     )
+    
+    const roster_table_data = useMemo(
+        () => rosters?.[seasonId] || []
+        , [rosters, seasonId]
+    )
 
-    const table_columns = useMemo(
+    const team_table_columns = useMemo(
         () => [
             {
                 Header: 'Year',
@@ -63,6 +64,44 @@ export default function TeamPage({yearly_data, team_name}) {
         []
     )
 
+  const roster_table_columns = useMemo(
+    () => [
+        {
+            Header: 'Team',
+            accessor: (d) => d['team.name'],
+        },
+        {
+            Header: 'Year',
+            accessor: 'season',
+        },
+        {
+            Header: 'Name',
+            accessor: 'fullName',
+        },
+        {
+            Header: 'Pos.',
+            accessor: (d) => d['primaryPosition.code'],
+        },
+        {
+            Header: 'GP',
+            accessor: (d) => d['stat.games'],
+        },
+        {
+            Header: 'Goals',
+            accessor: (d) => d['stat.goals'],
+        },
+        {
+            Header: 'Assists',
+            accessor: (d) => d['stat.assists'],
+        },
+        {
+            Header: 'Points',
+            accessor: (d) => d['stat.points'],
+        },
+    ],
+    []
+  )
+
     return (
         <div className=''>
             <Head>
@@ -70,9 +109,6 @@ export default function TeamPage({yearly_data, team_name}) {
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
      crossOrigin="anonymous"></script>
             </Head>
-        {
-        !!team_data 
-        ? 
             <div className="text-center border border-black rounded p-2">
                 <p className="text-lg">{team_data[0].name}</p>
                 <p>{team_data[0].firstYearOfPlay}</p>
@@ -80,28 +116,27 @@ export default function TeamPage({yearly_data, team_name}) {
                     <a className='hover:text-blue-700'>{team_data[0].officialSiteUrl}</a>
                 </Link>
             </div>
-            :
-            <p>Data Not Found</p>
-        }
-        {/* <p>{JSON.stringify(team_data)}</p> */}
-        {/* <div className="flex"> */}
+        <div className="p-2 gap-1 flex flex-col lg:flex-row">
+            {roster_table_data && rosters && 
+            <div className="border-2 p-1 flex flex-col basis-3/5">              
+                <select className="flex w-32 justify-end" value={seasonId} onChange={(event) => setSeasonId(event.target.value)}>
+                    {seasons && seasons?.map((szn) => {
+                        return <option key={szn} value={szn}>{JSON.stringify(szn)}</option>
+                    })}
+                </select>
+                <ReactTable data={roster_table_data} columns={roster_table_columns} sortBy='pts' />        
+            </div>
+            }
             {!yearly_data ? 
-            <p className='grid place-self-center'>Loading...</p>    
+            <p className='grid place-self-top'>Loading...</p>    
             :
-            <div className='flex flex-col items-center justify-center lg:flex-row '>
-                <div className="p-2 max-w-48">
-                {yearly_data && <ReactTable columns={table_columns} data={table_data} className="inline-block"/>}
-                </div>
+            <div className='border-2 p-1 flex flex-col items-center'>
                 <div className="p-2 flex flex-col">
                     {/* <input type="" /> */}
                     <ResponsiveContainer 
                                             width={500}
                                             height={300}>
-
-                    {/* <text className="text-lg text-center">Wins by Season</text> */}
-                    
                     <LineChart
-
                         data={yearly_data}
                         >
                         <YAxis />
@@ -115,10 +150,13 @@ export default function TeamPage({yearly_data, team_name}) {
                     </LineChart>
                     </ResponsiveContainer>
                 </div>
+                <div className="p-2 max-w-48">
+                    {yearly_data && <ReactTable columns={team_table_columns} data={team_table_data} className="inline-block"/>}
+                </div>
             </div>
             }
         </div>
-        // </div>
+     </div>
     )
 };
 
@@ -140,8 +178,24 @@ export async function getStaticPaths() {
   }
 export async function getStaticProps({params}) {
     const fetchSeasons = async () => {
+        const team = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${params.id}`);
+        const data = await team.json()
+        const team_data = data.teams
+
+        const roster_data = await getRoster(params.id)
+        let rosters = roster_data.reduce((r,curr) => {
+            (r[curr.season] = r[curr.season] || []).push(curr);
+            return r
+        }, {})
+
+        let years = '20222023'
+        if (rosters) {
+        years = Object.keys(rosters)
+        }
+
+
         let seasons = [];
-        for (let i = 2010; i <= 2022; i++) {
+        for (let i = 2013; i <= 2022; i++) {
             const res = await fetch(`https://statsapi.web.nhl.com/api/v1/teams/${params.id}?expand=team.stats&season=${i}${i+1}`);
             const seasonStats = await res.json()
             if (!!seasonStats.teams) {
@@ -158,7 +212,10 @@ export async function getStaticProps({params}) {
         return {
             props: {
                 yearly_data: season_stats,
-                team_name
+                team_name,
+                team_data,
+                rosters,
+                seasons: years
             },
             revalidate: 86400,
         }
