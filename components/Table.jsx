@@ -1,7 +1,6 @@
-import { keys } from '@material-ui/core/styles/createBreakpoints'
-import { useTable, useSortBy,useFilters } from 'react-table'
+import {useTable, useSortBy, useFilters} from "react-table";
 
-export default function ReactTable({ columns, data, sortBy = 'season' }) {
+export default function ReactTable({columns, data, sortKey = "season"}) {
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
@@ -17,14 +16,14 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
       initialState: {
         sortBy: [
           {
-            id: sortBy,
+            id: sortKey,
             desc: true,
           },
-        ]
-      }
+        ],
+      },
     },
     useSortBy
-  )
+  );
 
   // Render the UI for your table
   return (
@@ -34,12 +33,12 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
     >
       <thead className="bg-blue-200">
         {headerGroups.map((headerGroup) => {
-          const { key, ...restHeaderGroupProps } =
+          const {key, ...restHeaderGroupProps} =
             headerGroup.getHeaderGroupProps();
           return (
             <tr key={key} {...restHeaderGroupProps}>
               {headerGroup.headers.map((column) => {
-                const { key, ...restColumnProps } = column.getHeaderProps(
+                const {key, ...restColumnProps} = column.getHeaderProps(
                   column.getSortByToggleProps()
                 );
                 return (
@@ -62,11 +61,11 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
       <tbody {...getTableBodyProps()} className="">
         {rows.map((row, i) => {
           prepareRow(row);
-          const { key, ...restRowProps } = row.getRowProps();
+          const {key, ...restRowProps} = row.getRowProps();
           return (
             <tr key={key} {...restRowProps} className="odd:bg-slate-200">
               {row.cells.map((cell) => {
-                const { key, ...restCellProps } = cell.getCellProps();
+                const {key, ...restCellProps} = cell.getCellProps();
                 return (
                   <td
                     className="border-black border p-1"
@@ -83,9 +82,19 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
       </tbody>
       <tfoot>
         {footerGroups.map((group, idx) => (
-          <tr key={idx} {...group.getFooterGroupProps()} className="bg-slate-300 py-px text-center font-bold">
+          <tr
+            key={idx}
+            {...group.getFooterGroupProps()}
+            className="bg-slate-300 py-px text-center font-bold"
+          >
             {group.headers.map((column) => (
-              <td key={idx}{...column.getFooterProps()} className="border-black px-1">{column.render("Footer")}</td>
+              <td
+                key={idx}
+                {...column.getFooterProps()}
+                className="border-black px-1"
+              >
+                {column.render("Footer")}
+              </td>
             ))}
           </tr>
         ))}
@@ -93,6 +102,3 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
     </table>
   );
 }
-
-
-
