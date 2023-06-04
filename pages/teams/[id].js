@@ -36,37 +36,37 @@ export default function TeamPage({
   const team_table_columns = useMemo(
     () => [
       {
-        Header: "Year",
-        accessor: "year",
+        accessorKey: "year",
+        header: "Year",
       },
-      {
-        Header: "Wins",
-        accessor: "wins",
-      },
-      {
-        Header: "Losses",
-        accessor: "losses",
-      },
-      {
-        Header: "OTL",
-        accessor: "ot",
-      },
-      {
-        Header: "Points",
-        accessor: "pts",
-      },
-      {
-        Header: "GPG",
-        accessor: "goalsPerGame",
-      },
-      {
-        Header: "GAPG",
-        accessor: "goalsAgainstPerGame",
-      },
-      {
-        Header: "Place",
-        accessor: "place",
-      },
+        {
+          header: "Wins",
+          accessorKey: "wins",
+        },
+        {
+          header: "Losses",
+          accessorKey: "losses",
+        },
+        {
+          header: "OTL",
+          accessorKey: "ot",
+        },
+        {
+          header: "Points",
+          accessorKey: "pts",
+        },
+        {
+          header: "GPG",
+          accessorKey: "goalsPerGame",
+        },
+        {
+          header: "GAPG",
+          accessorKey: "goalsAgainstPerGame",
+        },
+        {
+          header: "Place",
+          accessorKey: "place",
+        },
     ],
     []
   );
@@ -74,36 +74,36 @@ export default function TeamPage({
   const roster_table_columns = useMemo(
     () => [
       {
-        Header: "Team",
-        accessor: (d) => d["team.name"],
+        header: "Team",
+        accessorFn: (d) => d["team.name"],
       },
       {
-        Header: "Year",
-        accessor: "season",
+        header: "Year",
+        accessorKey: "season",
       },
       {
-        Header: "Name",
-        accessor: "fullName",
+        header: "Name",
+        accessorKey: "fullName",
       },
       {
-        Header: "Pos.",
-        accessor: (d) => d["primaryPosition.code"],
+        header: "Pos.",
+        accessorFn: (d) => d["primaryPosition.code"],
       },
       {
-        Header: "GP",
-        accessor: (d) => d["stat.games"],
+        header: "GP",
+        accessorFn: (d) => d["stat.games"],
       },
       {
-        Header: "G",
-        accessor: (d) => d["stat.goals"],
+        header: "G",
+        accessorFn: (d) => d["stat.goals"],
       },
       {
-        Header: "A",
-        accessor: (d) => d["stat.assists"],
+        header: "A",
+        accessorFn: (d) => d["stat.assists"],
       },
       {
-        Header: "P",
-        accessor: (d) => d["stat.points"],
+        header: "P",
+        accessorFn: (d) => d["stat.points"],
       },
     ],
     []
@@ -194,9 +194,10 @@ export default function TeamPage({
               </ResponsiveContainer>
             </div>
             <div className="p-2 max-w-48">
-              {yearly_data && (
+              {team_table_data && (
                 <ReactTable
-                  columns={team_table_columns}
+                  // columns={newColumns}
+                    columns={team_table_columns}
                   data={team_table_data}
                   className="inline-block"
                 />
