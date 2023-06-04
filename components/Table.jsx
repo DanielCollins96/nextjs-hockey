@@ -1,79 +1,82 @@
-import { keys } from '@material-ui/core/styles/createBreakpoints'
-import { useTable, useSortBy,useFilters } from 'react-table'
+// import {useTable, useSortBy, useFilters} from "react-table";
+import {
+  useReactTable,
+  flexRender,
+  getRowModel,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState
 
-export default function ReactTable({ columns, data, sortBy = 'season' }) {
-  // Use the state and functions returned from useTable to build your UI
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    footerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
+} from "@tanstack/react-table";
+import { useState } from "react";
+
+export default function ReactTable({columns, data, sortKey = "season"}) {
+
+  const [sorting, setSorting] = useState([{
+            id: sortKey,
+            desc: true,
+          },])
+
+  const table = useReactTable(
     {
       columns,
       data,
-      initialState: {
-        sortBy: [
-          {
-            id: sortBy,
-            desc: true,
-          },
-        ]
-      }
-    },
-    useSortBy
-  )
+      state: {
+      sorting,
+      },
+      onSortingChange: setSorting,
+      getCoreRowModel: getCoreRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+    }
+  );
 
-  // Render the UI for your table
   return (
     <table
-      {...getTableProps()}
-      className="border border-black table-fixed p-4 text-sm m-1"
+      className="border border-black table-fixed p-4 text-sm m-1 max-w-xl"
     >
-      <thead className="bg-blue-200">
-        {headerGroups.map((headerGroup) => {
-          const { key, ...restHeaderGroupProps } =
-            headerGroup.getHeaderGroupProps();
-          return (
-            <tr key={key} {...restHeaderGroupProps}>
-              {headerGroup.headers.map((column) => {
-                const { key, ...restColumnProps } = column.getHeaderProps(
-                  column.getSortByToggleProps()
-                );
+   <thead>
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => {
                 return (
-                  <th className="p-1" key={key} {...restColumnProps}>
-                    {column.render("Header")}
-                    <span>
-                      {column.isSorted
-                        ? column.isSortedDesc
-                          ? " 🔽"
-                          : " 🔼"
-                        : ""}
-                    </span>
+                  <th className="p-1" key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder ? null : (
+                      <div
+                        {...{
+                          className: header.column.getCanSort()
+                            ? 'cursor-pointer select-none'
+                            : '',
+                          onClick: header.column.getToggleSortingHandler(),
+                        }}
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {{
+                          asc: ' 🔼',
+                          desc: ' 🔽',
+                        }[header.column.getIsSorted()] ?? null}
+                      </div>
+                    )}
                   </th>
-                );
+                )
               })}
             </tr>
-          );
-        })}
-      </thead>
-      <tbody {...getTableBodyProps()} className="">
-        {rows.map((row, i) => {
-          prepareRow(row);
-          const { key, ...restRowProps } = row.getRowProps();
+          ))}
+        </thead>
+      <tbody className="">
+        {table.getRowModel().rows?.map((row, i) => {
           return (
-            <tr key={key} {...restRowProps} className="odd:bg-slate-200">
-              {row.cells.map((cell) => {
-                const { key, ...restCellProps } = cell.getCellProps();
+            <tr key={row.id} className="odd:bg-slate-200">
+              {row.getVisibleCells().map((cell) => {
                 return (
                   <td
                     className="border-black border p-1"
-                    key={key}
-                    {...restCellProps}
+                    key={cell.id}
                   >
-                    {cell.render("Cell")}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 );
               })}
@@ -82,10 +85,24 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
         })}
       </tbody>
       <tfoot>
-        {footerGroups.map((group, idx) => (
-          <tr key={idx} {...group.getFooterGroupProps()} className="bg-slate-300 py-px text-center font-bold">
-            {group.headers.map((column) => (
-              <td key={idx}{...column.getFooterProps()} className="border-black px-1">{column.render("Footer")}</td>
+        {table.getFooterGroups().map((footerGroup, idx) => (
+          <tr
+            key={footerGroup.id}
+            className="bg-slate-300 py-px text-center font-bold"
+          >
+            {footerGroup.headers.map((header) => (
+              <td
+                key={header.id}
+                colSpan={header.colSpan}
+                className="border-black px-1"
+              >
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                      header.column.columnDef.footer,
+                      header.getContext()
+                    )}{" "}
+              </td>
             ))}
           </tr>
         ))}
@@ -93,6 +110,3 @@ export default function ReactTable({ columns, data, sortBy = 'season' }) {
     </table>
   );
 }
-
-
-
