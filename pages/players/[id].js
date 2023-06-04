@@ -83,8 +83,8 @@ const Players = () => {
     
     let playerStuff = position !== 'G' ? [
       {
-        Header: 'G',
-        accessor: 'g',
+        header: 'G',
+        accessorKey: 'g',
         Footer: info => {
            // Only calculate total visits if rows change
            const total = useMemo(
@@ -101,8 +101,8 @@ const Players = () => {
          },
     },
    {
-        Header: 'A',
-        accessor: 'a',
+        header: 'A',
+        accessorKey: 'a',
         Footer: info => {
            const total = useMemo(
              () =>
@@ -118,8 +118,8 @@ const Players = () => {
          },
     },
       {
-        Header: 'P',
-        accessor: 'pts',
+        header: 'P',
+        accessorKey: 'pts',
         Footer: info => {
            const total = useMemo(
              () =>
@@ -135,8 +135,8 @@ const Players = () => {
          },
     },
     {
-        Header: 'PIM',
-        accessor: 'pim',
+        header: 'PIM',
+        accessorKey: 'pim',
         Footer: info => {
            const total = useMemo(
              () =>
@@ -153,8 +153,8 @@ const Players = () => {
     },
     ] : [
       {
-        Header: 'W',
-        accessor: 'w',
+        header: 'W',
+        accessorKey: 'w',
         Footer: info => {
           const total = useMemo(
             () =>
@@ -170,8 +170,8 @@ const Players = () => {
         },
     },
       {
-        Header: 'L',
-        accessor: 'l',
+        header: 'L',
+        accessorKey: 'l',
         Footer: info => {
           // Only calculate total visits if rows change
           const total = useMemo(
@@ -188,9 +188,9 @@ const Players = () => {
         },
     },
       {
-        Header: 'GAA',
-        accessor: 'gaa',
-        Cell: props => props.value?.toFixed(2) || null,
+        header: 'GAA',
+        accessorKey: 'gaa',
+        cell: props => props.value?.toFixed(2) || null,
         Footer: info => {
           // Only calculate total visits if rows change
           const total = useMemo(
@@ -214,9 +214,9 @@ const Players = () => {
         },
     },
       {
-        Header: 'SV%',
-        accessor: 'svPct',
-        Cell: props => props.value?.toFixed(3) || null,
+        header: 'SV%',
+        accessorKey: 'svPct',
+        cell: props => props.value?.toFixed(3) || null,
         Footer: info => {
           // Only calculate total visits if rows change
           const total = useMemo(
@@ -245,22 +245,22 @@ const Players = () => {
     const columns = useMemo(
         () => [
              {
-                 Header: 'Season',
-                 accessor: 'season',
+                 header: 'Season',
+                 accessorKey: 'season',
              },
              {
-                 Header: 'Team',
-                 accessor: 'team',
-                 Cell: props => props.row.original.team.id ? (<Link href={`/teams/${props.row.original.team.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
+                 header: 'Team',
+                 accessorKey: 'team',
+                 cell: props => props.row.original.team.id ? (<Link href={`/teams/${props.row.original.team.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
              },
             {
-                 Header: 'League',
-                 accessor: 'league',
+                 header: 'League',
+                 accessorKey: 'league',
                  Footer: 'NHL',
              },
             {
-                 Header: 'GP',
-                 accessor: 'gp',
+                 header: 'GP',
+                 accessorKey: 'gp',
                  Footer: info => {
                     // Only calculate total visits if rows change
                     const total = useMemo(

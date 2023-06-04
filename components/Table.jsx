@@ -6,14 +6,31 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  SortingState
+
 } from "@tanstack/react-table";
+import { useState } from "react";
 
 export default function ReactTable({columns, data, sortKey = "season"}) {
+
+  const [sorting, setSorting] = useState([{
+            id: sortKey,
+            desc: true,
+          },])
+
   const table = useReactTable(
     {
       columns,
       data,
+      state: {
+      sorting,
+      },
+      onSortingChange: setSorting,
       getCoreRowModel: getCoreRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      // sortingFns: {
+
+      // }
       // initialState: {
       //   sortBy: [
       //     {
@@ -30,40 +47,39 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
   return (
     <table
       // {...getTableProps()}
-      className="border border-black table-fixed p-4 text-sm m-1"
+      className="border border-black table-fixed p-4 text-sm m-1 max-w-xl"
     >
-      <thead className="bg-blue-200">
-        {table.getHeaderGroups().map((headerGroup) => {
-          // const {key, ...restHeaderGroupProps} =
-          // headerGroup.getHeaderGroupProps();
-          return (
+   <thead>
+          {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                // const {key, ...r÷estColumnProps} = column.getHeaderProps(
-                //   column.getSortByToggleProps()
-                // );
+              {headerGroup.headers.map(header => {
                 return (
                   <th className="p-1" key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                    {header.isPlaceholder ? null : (
+                      <div
+                        {...{
+                          className: header.column.getCanSort()
+                            ? 'cursor-pointer select-none'
+                            : '',
+                          onClick: header.column.getToggleSortingHandler(),
+                        }}
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                    <span>
-                      {/* {column.isSorted
-                        ? column.isSortedDesc
-                          ? " 🔽"
-                          : " 🔼"
-                        : ""} */}
-                    </span>
+                        {{
+                          asc: ' 🔼',
+                          desc: ' 🔽',
+                        }[header.column.getIsSorted()] ?? null}
+                      </div>
+                    )}
                   </th>
-                );
+                )
               })}
             </tr>
-          );
-        })}
-      </thead>
+          ))}
+        </thead>
       <tbody className="">
         {table.getRowModel().rows?.map((row, i) => {
           // prepareRow(row);

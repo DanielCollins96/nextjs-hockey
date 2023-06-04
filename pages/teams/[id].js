@@ -128,7 +128,7 @@ export default function TeamPage({
       </div>
       <div className="p-2 gap-1 flex flex-col lg:flex-row">
         {roster_table_data && rosters && (
-          <div className="border-2 p-1 flex flex-col max-w-lg">
+          <div className="border-2 p-1 flex flex-col max-w-xl">
             <select
               className="flex w-32 justify-end"
               value={seasonId}
@@ -146,7 +146,7 @@ export default function TeamPage({
             <ReactTable
               data={roster_table_data}
               columns={roster_table_columns}
-              sortKey="fullName"
+              sortKey="P"
             />
           </div>
         )}
@@ -199,7 +199,7 @@ export default function TeamPage({
                   // columns={newColumns}
                     columns={team_table_columns}
                   data={team_table_data}
-                  className="inline-block"
+                  sortKey="year"
                 />
               )}
             </div>
@@ -209,8 +209,6 @@ export default function TeamPage({
     </div>
   );
 }
-
-function test(value) {}
 
 export async function getStaticPaths() {
   const path = "https://statsapi.web.nhl.com/api/v1/teams/";
