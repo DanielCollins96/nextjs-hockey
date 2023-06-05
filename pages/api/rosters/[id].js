@@ -26,7 +26,7 @@ export default async (req, res) => {
         let result = await getRoster(id)
 
         let rosters = result.reduce((r,curr) => {
-            (r[curr.season] = r[curr.season] || []).push(curr);
+            (r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] = r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] || []).push(curr);
             return r
         }, {})
 

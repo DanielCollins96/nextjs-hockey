@@ -2,7 +2,6 @@ import Link from "next/link";
 import Head from "next/head";
 import {useRouter} from "next/router";
 import {useState, useMemo} from "react";
-import {useQuery, useQueries} from "react-query";
 import ReactTable from "../../components/Table";
 import {getRoster} from "../../lib/queries";
 import {
@@ -22,11 +21,12 @@ export default function TeamPage({
   rosters,
   seasons,
 }) {
-  const [seasonId, setSeasonId] = useState("20222023");
   const router = useRouter();
-  const {id} = router.query;
+  const {id, season} = router.query;
+console.log({season})
+  const [seasonId, setSeasonId] = useState(season || "2022-23");
 
-  const team_table_data = useMemo(() => yearly_data, []);
+  const team_table_data = useMemo(() => yearly_data, [yearly_data]);
 
   const roster_table_data = useMemo(
     () => rosters?.[seasonId] || [],
@@ -36,15 +36,15 @@ export default function TeamPage({
   const team_table_columns = useMemo(
     () => [
       {
-        accessorKey: "year",
         header: "Year",
+        accessorKey: "year",
       },
         {
-          header: "Wins",
+          header: "W",
           accessorKey: "wins",
         },
         {
-          header: "Losses",
+          header: "L",
           accessorKey: "losses",
         },
         {
@@ -52,11 +52,11 @@ export default function TeamPage({
           accessorKey: "ot",
         },
         {
-          header: "Points",
+          header: "Pts",
           accessorKey: "pts",
         },
         {
-          header: "GPG",
+          header: "GFPG",
           accessorKey: "goalsPerGame",
         },
         {
@@ -74,16 +74,20 @@ export default function TeamPage({
   const roster_table_columns = useMemo(
     () => [
       {
+        header: "Year",
+        accessorKey: "season",
+        cell: props => props.row.original.season.toString().slice(0, 4) + '-' + props.row.original.season.toString().slice(6)
+
+      },
+      {
         header: "Team",
         accessorFn: (d) => d["team.name"],
       },
       {
-        header: "Year",
-        accessorKey: "season",
-      },
-      {
         header: "Name",
         accessorKey: "fullName",
+        cell: props => props.row.original?.id ? (<Link href={`/players/${props.row.original.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
+
       },
       {
         header: "Pos.",
@@ -231,8 +235,11 @@ export async function getStaticProps({params}) {
     const team_data = data.teams;
 
     const roster_data = await getRoster(params.id);
-    let rosters = roster_data.reduce((r, curr) => {
-      (r[curr.season] = r[curr.season] || []).push(curr);
+    let rosters = roster_data
+    // .map(r => r.season = r.season.slice(0,4) +'-'+ r.season.slice(6) )
+    .reduce((r, curr) => {
+      (r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] = r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] || []).push(curr);
+      // (r[curr.season] = r[curr.season] || []).push(curr);
       return r;
     }, {});
 
@@ -249,9 +256,12 @@ export async function getStaticProps({params}) {
         }?expand=team.stats&season=${i}${i + 1}`
       );
       const seasonStats = await res.json();
+
       if (!!seasonStats.teams) {
-        seasons.push({
-          ...seasonStats.teams[0].teamStats[0].splits[0].stat,
+        const keysToRetrieve = ['year', 'wins', 'losses','ot', 'pts', 'goalsPerGame', 'goalsAgainstPerGame', 'place'];
+
+        let season = {
+          ...seasonStats?.teams[0]?.teamStats[0]?.splits[0]?.stat,
           ...{year: i},
           ...{
             wins: parseInt(
@@ -261,7 +271,14 @@ export async function getStaticProps({params}) {
           },
           ...{place: seasonStats.teams[0].teamStats[0].splits[1].stat.wins},
           ...{name: seasonStats.teams[0].name},
-        });
+        }
+
+        const result = keysToRetrieve.reduce((obj, key) => {
+          obj[key] = season[key];
+          return obj;
+        }, {});
+
+        seasons.push(result);
       }
     }
     let season_reqs = await Promise.allSettled(seasons);
