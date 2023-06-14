@@ -2,6 +2,8 @@ import Link from "next/link";
 import Head from "next/head";
 import {useRouter} from "next/router";
 import {useState, useMemo} from "react";
+import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
+
 import ReactTable from "../../components/Table";
 import {getRoster} from "../../lib/queries";
 import {
@@ -23,8 +25,23 @@ export default function TeamPage({
 }) {
   const router = useRouter();
   const {id, season} = router.query;
-console.log({season})
+
   const [seasonId, setSeasonId] = useState(season || "2022-23");
+
+  const handleIncrementSeason = () => {
+    const currentIndex = seasons.indexOf(seasonId);
+    if (currentIndex < seasons.length - 1) {
+      setSeasonId(seasons[currentIndex + 1]);
+    }
+  };
+  const handleDecrementSeason = () => {
+    const currentIndex = seasons.indexOf(seasonId);
+    console.log({currentIndex})
+    console.log({seasonId})
+    if (currentIndex > 0) {
+      setSeasonId(seasons[currentIndex - 1]);
+    }
+  };
 
   const team_table_data = useMemo(() => yearly_data, [yearly_data]);
 
@@ -133,6 +150,7 @@ console.log({season})
       <div className="p-2 gap-1 flex flex-col lg:flex-row">
         {roster_table_data && rosters && (
           <div className="border-2 p-1 flex flex-col max-w-xl">
+          <div className="flex">
             <select
               className="flex w-32 justify-end"
               value={seasonId}
@@ -147,6 +165,10 @@ console.log({season})
                   );
                 })}
             </select>
+            <button onClick={handleIncrementSeason}><MdOutlineChevronLeft size={30} /></button>
+            <button onClick={handleDecrementSeason}><MdOutlineChevronRight size={30}/></button>
+
+          </div>
             <ReactTable
               data={roster_table_data}
               columns={roster_table_columns}
