@@ -158,7 +158,7 @@ const Players = () => {
             {
                  header: 'League',
                  accessorKey: 'league',
-                //  footer: 'NHL',
+                 footer: 'NHL',
              },
             {
                  header: 'GP',
