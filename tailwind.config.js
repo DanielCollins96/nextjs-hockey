@@ -13,6 +13,9 @@ module.exports = {
       minHeight: (theme) => ({
         ...theme('spacing'),
       }),
+      minWidth: {
+      'tbl': '30rem'
+      },
       spacing: {
       '144': '36rem'
       }

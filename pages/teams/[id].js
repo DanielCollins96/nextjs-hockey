@@ -91,16 +91,6 @@ export default function TeamPage({
   const roster_table_columns = useMemo(
     () => [
       {
-        header: "Year",
-        accessorKey: "season",
-        cell: props => props.row.original.season.toString().slice(0, 4) + '-' + props.row.original.season.toString().slice(6)
-
-      },
-      {
-        header: "Team",
-        accessorFn: (d) => d["team.name"],
-      },
-      {
         header: "Name",
         accessorKey: "fullName",
         cell: props => props.row.original?.id ? (<Link href={`/players/${props.row.original.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
@@ -118,27 +108,31 @@ export default function TeamPage({
       {
         header: "G",
         accessorFn: (d) => d["stat.goals"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "A",
         accessorFn: (d) => d["stat.assists"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "P",
         accessorFn: (d) => d["stat.points"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "PIM",
         accessorFn: (d) => d["stat.pim"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "+/-",
         accessorFn: (d) => d["stat.plusMinus"],
-        // className: "text-right"
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
     ],
@@ -164,7 +158,7 @@ export default function TeamPage({
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {roster_table_data && rosters && (
-          <div className="border-2 p-1 flex flex-col w-144 max-w-2xl">
+          <div className="border-2 p-1 flex flex-col min-w-tbl max-w-2xl">
           <div className="flex">
             <select
               className="flex w-32 justify-end"
