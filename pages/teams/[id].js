@@ -113,18 +113,33 @@ export default function TeamPage({
       {
         header: "GP",
         accessorFn: (d) => d["stat.games"],
+        cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "G",
         accessorFn: (d) => d["stat.goals"],
+        cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "A",
         accessorFn: (d) => d["stat.assists"],
+        cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "P",
         accessorFn: (d) => d["stat.points"],
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "PIM",
+        accessorFn: (d) => d["stat.pim"],
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "+/-",
+        accessorFn: (d) => d["stat.plusMinus"],
+        // className: "text-right"
+        cell: props => <p className="text-right">{props.getValue()}</p>
       },
     ],
     []
@@ -147,9 +162,9 @@ export default function TeamPage({
           <a className="hover:text-blue-700">{team_data[0].officialSiteUrl}</a>
         </Link>
       </div>
-      <div className="p-2 gap-1 flex flex-col lg:flex-row">
+      <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {roster_table_data && rosters && (
-          <div className="border-2 p-1 flex flex-col max-w-xl">
+          <div className="border-2 p-1 flex flex-col w-144 max-w-2xl">
           <div className="flex">
             <select
               className="flex w-32 justify-end"

@@ -13,6 +13,9 @@ module.exports = {
       minHeight: (theme) => ({
         ...theme('spacing'),
       }),
+      spacing: {
+      '144': '36rem'
+      }
     },
   },
   variants: {
