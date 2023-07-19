@@ -27,13 +27,14 @@ const Players = () => {
         const playerStats = {}
         if (position == 'G') {
             playerStats = playerRes.stats[0].splits.map((szn) => {
+            const league = szn.league.name === 'National Hockey League' ? 'NHL' : szn.league.name;
               return (
                   {
                       season: szn.season.substring(0,4)+'-'+szn.season.substring(6,8),
                       id: szn.team?.id,
                       team: {name: szn.team.name, id: szn.team?.id},
                       // team: szn.team.name,
-                      league: szn.league.name,
+                      league: league,
                       gp: szn.stat.games,
                       w: szn.stat.wins,
                       l: szn.stat.losses,
@@ -45,13 +46,14 @@ const Players = () => {
           })
         } else {
             playerStats = playerRes.stats[0].splits.map((szn) => {
+            const league = szn.league.name === 'National Hockey League' ? 'NHL' : szn.league.name;
             return (
                 {
                     season: szn.season.substring(0,4)+'-'+szn.season.substring(6,8),
                     team: {name: szn.team.name, id: szn.team?.id},
 
                     // team: szn.team.name,
-                    league: szn.league.name,
+                    league: league,
                     gp: szn.stat.games,
                     g: szn.stat.goals,
                     a: szn.stat.assists,
@@ -85,37 +87,37 @@ const Players = () => {
       {
         header: 'G',
         accessorKey: 'g',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('g'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('g'), 0),
     },
    {
         header: 'A',
         accessorKey: 'a',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('a'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('a'), 0),
 
     },
       {
         header: 'P',
         accessorKey: 'pts',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('pts'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pts'), 0),
 
     },
     {
         header: 'PIM',
         accessorKey: 'pim',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('pim'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pim'), 0),
 
     },
     ] : [
       {
         header: 'W',
         accessorKey: 'w',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('w'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('w'), 0),
 
     },
       {
         header: 'L',
         accessorKey: 'l',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('l'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('l'), 0),
 
     },
       {
@@ -123,7 +125,7 @@ const Players = () => {
         accessorKey: 'gaa',
         cell: props => props.getValue()?.toFixed(2) || null,
         footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League'));
+          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
           let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
           let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('gaa')), 0)
           let total = totalGaa / gp
@@ -135,7 +137,7 @@ const Players = () => {
         accessorKey: 'svPct',
         cell: props => props.getValue()?.toFixed(3) || null,
         footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League'));
+          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
           let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
           let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('svPct')), 0)
           let total = totalSvPct / gp
@@ -163,7 +165,7 @@ const Players = () => {
             {
                  header: 'GP',
                  accessorKey: 'gp',
-                 footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('National Hockey League')).reduce((total, row) => total + row.getValue('gp'), 0),
+                 footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('gp'), 0),
              },
             ...playerStuff
         ],
