@@ -158,7 +158,7 @@ export default function TeamPage({
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {roster_table_data && rosters && (
-          <div className="border-2 p-1 flex flex-col min-w-tbl max-w-2xl">
+          <div className="border-2  w-screen p-1 flex flex-col min-w-tbl max-w-2xl">
           <div className="flex">
             <select
               className="flex w-32 justify-end"
