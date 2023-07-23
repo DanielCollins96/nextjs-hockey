@@ -59,6 +59,7 @@ const Players = () => {
                     a: szn.stat.assists,
                     pts: szn.stat.points,
                     pim: szn.stat.pim,
+                    plusMinus: szn.stat.plusMinus
                 }
             )
         })
@@ -105,7 +106,11 @@ const Players = () => {
         header: 'PIM',
         accessorKey: 'pim',
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pim'), 0),
-
+    },
+    {
+        header: '+/-',
+        accessorKey: 'plusMinus',
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('plusMinus'), 0),
     },
     ] : [
       {
@@ -155,7 +160,7 @@ const Players = () => {
              {
                  header: 'Team',
                  accessorKey: 'team',
-                 cell: props => props.row.original.team.id ? (<Link href={`/teams/${props.row.original.team.id}?season=${props.row.original.season}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
+                 cell: props => props.row.original.league == 'NHL' ? (<Link href={`/teams/${props.row.original.team.id}?season=${props.row.original.season}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
              },
             {
                  header: 'League',
