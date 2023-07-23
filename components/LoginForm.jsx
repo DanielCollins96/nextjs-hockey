@@ -20,18 +20,16 @@ export default function LoginForm() {
     const { isSubmitting } = formState;
 
     const onSubmit = async (event) => {
-        console.log(event);
         setSubmitError('')
         try {
             let user = await signIn(event)
-            console.log(user)
+
             if (user.username) {
                 // addToast('Logged In Successfully', { appearance: 'success', autoDismiss: true })
                 setUser(user)
                 router.push('/profile')
             } else {
                 try {
-                    console.log(user)
                     setSubmitError(user.message)
                 } catch(e) {
                     console.log(e);
