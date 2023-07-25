@@ -90,28 +90,28 @@ const Players = () => {
         accessorKey: 'g',
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('g'), 0),
     },
-   {
-        header: 'A',
-        accessorKey: 'a',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('a'), 0),
+//    {
+//         header: 'A',
+//         accessorKey: 'a',
+//         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('a'), 0),
 
-    },
-      {
-        header: 'P',
-        accessorKey: 'pts',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pts'), 0),
+//     },
+//       {
+//         header: 'P',
+//         accessorKey: 'pts',
+//         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pts'), 0),
 
-    },
-    {
-        header: 'PIM',
-        accessorKey: 'pim',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pim'), 0),
-    },
-    {
-        header: '+/-',
-        accessorKey: 'plusMinus',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('plusMinus'), 0),
-    },
+//     },
+//     {
+//         header: 'PIM',
+//         accessorKey: 'pim',
+//         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('pim'), 0),
+//     },
+//     {
+//         header: '+/-',
+//         accessorKey: 'plusMinus',
+//         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('plusMinus'), 0),
+//     },
     ] : [
       {
         header: 'W',
@@ -119,36 +119,36 @@ const Players = () => {
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('w'), 0),
 
     },
-      {
-        header: 'L',
-        accessorKey: 'l',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('l'), 0),
+    //   {
+    //     header: 'L',
+    //     accessorKey: 'l',
+    //     footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('l'), 0),
 
-    },
-      {
-        header: 'GAA',
-        accessorKey: 'gaa',
-        cell: props => props.getValue()?.toFixed(2) || null,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
-          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('gaa')), 0)
-          let total = totalGaa / gp
-          return total.toFixed(2) || null
-        }
-      },
-      {
-        header: 'SV%',
-        accessorKey: 'svPct',
-        cell: props => props.getValue()?.toFixed(3) || null,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
-          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('svPct')), 0)
-          let total = totalSvPct / gp
-          return total.toFixed(3) || null
-        }
-   },
+    // },
+    //   {
+    //     header: 'GAA',
+    //     accessorKey: 'gaa',
+    //     cell: props => props.getValue()?.toFixed(2) || null,
+    //     footer: ({ table }) => { 
+    //       const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
+    //       let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
+    //       let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('gaa')), 0)
+    //       let total = totalGaa / gp
+    //       return total.toFixed(2) || null
+    //     }
+    //   },
+    //   {
+    //     header: 'SV%',
+    //     accessorKey: 'svPct',
+    //     cell: props => props.getValue()?.toFixed(3) || null,
+    //     footer: ({ table }) => { 
+    //       const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
+    //       let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
+    //       let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('svPct')), 0)
+    //       let total = totalSvPct / gp
+    //       return total.toFixed(3) || null
+    //     }
+    // },
     ]
 
     const columns = useMemo(
