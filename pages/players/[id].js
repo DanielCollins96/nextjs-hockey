@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
-// import Image from 'next/image'
+import {getAllPlayerIds} from '../../lib/queries'
 import ReactTable from '../../components/Table';
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
@@ -87,7 +87,8 @@ const Players = () => {
     let playerStuff = position !== 'G' ? [
       {
         header: 'G',
-        accessorKey: 'g',
+        accessorFn: (d) => d["stat.goals"],
+        // accessorKey: 'g',
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('g'), 0),
     },
 //    {
@@ -209,8 +210,27 @@ const Players = () => {
     )
 };
 
-// export async function getStaticProps() {
-    
+// export async function getStaticPaths() {
+//     const ids = await getAllPlayerIds()
+//     console.log({ids});
+//     let paths = ids?.map((id) => {
+//         return {
+//             params: {
+//                 id: id.toString()
+//             }
+//         }
+//     })
+//     return {
+//         paths,
+//         fallback: false
+//     }
 // }
+
+// export async function getStaticProps({params}) {
+//     return {
+//         props: {
+//             id: params.id
+//             }
+// }}
 
 export default Players;
