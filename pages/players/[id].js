@@ -13,11 +13,8 @@ const Players = ({playerId, stats, person}) => {
     const router = useRouter()
     const { id } = router.query
 
-console.log({person})
-console.log({stats})
-        if (router.isFallback) {
-            return <div>PLayer Not Found...</div>
-        }
+    console.log({person})
+    console.log({stats})
     const position = person?.primaryPosition?.code || 'C';
     
     let playerStuff = position !== 'G' ? [
@@ -120,6 +117,11 @@ console.log({stats})
     const data = useMemo(
         () => stats
     , [])
+
+    // if (router.isFallback) {
+    //     return <div>Player Not Found...</div>
+    // }
+
     return (
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
@@ -157,7 +159,7 @@ export async function getStaticPaths() {
     })
     return {
         paths,
-        fallback: true
+        fallback: false
     }
 }
 

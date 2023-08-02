@@ -257,6 +257,7 @@ export async function getStaticPaths() {
     fallback: false,
   };
 }
+
 export async function getStaticProps({params}) {
   const fetchSeasons = async () => {
     const team = await fetch(
