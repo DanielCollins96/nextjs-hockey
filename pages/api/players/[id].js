@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const { id } = req.query
     const player = await getPlayer(id)
     if(player.length === 0) return res.status(404).json({error_message: "Player not found"})
-    console.log({player});
+    // console.log({player});
 
     let result = await getPlayerStats(id)
     res.status(200).json({player, playerStats: result})

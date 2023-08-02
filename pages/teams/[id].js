@@ -36,8 +36,7 @@ export default function TeamPage({
   };
   const handleDecrementSeason = () => {
     const currentIndex = seasons.indexOf(seasonId);
-    console.log({currentIndex})
-    console.log({seasonId})
+
     if (currentIndex > 0) {
       setSeasonId(seasons[currentIndex - 1]);
     }

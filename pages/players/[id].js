@@ -13,8 +13,8 @@ const Players = ({playerId, stats, person}) => {
     const router = useRouter()
     const { id } = router.query
 
-    console.log({person})
-    console.log({stats})
+    // console.log({person})
+    // console.log({stats})
     const position = person?.primaryPosition?.code || 'C';
     
     let playerStuff = position !== 'G' ? [
@@ -150,10 +150,10 @@ const Players = ({playerId, stats, person}) => {
 export async function getStaticPaths() {
 
     const ids = await getAllPlayerIds()
-    let paths = ids?.map((id) => {
+    let paths = ids?.map((res) => {
         return {
             params: {
-                id: id.toString()
+                id: res.id
             }
         }
     })
