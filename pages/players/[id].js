@@ -14,8 +14,8 @@ const Players = ({playerId, stats, person, imageData}) => {
     const { id } = router.query
 
     // console.log({person})
-    console.log({imageData})
-    const position = person?.primaryPosition?.code || 'C';
+    console.log({person:person['primaryPosition.code']})
+    const position = person['primaryPosition.code'] || 'C';
     
     let playerStuff = position !== 'G' ? [
       {
@@ -52,8 +52,8 @@ const Players = ({playerId, stats, person, imageData}) => {
     ] : [
       {
         header: 'W',
-        accessorKey: 'w',
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('w'), 0),
+        accessorFn: (d) => d['stat.wins'],
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('w'), 0),
 
     },
     //   {
@@ -157,7 +157,7 @@ export async function getStaticPaths() {
     })
     return {
         paths,
-        fallback: false
+        fallback: true
     }
 }
 
