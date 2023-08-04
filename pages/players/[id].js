@@ -8,13 +8,13 @@ import ReactTable from '../../components/Table';
 // https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
 
 
-const Players = ({playerId, stats, person}) => {
+const Players = ({playerId, stats, person, imageData}) => {
 
     const router = useRouter()
     const { id } = router.query
 
     // console.log({person})
-    // console.log({stats})
+    console.log({imageData})
     const position = person?.primaryPosition?.code || 'C';
     
     let playerStuff = position !== 'G' ? [
@@ -97,7 +97,8 @@ const Players = ({playerId, stats, person}) => {
              {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
-                //  cell: props => props.row.original.league == 'NHL' ? (<Link href={`/teams/${props.row.original.team.id}?season=${props.row.original.season}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.team.name}</a></Link>) : (props.row.original.team.name)
+                //  cell: (props) => props.getValue(),
+                 cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link href={`/teams/${row.original['team.id']}?season=${row.original.season}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</a></Link>) : (row.original['team.name'])
              },
             {
                  header: 'League',
@@ -107,8 +108,8 @@ const Players = ({playerId, stats, person}) => {
              },
             {
                  header: 'GP',
-                accessorFn: (d) => d["stat.games"],
-            //      footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('gp'), 0),
+                 accessorFn: (d) => d["stat.games"],
+                 footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
              },
             ...playerStuff
         ],
@@ -117,10 +118,6 @@ const Players = ({playerId, stats, person}) => {
     const data = useMemo(
         () => stats
     , [])
-
-    // if (router.isFallback) {
-    //     return <div>Player Not Found...</div>
-    // }
 
     return (
         <div className="flex flex-col sm:flex-row mt-2">
@@ -132,8 +129,9 @@ const Players = ({playerId, stats, person}) => {
      crossOrigin="anonymous"></script>
             </Head>
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
-                <img src={`http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`} alt="" />
+                <img src={imageData} alt="" />
                 <div className="w-56 p-1 m-1">
+
                 <p className="text-2xl font-bold">{person?.fullName}</p>
                 <p>Birth Date: {person?.birthDate}</p>
                 <p>Nationality: {person?.birthCountry}</p>
@@ -167,12 +165,21 @@ export async function getStaticProps({params}) {
     const { id } = params
     const stats = await getPlayerStats(id)
     const person = await getPlayer(id)
-    // console.log({person});
+    let url = `http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`
+    let imageData = null
+    try {
+        const response = await fetch(url);
+        const imageBuffer = await response.arrayBuffer();
+        imageData = `data:image/jpeg;base64,${Buffer.from(imageBuffer).toString('base64')}`;
+    } catch (error) {
+        console.error('Error fetching image data:', error);
+    }
     return {
         props: {
             playerId: params.id,
             stats,
-            person: person[0]
+            person: person[0],
+            imageData
             }
 }}
 
