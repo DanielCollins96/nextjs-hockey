@@ -13,15 +13,12 @@ const Players = ({playerId, stats, person, imageData}) => {
     const router = useRouter()
     const { id } = router.query
 
-    // console.log({person})
-    console.log({person:person['primaryPosition.code']})
-    const position = person['primaryPosition.code'] || 'C';
-    
+    const position = person && person['primaryPosition.code'] ? person['primaryPosition.code'] : 'C';
+
     let playerStuff = position !== 'G' ? [
       {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
-        // accessorKey: 'g',
         footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
@@ -36,7 +33,6 @@ const Players = ({playerId, stats, person, imageData}) => {
         accessorFn: (d) => d["stat.points"],
         footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
-
     },
     {
         header: 'PIM',
@@ -54,30 +50,28 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: 'W',
         accessorFn: (d) => d['stat.wins'],
         // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('w'), 0),
-
     },
-    //   {
-    //     header: 'L',
-    //     accessorKey: 'l',
-    //     footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('l'), 0),
-
-    // },
-    //   {
-    //     header: 'GAA',
-    //     accessorKey: 'gaa',
-    //     cell: props => props.getValue()?.toFixed(2) || null,
+      {
+        header: 'L',
+        accessorFn: (d) => d['stat.losses'],
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('l'), 0),
+    },
+      {
+        header: 'GAA',
+        accessorFn: (d) => d['stat.goalAgainstAverage'],
+        cell: props => props.getValue()?.toFixed(2) || null,
     //     footer: ({ table }) => { 
     //       const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
     //       let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
     //       let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('gaa')), 0)
     //       let total = totalGaa / gp
     //       return total.toFixed(2) || null
-    //     }
-    //   },
-    //   {
-    //     header: 'SV%',
-    //     accessorKey: 'svPct',
-    //     cell: props => props.getValue()?.toFixed(3) || null,
+        // }
+      },
+      {
+        header: 'SV%',
+        accessorFn: (d) => d['stat.savePercentage'],
+        cell: props => props.getValue()?.toFixed(3) || null,
     //     footer: ({ table }) => { 
     //       const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
     //       let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
@@ -85,7 +79,7 @@ const Players = ({playerId, stats, person, imageData}) => {
     //       let total = totalSvPct / gp
     //       return total.toFixed(3) || null
     //     }
-    // },
+    },
     ]
 
     const columns = useMemo(
@@ -119,6 +113,13 @@ const Players = ({playerId, stats, person, imageData}) => {
         () => stats
     , [])
 
+    if (!person) {
+        return <p className='text-lg font-bold text-center'>Player Not Found... Return {' '}
+    <Link href="/">
+      <a className='text-blue-600 hover:text-blue-800'>Home</a>
+    </Link>
+        </p>
+    }
     return (
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
@@ -140,7 +141,7 @@ const Players = ({playerId, stats, person, imageData}) => {
                 <p>Age: {person?.currentAge}</p>
                 </div>
             </div>
-            <ReactTable columns={columns} data={stats} />
+            {stats ? <ReactTable columns={columns} data={stats} /> : <h3>Loading...</h3>} 
         </div>
     )
 };
@@ -163,8 +164,22 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
     const { id } = params
+    let person = null
+    try {
+        person = await getPlayer(id)
+        if (person.length == 0) {
+            return {
+            props: {
+                playerId: params.id,
+                stats: null,
+                person: null,
+                }
+            }
+        }
+    } catch (error) {
+        console.log(error);
+    }
     const stats = await getPlayerStats(id)
-    const person = await getPlayer(id)
     let url = `http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`
     let imageData = null
     try {
@@ -178,7 +193,7 @@ export async function getStaticProps({params}) {
         props: {
             playerId: params.id,
             stats,
-            person: person[0],
+            person: person ? person[0] : null,
             imageData
             }
 }}
