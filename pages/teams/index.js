@@ -40,7 +40,7 @@ export default function Teams({playerData}) {
                 <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
             </div>
             {/* <div className="flex flex-wrap justify-center my-2 mx-4"> */}
-            <div className="grid my-2 mx-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
                 {
                     filteredPlayers &&
                     filteredPlayers

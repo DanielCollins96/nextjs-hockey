@@ -36,8 +36,7 @@ export default function TeamPage({
   };
   const handleDecrementSeason = () => {
     const currentIndex = seasons.indexOf(seasonId);
-    console.log({currentIndex})
-    console.log({seasonId})
+
     if (currentIndex > 0) {
       setSeasonId(seasons[currentIndex - 1]);
     }
@@ -158,7 +157,7 @@ export default function TeamPage({
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {roster_table_data && rosters && (
-          <div className="border-2  w-screen p-1 flex flex-col min-w-tbl max-w-2xl">
+          <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
           <div className="flex">
             <select
               className="flex w-32 justify-end"
@@ -257,6 +256,7 @@ export async function getStaticPaths() {
     fallback: false,
   };
 }
+
 export async function getStaticProps({params}) {
   const fetchSeasons = async () => {
     const team = await fetch(

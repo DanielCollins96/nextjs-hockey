@@ -16,7 +16,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
   const [sorting, setSorting] = useState([{
             id: sortKey,
             desc: true,
-          },])
+          },]);
 
   const table = useReactTable(
     {
@@ -33,7 +33,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
 
   return (
     <table
-      className="border border-black table-fixed p-4 text-sm m-1 max-w-xl"
+      className="border border-black p-2 m-1 max-w-xl"
     >
    <thead>
           {table.getHeaderGroups().map(headerGroup => (
@@ -54,10 +54,12 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        <span className="text-sm">
                         {{
                           asc: ' 🔼',
                           desc: ' 🔽',
                         }[header.column.getIsSorted()] ?? null}
+                        </span>
                       </div>
                     )}
                   </th>
@@ -69,13 +71,13 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
       <tbody className="">
         {table.getRowModel().rows?.map((row, i) => {
 
-          const isNHL = row?.original?.league == 'NHL'
+          const isNHL = row?.original['league.name'] == 'National Hockey League'
           return (
             <tr key={row.id} className={isNHL ? "bg-slate-200" : ""}>
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
-                    className="border-black border p-1"
+                    className="border-black border px-1"
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
