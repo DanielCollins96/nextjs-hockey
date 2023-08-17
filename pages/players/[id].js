@@ -103,6 +103,7 @@ const Players = ({playerId, stats, person, imageData}) => {
             {
                  header: 'GP',
                  accessorFn: (d) => d["stat.games"],
+                 cell: props => <p className="text-right">{props.getValue()}</p>,
                  footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
              },
             ...playerStuff

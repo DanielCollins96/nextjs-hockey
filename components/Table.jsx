@@ -33,7 +33,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
 
   return (
     <table
-      className="border border-black p-4 m-1 max-w-xl"
+      className="border border-black p-2 m-1 max-w-xl"
     >
    <thead>
           {table.getHeaderGroups().map(headerGroup => (
@@ -54,10 +54,12 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        <span className="text-sm">
                         {{
                           asc: ' 🔼',
                           desc: ' 🔽',
                         }[header.column.getIsSorted()] ?? null}
+                        </span>
                       </div>
                     )}
                   </th>
@@ -75,7 +77,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
-                    className="border-black border p-1"
+                    className="border-black border px-1"
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
