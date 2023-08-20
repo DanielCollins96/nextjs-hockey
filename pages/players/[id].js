@@ -19,66 +19,84 @@ const Players = ({playerId, stats, person, imageData}) => {
       {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('G'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
    {
         header: 'A',
         accessorFn: (d) => d["stat.assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('A'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
       {
         header: 'P',
         accessorFn: (d) => d["stat.points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('P'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
     {
         header: 'PIM',
         accessorFn: (d) => d["stat.pim"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('PIM'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
     {
         header: '+/-',
         accessorFn: (d) => d["stat.plusMinus"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('+/-'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>    },
     ] : [
       {
         header: 'W',
         accessorFn: (d) => d['stat.wins'],
-        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('w'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('W'), 0),
     },
       {
         header: 'L',
         accessorFn: (d) => d['stat.losses'],
-        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL')).reduce((total, row) => total + row.getValue('l'), 0),
+        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    ).reduce((total, row) => total + row.getValue('L'), 0),
     },
       {
         header: 'GAA',
         accessorFn: (d) => d['stat.goalAgainstAverage'],
         cell: props => props.getValue()?.toFixed(2) || null,
-    //     footer: ({ table }) => { 
-    //       const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
-    //       let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
-    //       let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('gaa')), 0)
-    //       let total = totalGaa / gp
-    //       return total.toFixed(2) || null
-        // }
+        footer: ({ table }) => { 
+          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    )
+          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
+          let total = totalGaa / gp
+          return total.toFixed(2) || null
+        }
       },
       {
         header: 'SV%',
         accessorFn: (d) => d['stat.savePercentage'],
         cell: props => props.getValue()?.toFixed(3) || null,
-    //     footer: ({ table }) => { 
-    //       const nhlGames = table.getFilteredRowModel().rows?.filter((row) => row.getValue('gp') !== null && row.getValue('league').includes('NHL'));
-    //       let gp =  nhlGames.reduce((total, row) => total + row.getValue('gp'), 0)
-    //       let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('gp') * row.getValue('svPct')), 0)
-    //       let total = totalSvPct / gp
-    //       return total.toFixed(3) || null
-    //     }
+        footer: ({ table }) => { 
+          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    )
+          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
+          let total = totalSvPct / gp
+          return total.toFixed(3) || null
+        }
     },
     ]
 
@@ -104,7 +122,13 @@ const Players = ({playerId, stats, person, imageData}) => {
                  header: 'GP',
                  accessorFn: (d) => d["stat.games"],
                  cell: props => <p className="text-right">{props.getValue()}</p>,
-                 footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
+                 footer: ({ table }) => {
+                   const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
+                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                    );
+
+                    return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)
+                },    
              },
             ...playerStuff
         ],
