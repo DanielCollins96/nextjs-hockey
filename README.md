@@ -6,19 +6,17 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## TODOs
 
+- [x] **Get 22/23 stats into DB**
+- [ ] **Playoff Stats**
+- [ ] unit/integration tests
 - [ ] user file uploads
-- [x] add links into tables
 - [ ] add forum to team page and news stories
 - [ ] add tags to posts
 - [x] goalie stats
-- [x] refresh of player/team page leads to 404
-- [x] update team page visuals
-
 - [ ] Add Dark Mode
-- [ ] Playoff Stats
 - [ ] Player search page (All players by name/team)
 - [ ] Caphit scrape to add to page
-- [ ] Get 22/23 stats into DB
+- [ ] Save Season in Teams/ Query Params
 
 ## Getting Started
 

@@ -26,6 +26,8 @@ export default function TeamPage({
   const router = useRouter();
   const {id, season} = router.query;
 
+  console.log({season});
+
   const [seasonId, setSeasonId] = useState(season || "2022-23");
 
   const handleIncrementSeason = () => {
@@ -36,7 +38,6 @@ export default function TeamPage({
   };
   const handleDecrementSeason = () => {
     const currentIndex = seasons.indexOf(seasonId);
-
     if (currentIndex > 0) {
       setSeasonId(seasons[currentIndex - 1]);
     }
@@ -102,7 +103,8 @@ export default function TeamPage({
       {
         header: "GP",
         accessorFn: (d) => d["stat.games"],
-        cell: props => <p className="text-right">{props.getValue()}</p>
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
       },
       {
         header: "G",
@@ -159,6 +161,7 @@ export default function TeamPage({
         {roster_table_data && rosters && (
           <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
           <div className="flex">
+          <label className="px-1 text-lg" htmlFor="season">Season:</label>
             <select
               className="flex w-32 justify-end"
               value={seasonId}
@@ -253,7 +256,7 @@ export async function getStaticPaths() {
   }));
   return {
     paths,
-    fallback: false,
+    fallback: true,
   };
 }
 

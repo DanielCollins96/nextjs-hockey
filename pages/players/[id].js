@@ -220,7 +220,8 @@ export async function getStaticProps({params}) {
             stats,
             person: person ? person[0] : null,
             imageData
-            }
+            },
+            revalidate: 43200
 }}
 
 export default Players;
