@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Head from "next/head";
 import {useRouter} from "next/router";
-import {useState, useMemo} from "react";
+import {useState, useMemo, useEffect} from "react";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 
 import ReactTable from "../../components/Table";
@@ -29,6 +29,13 @@ export default function TeamPage({
   console.log({season});
 
   const [seasonId, setSeasonId] = useState(season || "2022-23");
+
+  useEffect(() => {
+    router.push({
+      query: { id, season: seasonId }
+    }, undefined, { shallow: true }); // Shallow routing to keep scroll position
+  }, [seasonId]);
+
 
   const handleIncrementSeason = () => {
     const currentIndex = seasons.indexOf(seasonId);
@@ -151,10 +158,10 @@ export default function TeamPage({
         ></script>
       </Head>
       <div className="text-center border border-black rounded p-2">
-        <p className="text-lg">{team_data[0].name}</p>
-        <p>{team_data[0].firstYearOfPlay}</p>
-        <Link href={`${team_data[0].officialSiteUrl}`}>
-          <a className="hover:text-blue-700">{team_data[0].officialSiteUrl}</a>
+        <p className="text-lg">{team_data[0]?.name}</p>
+        <p>{team_data[0]?.firstYearOfPlay}</p>
+        <Link href={`${team_data[0]?.officialSiteUrl}`}>
+          <a className="hover:text-blue-700">{team_data[0]?.officialSiteUrl}</a>
         </Link>
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
@@ -256,7 +263,7 @@ export async function getStaticPaths() {
   }));
   return {
     paths,
-    fallback: true,
+    fallback: false,
   };
 }
 
