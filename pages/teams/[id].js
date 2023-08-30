@@ -36,6 +36,10 @@ export default function TeamPage({
     }, undefined, { shallow: true }); // Shallow routing to keep scroll position
   }, [seasonId]);
 
+  useEffect(() => {
+    setSeasonId(season)
+  }, [season]);
+
 
   const handleIncrementSeason = () => {
     const currentIndex = seasons.indexOf(seasonId);
