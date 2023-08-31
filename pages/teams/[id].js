@@ -25,21 +25,11 @@ export default function TeamPage({
 }) {
   const router = useRouter();
   const {id, season} = router.query;
-
-  console.log({season});
-
   const [seasonId, setSeasonId] = useState(season || "2022-23");
-
-  useEffect(() => {
-    router.push({
-      query: { id, season: seasonId }
-    }, undefined, { shallow: true }); // Shallow routing to keep scroll position
-  }, [seasonId]);
 
   useEffect(() => {
     setSeasonId(season)
   }, [season]);
-
 
   const handleIncrementSeason = () => {
     const currentIndex = seasons.indexOf(seasonId);
@@ -176,8 +166,14 @@ export default function TeamPage({
             <select
               className="flex w-32 justify-end"
               value={seasonId}
-              onChange={(event) => setSeasonId(event.target.value)}
-            >
+              onChange={(event) => {
+                const newSeasonId = event.target.value;
+                setSeasonId(newSeasonId);
+                router.push({
+                  pathname: router.pathname, // Current path
+                  query: { ...router.query, season: newSeasonId }, // Updated query parameter
+                },undefined,{shallow: true});
+              }}>
               {seasons &&
                 seasons?.map((szn) => {
                   return (
