@@ -28,7 +28,7 @@ export default function TeamPage({
   const [seasonId, setSeasonId] = useState(season || "2022-23");
 
   useEffect(() => {
-    setSeasonId(season)
+    setSeasonId(season || "2022-23")
   }, [season]);
 
   const handleIncrementSeason = () => {
@@ -289,6 +289,7 @@ export async function getStaticProps({params}) {
       years = Object.keys(rosters);
     }
 
+
     let seasons = [];
     for (let i = 2013; i <= 2022; i++) {
       const res = await fetch(
@@ -328,6 +329,7 @@ export async function getStaticProps({params}) {
         return season.value;
       }
     });
+
     let team_name = seasons[0]?.name || "Team";
     return {
       props: {
