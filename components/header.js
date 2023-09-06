@@ -22,11 +22,11 @@ const Header = () => {
                             <a className="text-xl">Teams</a>
                         </Link>
                     </li>
-                    {/* <li className="my-auto px-3 py-1">
+                    <li className="my-auto px-3 py-1">
                         <Link href="/players">
                             <a className="text-xl">Players</a>
                         </Link>
-                    </li> */}
+                    </li>
                     { !user ?
                     <li>
                         <Link href="/login" passHref>

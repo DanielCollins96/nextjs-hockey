@@ -9,7 +9,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 - [x] **Get 22/23 stats into DB**
 - [x] **Save Season in Teams/ Query Params**
 - [ ] **Playoff Stats**
-- [ ] unit/integration tests
+- [ ] unit/integration tests (CI/CD Build)
 - [ ] user file uploads
 - [ ] add forum to team page and news stories
 - [ ] add tags to posts
