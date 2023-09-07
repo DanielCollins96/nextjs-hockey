@@ -11,6 +11,7 @@ try {
     FROM staging1.player_stats_new ps
     INNER JOIN staging1.player p
     ON p.id = ps."person.id" AND p.active = true AND ps.season = 20222023
+    WHERE ps."league.id" = 133
     ORDER BY ps."stat.points" DESC NULLS LAST,ps."stat.goals" DESC NULLS LAST
     LIMIT 100
     `
