@@ -6,11 +6,12 @@ try {
     
     const sql = `
 
-    SELECT p."fullName", p.id, p."primaryPosition.code", ps."season", ps."team.name", ps."stat.goals", ps."stat.assists", ps."stat.points"
+    SELECT     ROW_NUMBER() OVER (ORDER BY ps."stat.points" DESC NULLS LAST, ps."stat.goals" DESC NULLS LAST) AS row_number,
+    p."fullName", p.id, p."primaryPosition.code", ps."season", ps."team.name", ps."stat.goals", ps."stat.games",ps."stat.assists", ps."stat.points"
     FROM staging1.player_stats_new ps
     INNER JOIN staging1.player p
     ON p.id = ps."person.id" AND p.active = true AND ps.season = 20222023
-    ORDER BY ps."stat.goals" DESC NULLS LAST, ps."stat.points" DESC NULLS LAST
+    ORDER BY ps."stat.points" DESC NULLS LAST,ps."stat.goals" DESC NULLS LAST
     LIMIT 100
     `
     let result = await conn.query(sql)
