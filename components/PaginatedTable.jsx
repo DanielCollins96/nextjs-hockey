@@ -18,21 +18,28 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
             desc: true,
           },]);
 
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 25,
+    })
+
   const table = useReactTable(
     {
       columns,
       data,
       state: {
       sorting,
+      pagination,
       },
+      onPaginationChange: setPagination,
       onSortingChange: setSorting,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
-      // getPaginationRowModel: getPaginationRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
     }
   );
 
-  return (
+  return (<>
     <table
       className="border border-black p-2 m-1 max-w-xl"
     >
@@ -113,5 +120,45 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
         ))}
       </tfoot>
     </table>
+    <div className="flex items-center gap-2">
+        <button
+          className="border rounded p-1"
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+        >
+          {'<<'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          {'<'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          {'>'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          disabled={!table.getCanNextPage()}
+        >
+          {'>>'}
+        </button>
+                <span className="flex items-center gap-1">
+          <div>Page</div>
+          <strong>
+            {table.getState().pagination.pageIndex + 1} of{' '}
+            {table.getPageCount()}
+          </strong>
+        </span>
+              {/* <div>{table.getRowModel().rows.length} Rows</div> */}
+
+        </div>
+        </>
   );
 }
