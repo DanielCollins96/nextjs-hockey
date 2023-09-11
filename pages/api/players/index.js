@@ -5,7 +5,6 @@ console.log('whwhhwhwhwhhwhwhw');
 try {
     
     const sql = `
-
     SELECT     ROW_NUMBER() OVER (ORDER BY ps."stat.points" DESC NULLS LAST, ps."stat.goals" DESC NULLS LAST) AS row_number,
     p."fullName", p.id, p."primaryPosition.code", ps."season", ps."team.name", ps."stat.goals", ps."stat.games",ps."stat.assists", ps."stat.points"
     FROM staging1.player_stats_new ps

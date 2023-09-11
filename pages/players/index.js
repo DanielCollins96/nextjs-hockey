@@ -3,7 +3,7 @@ import { useQuery, useQueries } from 'react-query';
 import TeamBox from '../../components/TeamBox'; 
 import Link from 'next/link';
 
-import ReactTable from '../../components/Table';
+import ReactTable from '../../components/PaginatedTable';
 
 export default function Players() {
     // Write a query with useQuery to fetch from api/players
@@ -41,36 +41,36 @@ export default function Players() {
                  header: 'GP',
                  accessorFn: (d) => d["stat.games"],
                  cell: props => <p className="text-right">{props.getValue()}</p>,
-                 footer: ({ table }) => {
-                   const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
-                    );
+                //  footer: ({ table }) => {
+                //    const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
+                //         row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                //     );
 
-                    return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)
-                },    
+                //     return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)
+                // },    
              },
                    {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('G'), 0),
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+        //                 row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+        //             ).reduce((total, row) => total + row.getValue('G'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
    {
         header: 'A',
         accessorFn: (d) => d["stat.assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('A'), 0),
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+        //                 row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+        //             ).reduce((total, row) => total + row.getValue('A'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
       {
         header: 'P',
         accessorFn: (d) => d["stat.points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('P'), 0),
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+        //                 row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+        //             ).reduce((total, row) => total + row.getValue('P'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
         ])
