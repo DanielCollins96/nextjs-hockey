@@ -12,7 +12,7 @@ try {
     ON p.id = ps."person.id" AND p.active = true AND ps.season = 20222023
     WHERE ps."league.id" = 133
     ORDER BY ps."stat.points" DESC NULLS LAST,ps."stat.goals" DESC NULLS LAST
-    LIMIT 100
+    LIMIT 200
     `
     let result = await conn.query(sql)
     result = result.rows
