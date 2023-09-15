@@ -6,12 +6,14 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState
+  SortingState,
+  getFilteredRowModel
 
 } from "@tanstack/react-table";
 import { useState } from "react";
+import Filter from "./Filter";
 
-export default function ReactTable({columns, data, sortKey = "season"}) {
+export default function ReactTable({columns, data, sortKey = "season", filterCol=['fullName']}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
@@ -36,6 +38,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
+      getFilteredRowModel: getFilteredRowModel(),
     }
   );
 
@@ -70,6 +73,11 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
                         </span>
                       </div>
                     )}
+                              {filterCol && filterCol.includes(header.column.id) && (
+                        <div>
+                        <Filter column={header.column} table={table} />
+                        </div>
+                              )}
                   </th>
                 )
               })}

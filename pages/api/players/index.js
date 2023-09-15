@@ -6,7 +6,7 @@ try {
     
     const sql = `
     SELECT     ROW_NUMBER() OVER (ORDER BY ps."stat.points" DESC NULLS LAST, ps."stat.goals" DESC NULLS LAST) AS row_number,
-    p."fullName", p.id, p."primaryPosition.code", ps."season", ps."team.name", ps."stat.goals", ps."stat.games",ps."stat.assists", ps."stat.points"
+    p."fullName", p.id, p."primaryPosition.code", ps."season", ps."team.name", ps."stat.goals", ps."stat.games",ps."stat.assists", ps."stat.points", ps."team.id"
     FROM staging1.player_stats_new ps
     INNER JOIN staging1.player p
     ON p.id = ps."person.id" AND p.active = true AND ps.season = 20222023
