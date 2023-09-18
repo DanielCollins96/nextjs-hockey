@@ -20,7 +20,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('G'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
@@ -28,7 +28,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: 'A',
         accessorFn: (d) => d["stat.assists"],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('A'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
@@ -36,7 +36,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: 'P',
         accessorFn: (d) => d["stat.points"],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('P'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
@@ -44,7 +44,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: 'PIM',
         accessorFn: (d) => d["stat.pim"],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('PIM'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
@@ -52,7 +52,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: '+/-',
         accessorFn: (d) => d["stat.plusMinus"],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('+/-'), 0),
         cell: props => <p className="text-right">{props.getValue()}</p>    },
     ] : [
@@ -60,14 +60,14 @@ const Players = ({playerId, stats, person, imageData}) => {
         header: 'W',
         accessorFn: (d) => d['stat.wins'],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('W'), 0),
     },
       {
         header: 'L',
         accessorFn: (d) => d['stat.losses'],
         footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     ).reduce((total, row) => total + row.getValue('L'), 0),
     },
       {
@@ -76,7 +76,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         cell: props => props.getValue()?.toFixed(2) || null,
         footer: ({ table }) => { 
           const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     )
           let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
           let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
@@ -90,7 +90,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         cell: props => props.getValue()?.toFixed(3) || null,
         footer: ({ table }) => { 
           const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     )
           let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
           let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
@@ -113,7 +113,7 @@ const Players = ({playerId, stats, person, imageData}) => {
                  cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link href={`/teams/${row.original['team.id']}?season=${row.original.season}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</a></Link>) : (row.original['team.name'])
              },
             {
-                 header: 'League',
+                 header: 'Lge',
                  accessorFn: (d) => d['league.name'].replace('National Hockey League', 'NHL'),
                 //  cell: props => props,
                  footer: 'NHL',
@@ -124,7 +124,7 @@ const Players = ({playerId, stats, person, imageData}) => {
                  cell: props => <p className="text-right">{props.getValue()}</p>,
                  footer: ({ table }) => {
                    const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('League')?.includes('NHL')
+                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     );
 
                     return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)

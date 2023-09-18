@@ -20,8 +20,9 @@ export default function Players() {
     const columns = useMemo(
         () => [
              {
-                 header: 'Rank',
+                 header: 'Rk',
                  accessorKey: 'row_number',
+                 cell: ({row}) => <div>{row.original.row_number}</div>
              },
                           {
                  header: 'Team',
