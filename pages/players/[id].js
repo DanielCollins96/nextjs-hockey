@@ -165,6 +165,10 @@ const Players = ({playerId, stats, person, imageData}) => {
                 <p>Primary Number: {person?.primaryNumber}</p>
                 <p>Age: {person?.currentAge}</p>
                 </div>
+                <div className='border'>
+                    <p>Drafted: {person?.draft_seasons ? person?.draft_seasons : 'Undrafted'}</p>
+                    <p>Position: {person?.draft_position ? '#' + person?.draft_position : 'N/A'}</p>
+                </div>
             </div>
             {stats ? <ReactTable columns={columns} data={stats} /> : <h3>Loading...</h3>} 
         </div>
