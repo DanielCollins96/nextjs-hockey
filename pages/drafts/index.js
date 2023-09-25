@@ -2,7 +2,7 @@ import React from 'react'
 import DraftList from '../../components/DraftList'
 import { useQuery } from 'react-query'
 
-export default function index() {
+export default function Drafts() {
   
   // use useQuery to getalldraftyears
 
