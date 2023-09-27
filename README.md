@@ -6,9 +6,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## TODOs
 
-- [x] **Get 22/23 stats into DB**
-- [x] **Save Season in Teams/ Query Params**
 - [ ] **Playoff Stats**
+- [ ] **Draft Info/Page**
 - [ ] Player search page (All players by name/team)
 - [ ] unit/integration tests (CI/CD Build)
 - [ ] user file uploads

@@ -13,7 +13,7 @@ import {
 import { useState } from "react";
 import Filter from "./Filter";
 
-export default function ReactTable({columns, data, sortKey = "season", filterCol=['fullName']}) {
+export default function ReactTable({columns, data, sortKey = "season", filterCol=['fullName'], pageSize=25}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
@@ -22,7 +22,7 @@ export default function ReactTable({columns, data, sortKey = "season", filterCol
 
     const [pagination, setPagination] = useState({
         pageIndex: 0,
-        pageSize: 25,
+        pageSize: pageSize,
     })
 
   const table = useReactTable(

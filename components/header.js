@@ -27,6 +27,11 @@ const Header = () => {
                             <a className="text-xl">Players</a>
                         </Link>
                     </li>
+                    <li className="my-auto px-3 py-1">
+                        <Link href="/drafts">
+                            <a className="text-xl">Drafts</a>
+                        </Link>
+                    </li>
                     { !user ?
                     <li>
                         <Link href="/login" passHref>
