@@ -1,18 +1,11 @@
 import React from 'react'
-import DraftList from '../../components/DraftList'
 import { useQuery } from 'react-query'
+import DraftList from '../../components/DraftList'
+import { getAllDraftYears } from '../../lib/queries'
 
-export default function Drafts() {
-  
-  // use useQuery to getalldraftyears
 
-  const { data: draftYears } = useQuery('draftYears', getDrafts)
 
-  async function getDrafts() {
-    const res = await fetch('/api/drafts')
-    return res.json()
-  }
-
+export default function Drafts({draftYears}) {
 
   console.log(draftYears)
   return (
@@ -22,4 +15,16 @@ export default function Drafts() {
   )
 }
 
+export async function getStaticProps() {
+;
+  const draftYears = await getAllDraftYears()
+  // const draftYears = await res.json();
 
+  return {
+    props: {
+      draftYears,
+    },
+    // Revalidate every 6 months (you can adjust the time as needed)
+    revalidate: 60 * 60 * 24 * 180, // 180 days
+  };
+}
