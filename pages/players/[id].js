@@ -15,7 +15,7 @@ const Players = ({playerId, stats, person, imageData}) => {
 
     const position = person && person['primaryPosition.code'] ? person['primaryPosition.code'] : 'C';
 
-    let playerStuff = position !== 'G' ? [
+    let positionalColumns = position !== 'G' ? [
       {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
@@ -130,7 +130,7 @@ const Players = ({playerId, stats, person, imageData}) => {
                     return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)
                 },    
              },
-            ...playerStuff
+            ...positionalColumns
         ],
         [position]
     )
