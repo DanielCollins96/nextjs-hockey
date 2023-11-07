@@ -16,7 +16,7 @@ export default function TeamBox({team}) {
           {/* <div className="flex"> */}
           <Link href={`/teams/${encodeURIComponent(team.id)}`} >
             <a className="flex  gap-3 ml-3 pr-3 hover:text-blue-700">
-          <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" />
+          {/* <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" /> */}
             {team.name}</a>
           </Link>
           {/* </div> */}
