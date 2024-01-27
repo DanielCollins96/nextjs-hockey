@@ -84,9 +84,17 @@ function onPress() {
 }
 
 export async function getStaticProps(){
-  const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
-  const resJson = await res.json();
-  const teams = resJson.teams
+  const teams = []
+  try {
+    const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
+    if (!res.ok) {
+      throw new Error(`Failed to fetch, status: ${res.status}`)
+    }
+    const resJson = await res.json();
+    teams = resJson.teams
+  } catch (error) {
+    console.log("Error Fetching Teams:", error.message);
+  }
   return {
     props: {
       teams,
