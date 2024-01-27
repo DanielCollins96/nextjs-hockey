@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useQueries } from 'react-query';
-import TeamBox from '../../components/TeamBox'; 
 import Link from 'next/link';
 
 import ReactTable from '../../components/PaginatedTable';
