@@ -4,7 +4,7 @@ import TeamBox from '../../components/TeamBox';
 import Head from 'next/head'
 
 const fetchPlayers = async () => {
-  const teams = []
+  let teams = []
   try {
     const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
     if (!res.ok) {
