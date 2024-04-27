@@ -209,7 +209,7 @@ export async function getStaticProps({params}) {
         console.log(error);
     }
     const stats = await getPlayerStats(id)
-    let url = `http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`
+    let url = `https://assets.nhle.com/mugs/nhl/latest/${id}.png`
     let imageData = null
     try {
         const response = await fetch(url);

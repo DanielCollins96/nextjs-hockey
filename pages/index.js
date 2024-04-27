@@ -84,7 +84,7 @@ function onPress() {
 }
 
 export async function getStaticProps(){
-  const teams = []
+  let teams = []
   try {
     const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
     if (!res.ok) {
