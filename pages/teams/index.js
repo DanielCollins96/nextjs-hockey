@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox'; 
 import Head from 'next/head'
+import { getTeams } from '../../lib/queries';
 
 const fetchPlayers = async () => {
-  const teams = []
+  let teams = []
   try {
     const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
     if (!res.ok) {
@@ -17,6 +18,7 @@ const fetchPlayers = async () => {
   }
     return teams
 };
+
 export default function Teams({playerData}) {
 
     const [loading, setLoading] = useState(true)
@@ -30,7 +32,7 @@ export default function Teams({playerData}) {
     const inputChange = (e) => {
         let searchTerm = e.target.value
         console.log(e.target.value);
-        let newList = playerData.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
+        let newList = playerData.filter((team) => team.abbreviation.toLowerCase().includes(searchTerm.toLowerCase()) )
         setFilteredPlayers(newList)
     }
 
@@ -49,13 +51,14 @@ export default function Teams({playerData}) {
             </div>
             {/* <div className="flex flex-wrap justify-center my-2 mx-4"> */}
             <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
+            <p>{JSON.stringify(filteredPlayers)}</p>
                 {
                     filteredPlayers &&
                     filteredPlayers
                     .sort((teamA, teamB) => {
-                        return teamA.name > teamB.name ? 1 : -1
+                        return teamA.abbreviation > teamB.abbreviation ? 1 : -1
                     })                    
-                    .map((team) => <TeamBox team={team} key={team.id}/>)
+                    .map((team) => <TeamBox team={team} key={team.abbreviation}/>)
                 }       
             </div>
         </div>
@@ -63,7 +66,10 @@ export default function Teams({playerData}) {
 }
 
 export async function getStaticProps() {
-    const teams = await fetchPlayers();
+    // const teams = await fetchPlayers();
+  const teams = await getTeams();
+    console.log(teams);
+
     return {
         props: {
             playerData: teams
