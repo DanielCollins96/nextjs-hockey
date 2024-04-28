@@ -13,9 +13,9 @@ const Players = ({playerId, stats, person, imageData}) => {
     const router = useRouter()
     const { id } = router.query
 
-    const position = person && person['primaryPosition.code'] ? person['primaryPosition.code'] : 'C';
+    const position = person && person['primaryPosition.name'] ? person['primaryPosition.name'] : 'Center';
 
-    let positionalColumns = position !== 'G' ? [
+    let positionalColumns = position !== 'Goalie' ? [
       {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
@@ -208,7 +208,9 @@ export async function getStaticProps({params}) {
     } catch (error) {
         console.log(error);
     }
-    const stats = await getPlayerStats(id)
+    console.log(person);
+console.log(person[0]["primaryPosition.name"]);
+    const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
     let url = `https://assets.nhle.com/mugs/nhl/latest/${id}.png`
     let imageData = null
     try {

@@ -26,25 +26,39 @@ export default function TeamBox({team}) {
         </div>
         <ul  className="grid grid-cols-3 divide-x divide-y" >
           {
-          
-          team?.roster?.skaters
-            .sort((playerA, playerB) => {
-              return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
-            })
-            .map((person) => {
-              return (
-                <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
-                  <Link
-                    href={`/players/${encodeURIComponent(person.playerId)}`}
-                  >
-                    <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.firstName?.default + " " + person.lastName?.default}</a>
-                  </Link>
-                </li>
-              );
-            })
-            
+            team?.roster?.skaters
+              .sort((playerA, playerB) => {
+                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
+              })
+              .map((person) => {
+                return (
+                  <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
+                    <Link
+                      href={`/players/${encodeURIComponent(person.playerId)}`}
+                    >
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.firstName?.default + " " + person.lastName?.default}</a>
+                    </Link>
+                  </li>
+                );
+              })
             }
-            
+          {
+            team?.roster?.goalies
+              .sort((playerA, playerB) => {
+                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
+              })
+              .map((person) => {
+                return (
+                  <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
+                    <Link
+                      href={`/players/${encodeURIComponent(person.playerId)}`}
+                    >
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.firstName?.default + " " + person.lastName?.default}</a>
+                    </Link>
+                  </li>
+                );
+              })
+            }
         </ul>
         <div onClick={() => setActive(v => !v)} className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 cursor-pointer ${active ? "hidden" : ""}`}>...</div>
       </div>
