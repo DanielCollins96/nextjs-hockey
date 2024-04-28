@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import Link from "next/link";
 import Head from "next/head";
 import {useRouter} from "next/router";
@@ -25,239 +26,14 @@ teamId
   // seasons,
 }) {
 
-return (
-  <div>Test {teamId}</div>
-)
 
   const router = useRouter();
   const {id, season} = router.query;
   const [seasonId, setSeasonId] = useState(season || "2022-23");
+return (
+  <div>Test {teamId}</div>
+)
 
-  useEffect(() => {
-    setSeasonId(season || "2022-23")
-  }, [season]);
-
-  const handleIncrementSeason = () => {
-    const currentIndex = seasons.indexOf(seasonId);
-    if (currentIndex < seasons.length - 1) {
-      setSeasonId(seasons[currentIndex + 1]);
-    }
-  };
-  const handleDecrementSeason = () => {
-    const currentIndex = seasons.indexOf(seasonId);
-    if (currentIndex > 0) {
-      setSeasonId(seasons[currentIndex - 1]);
-    }
-  };
-
-  const team_table_data = useMemo(() => yearly_data, [yearly_data]);
-
-  const roster_table_data = useMemo(
-    () => rosters?.[seasonId] || [],
-    [rosters, seasonId]
-  );
-
-  const team_table_columns = useMemo(
-    () => [
-      {
-        header: "Year",
-        accessorKey: "year",
-      },
-        {
-          header: "W",
-          accessorKey: "wins",
-        },
-        {
-          header: "L",
-          accessorKey: "losses",
-        },
-        {
-          header: "OTL",
-          accessorKey: "ot",
-        },
-        {
-          header: "Pts",
-          accessorKey: "pts",
-        },
-        {
-          header: "GFPG",
-          accessorKey: "goalsPerGame",
-        },
-        {
-          header: "GAPG",
-          accessorKey: "goalsAgainstPerGame",
-        },
-        {
-          header: "Place",
-          accessorKey: "place",
-        },
-    ],
-    []
-  );
-
-  const roster_table_columns = useMemo(
-    () => [
-      {
-        header: "Name",
-        accessorKey: "fullName",
-        cell: props => props.row.original?.id ? (<Link href={`/players/${props.row.original.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
-
-      },
-      {
-        header: "Pos.",
-        accessorFn: (d) => d["primaryPosition.code"],
-      },
-      {
-        header: "GP",
-        accessorFn: (d) => d["stat.games"],
-        cell: props => <p className="text-right">{props.getValue()}</p>,
-        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
-      },
-      {
-        header: "G",
-        accessorFn: (d) => d["stat.goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "A",
-        accessorFn: (d) => d["stat.assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "P",
-        accessorFn: (d) => d["stat.points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "PIM",
-        accessorFn: (d) => d["stat.pim"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "+/-",
-        accessorFn: (d) => d["stat.plusMinus"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-    ],
-    []
-  );
-
-  return (
-    <div className="">
-      <Head>
-        <title>{team_name} Roster | the-nhl.com</title>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-          crossOrigin="anonymous"
-        ></script>
-      </Head>
-      <div className="text-center border border-black rounded p-2">
-        <p className="text-lg">{team_data[0]?.name}</p>
-        <p>{team_data[0]?.firstYearOfPlay}</p>
-        <Link href={`${team_data[0]?.officialSiteUrl}`}>
-          <a className="hover:text-blue-700">{team_data[0]?.officialSiteUrl}</a>
-        </Link>
-      </div>
-      <div className="gap-1 p-1 flex flex-col lg:flex-row">
-        {roster_table_data && rosters && (
-          <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
-          <div className="flex">
-          <label className="px-1 text-lg" htmlFor="season">Season:</label>
-            <select
-              className="flex w-32 justify-end"
-              value={seasonId}
-              onChange={(event) => {
-                const newSeasonId = event.target.value;
-                setSeasonId(newSeasonId);
-                router.push({
-                  pathname: router.pathname, // Current path
-                  query: { ...router.query, season: newSeasonId }, // Updated query parameter
-                },undefined,{shallow: true});
-              }}>
-              {seasons &&
-                seasons?.map((szn) => {
-                  return (
-                    <option key={szn} value={szn}>
-                      {JSON.stringify(szn)}
-                    </option>
-                  );
-                })}
-            </select>
-            <button onClick={handleIncrementSeason}><MdOutlineChevronLeft size={30} /></button>
-            <button onClick={handleDecrementSeason}><MdOutlineChevronRight size={30}/></button>
-
-          </div>
-            <ReactTable
-              data={roster_table_data}
-              columns={roster_table_columns}
-              sortKey="P"
-            />
-          </div>
-        )}
-        {!yearly_data ? (
-          <p className="grid place-self-top">Loading...</p>
-        ) : (
-          <div className="border-2 p-1 flex flex-col items-center">
-            <div className="p-2 flex flex-col">
-              {/* <input type="" /> */}
-              <ResponsiveContainer width={450} height={300}>
-                <LineChart data={yearly_data}>
-                  <YAxis />
-                  <XAxis dataKey="year" />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    name="Points"
-                    dataKey="pts"
-                    strokeWidth={2}
-                    stroke="#000"
-                  />
-                  <Line
-                    type="monotone"
-                    name="Wins"
-                    dataKey="wins"
-                    strokeWidth={2}
-                    stroke="#009966"
-                  />
-                  <Line
-                    type="monotone"
-                    name="OT Wins"
-                    dataKey="ot"
-                    strokeWidth={2}
-                    stroke="#11F"
-                  />
-                  <Line
-                    type="monotone"
-                    name="Losses"
-                    dataKey="losses"
-                    strokeWidth={2}
-                    stroke="#FF0000"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="p-2 max-w-48">
-              {team_table_data && (
-                <ReactTable
-                  // columns={newColumns}
-                    columns={team_table_columns}
-                  data={team_table_data}
-                  sortKey="year"
-                />
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 export async function getStaticPaths() {
@@ -275,11 +51,15 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
 
+  
   return {
     props: {
       teamId: params.id,
-      stats: null,
-      person: null,
+      // yearly_data: season_stats,
+      // team_name,
+      // team_data,
+      // rosters,
+      // seasons: years,
       }
     }
   }
