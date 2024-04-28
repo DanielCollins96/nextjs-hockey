@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/router'
 import {useEffect, useState, useRef } from 'react';
 import TeamBox from '../components/TeamBox'; 
+import { getTeams } from '../lib/queries';
 
 
 export default function Home({teams}) {
@@ -14,7 +15,7 @@ const inputRef = useRef();
 const inputChange = (e) => {
   let searchTerm = e.target.value
   console.log(e.target.value);
-  let newList = teams.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
+  let newList = teams.filter((team) => team.team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
   setSearchedTeams(newList)
 }
 
@@ -70,7 +71,7 @@ function onPress() {
             </div>
             <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
                 {
-                    searchedTeams &&
+                    
                     searchedTeams
                     .sort((teamA, teamB) => {
                         return teamA.name > teamB.name ? 1 : -1
@@ -83,23 +84,29 @@ function onPress() {
   )
 }
 
-export async function getStaticProps(){
-  let teams = []
-  try {
-    const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
-    if (!res.ok) {
-      throw new Error(`Failed to fetch, status: ${res.status}`)
-    }
-    const resJson = await res.json();
-    teams = resJson.teams
-  } catch (error) {
-    console.log("Error Fetching Teams:", error.message);
-  }
-  return {
-    props: {
-      teams,
-    },
-    revalidate: 3600
-  }
+export async function getStaticProps() {
+    // const teams = await fetchPlayers();
+  const teams = await getTeams();
+    // console.log(teams);
+    const fetchRosterPromises = await teams.map(team => {
+        let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
+        console.log(url);
+        return fetch(url)
+            .then(res => res.json())
+            .then(data => ({
+                team,
+                roster: data
+            }))
+    })
 
+    const rosters = await Promise.all(fetchRosterPromises)
+
+    console.log(rosters);
+
+    return {
+        props: {
+            teams: rosters
+        },
+        revalidate: 3600
+    }
 }

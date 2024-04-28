@@ -13,13 +13,10 @@ export default function TeamBox({team}) {
       <div className={`relative overflow-hidden border border-black rounded bg-white m-1 ${active ? 'max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
         <div className="flex justify-between items-center">
         <h2 className="text-xl text-left p-2">
-          {/* <div className="flex"> */}
-          <Link href={`/teams/${encodeURIComponent(team.abbreviation)}`} >
+          <Link href={`/teams/${encodeURIComponent(team.team.abbreviation)}`} >
             <a className="flex  gap-3 ml-3 pr-3 hover:text-blue-700">
-          {/* <img src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${team.id}.svg`} alt="" width="40" height="26" /> */}
-            {team.abbreviation}</a>
+            {team.team.name}</a>
           </Link>
-          {/* </div> */}
         </h2>
         <div className="pl-8 sm:pl-16 pr-2 cursor-pointer" onClick={() => setActive(v => !v)}>
           {
@@ -28,22 +25,26 @@ export default function TeamBox({team}) {
         </div>
         </div>
         <ul  className="grid grid-cols-3 divide-x divide-y" >
-          {team.roster?.roster
+          {
+          
+          team?.roster?.skaters
             .sort((playerA, playerB) => {
-              return playerA.person.fullName > playerB.person.fullName ? 1 : -1;
+              return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
             })
             .map((person) => {
               return (
                 <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
-                  {/* <p>{person.person.fullName}</p> */}
                   <Link
-                    href={`/players/${encodeURIComponent(person.person?.id)}`}
+                    href={`/players/${encodeURIComponent(person.playerId)}`}
                   >
-                    <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.person?.fullName}</a>
+                    <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.firstName?.default + " " + person.lastName?.default}</a>
                   </Link>
                 </li>
               );
-            })}
+            })
+            
+            }
+            
         </ul>
         <div onClick={() => setActive(v => !v)} className={`text-lg z-10 absolute bottom-0 text-center min-w-full	bg-white opacity-75 cursor-pointer ${active ? "hidden" : ""}`}>...</div>
       </div>
