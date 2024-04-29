@@ -87,8 +87,8 @@ function onPress() {
 export async function getStaticProps() {
     // const teams = await fetchPlayers();
   const teams = await getTeams();
-    // console.log(teams);
-    const fetchRosterPromises = await teams.map(team => {
+    
+    const fetchRosterPromises = await teams?.map(team => {
         let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
         console.log(url);
         return fetch(url)
@@ -100,8 +100,6 @@ export async function getStaticProps() {
     })
 
     const rosters = await Promise.all(fetchRosterPromises)
-
-    console.log(rosters);
 
     return {
         props: {

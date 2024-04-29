@@ -208,8 +208,6 @@ export async function getStaticProps({params}) {
     } catch (error) {
         console.log(error);
     }
-    console.log(person);
-console.log(person[0]["primaryPosition.name"]);
     const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
     let url = `https://assets.nhle.com/mugs/nhl/latest/${id}.png`
     let imageData = null
