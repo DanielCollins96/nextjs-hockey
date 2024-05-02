@@ -6,7 +6,7 @@ import {useState, useMemo, useEffect} from "react";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 
 import ReactTable from "../../components/Table";
-import {getTeams} from "../../lib/queries";
+import {getTeamIds} from "../../lib/queries";
 import {
   LineChart,
   Line,
@@ -16,32 +16,243 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import conn from "../../lib/db";
 
 export default function TeamPage({
-teamId
-  // yearly_data,
-  // team_name,
-  // team_data,
-  // rosters,
-  // seasons,
+teamId,
+  seasons = [],
+  abbreviation
 }) {
-
 
   const router = useRouter();
   const {id, season} = router.query;
-  const [seasonId, setSeasonId] = useState(season || "2022-23");
+  const [seasonId, setSeasonId] = useState(season || "20232024");
+  const seasonData = seasons.find(season => season.season === seasonId);
+
+  console.log(seasonData);
+  
+  useEffect(() => {
+    setSeasonId(season || "20232024")
+  }, [season]);
+
+
+  const handleDecrementSeason = () => {
+    setSeasonId(current => {
+      const currentIndex = seasons.findIndex(season => season.season === current);
+      const nextIndex = currentIndex + 1;
+      return nextIndex < seasons.length ? seasons[nextIndex].season : current;
+}
+)
+
+  };
+const handleIncrementSeason = () => {
+  setSeasonId(current => {
+    const currentIndex = seasons.findIndex(season => season.season === current);
+    const prevIndex = currentIndex - 1;
+    return prevIndex >= 0 ? seasons[prevIndex].season : current;
+  });
+};
+
+  const roster_table_data = useMemo(
+    () => seasons?.[season] || [],
+    [season, seasonData]
+  );
+
+  const roster_goalie_table_columns = useMemo(
+    () => [
+      {
+        header: "Name",
+        accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.fullName)
+      },
+            {
+        header: "GP",
+        accessorFn: (d) => d["gamesPlayed"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
+      },
+      {
+        header: "G",
+        accessorFn: (d) => d["goals"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "A",
+        accessorFn: (d) => d["assists"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: 'W',
+        accessorFn: (d) => d['wins'],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('W'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+
+    },
+      {
+        header: 'L',
+        accessorFn: (d) => d['losses'],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('L'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+
+    },
+      {
+        header: 'GAA',
+        accessorFn: (d) => d['goalsAgainstAverage'],
+        cell: props =>  <p className="text-right">{props.getValue()?.toFixed(2) || null}</p>,
+        footer: ({ table }) => { 
+          const nhlGames = table.getFilteredRowModel().rows
+          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
+          let total = totalGaa / gp
+          return total.toFixed(2) || null
+        }
+      },
+      {
+        header: 'SV%',
+        accessorFn: (d) => d['savePercentage'],
+        cell: props => <p className="text-right">{props.getValue()?.toFixed(3) || null}</p>,
+        footer: ({ table }) => { 
+          const nhlGames = table.getFilteredRowModel()?.rows
+          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
+          let total = totalSvPct / gp
+          return total.toFixed(3) || null
+        },
+        
+    },
+      {
+        header: "PIM",
+        accessorFn: (d) => d["penaltyMinutes"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+    ])
+
+  const roster_player_table_columns = useMemo(
+    () => [
+      {
+        header: "Name",
+        accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.fullName)
+      },
+      {
+        header: "Pos.",
+        accessorFn: (d) => d["positionCode"],
+      },
+      {
+        header: "GP",
+        accessorFn: (d) => d["gamesPlayed"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
+      },
+      {
+        header: "G",
+        accessorFn: (d) => d["goals"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "A",
+        accessorFn: (d) => d["assists"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "P",
+        accessorFn: (d) => d["points"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "PIM",
+        accessorFn: (d) => d["penaltyMinutes"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "+/-",
+        accessorFn: (d) => d["plusMinus"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+    ],
+    []
+  );
+
 return (
-  <div>Test {teamId}</div>
+  <div>
+          <Head>
+        <title>{abbreviation} Roster | the-nhl.com</title>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
+          crossOrigin="anonymous"
+        ></script>
+      </Head>
+      <div className="text-center border border-black rounded p-2">
+        <p className="text-lg">{abbreviation}</p>
+        {/* <p>{team_data[0]?.firstYearOfPlay}</p> */}
+        {/* <Link href={`${team_data[0]?.officialSiteUrl}`}>
+          <a className="hover:text-blue-700">{team_data[0]?.officialSiteUrl}</a>
+        </Link> */}
+      </div>
+          {seasons && (
+          <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
+          <div className="flex">
+          <label className="px-1 text-lg" htmlFor="season">Season:</label>
+            <select
+              className="flex w-32 justify-end"
+              value={seasonId}
+              onChange={(event) => {
+                const newSeasonId = event.target.value;
+                setSeasonId(newSeasonId);
+                router.push({
+                  pathname: router.pathname, // Current path
+                  query: { ...router.query, season: newSeasonId }, // Updated query parameter
+                },undefined,{shallow: true});
+              }}>
+              {seasons &&
+                seasons?.map((szn) => {
+                  return (
+                    <option key={szn.season} value={szn.season}>
+                      {JSON.stringify(szn.season)}
+                    </option>
+                  );
+                })}
+            </select>
+            <button onClick={handleDecrementSeason}><MdOutlineChevronLeft size={30} /></button>
+            <button onClick={handleIncrementSeason}><MdOutlineChevronRight size={30}/></button>
+
+          </div>
+          {seasonData && seasonData?.skaters &&
+            <ReactTable
+              data={seasonData.skaters}
+              columns={roster_player_table_columns}
+              sortKey="P"
+            />
+          }
+          {seasonData && seasonData?.goalies &&
+            <ReactTable
+              data={seasonData.goalies}
+              columns={roster_goalie_table_columns}
+              sortKey="P"
+            />
+          }
+          </div>
+        )}
+  </div>
 )
 
 }
 
 export async function getStaticPaths() {
   // const path = "https://statsapi.web.nhl.com/api/v1/teams/";
-  const teams = await getTeams();
+  const teams = await getTeamIds();
 
-  let paths = teams.map((team) => ({
-    params: {id: team.abbreviation},
+  let paths = teams?.map((team) => ({
+    params: {id: team.id},
   }));
   return {
     paths,
@@ -50,11 +261,57 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({params}) {
-
+  console.log(params);
+  let abbreviation = null
+  let data = null
+  // import conn and query with params id
+  try {
+  const sql = `
+    SELECT abbreviation
+    FROM staging1.team 
+    WHERE id = ${params.id} 
+  ` 
+  abbreviation = await conn.query(sql)
   
+  } catch (error) {
+    console.log(error)
+  }
+console.log(abbreviation);
+  if (abbreviation) {
+  let url = `https://api-web.nhle.com/v1/club-stats-season/${abbreviation.rows[0].abbreviation}`
+  console.log(url);
+  const response = await fetch(url);
+  data = await response.json();
+  console.log(data);
+  }
+
+  const fetchRoster = async () => {
+    const fetchPromises = data.map(year => {
+      const yearUrl = `https://api-web.nhle.com/v1/club-stats/${abbreviation.rows[0].abbreviation}/${year.season}/2`;
+      return fetch(yearUrl).then(response => response.json());
+    });
+
+    return Promise.all(fetchPromises);
+  };
+
+  const rosterData = (await fetchRoster()).sort((a,b) => {
+    // return b.season.localeCompare(a.season)
+      if (a.season > b.season) {
+    return -1; // a comes before b
+  }
+  if (a.season < b.season) {
+    return 1; // b comes before a
+  }
+  return 0; // a and b are equal
+  })
+  ;
+
+
   return {
     props: {
       teamId: params.id,
+      seasons: rosterData,
+      abbreviation: abbreviation.rows[0].abbreviation
       // yearly_data: season_stats,
       // team_name,
       // team_data,

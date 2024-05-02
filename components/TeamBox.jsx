@@ -13,7 +13,7 @@ export default function TeamBox({team}) {
       <div className={`relative overflow-hidden border border-black rounded bg-white m-1 ${active ? 'max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
         <div className="flex justify-between items-center">
         <h2 className="text-xl text-left p-2">
-          <Link href={`/teams/${encodeURIComponent(team.team.abbreviation)}`} >
+          <Link href={`/teams/${encodeURIComponent(team.team.id)}`} >
             <a className="flex  gap-3 ml-3 pr-3 hover:text-blue-700">
             {team.team.name}</a>
           </Link>
