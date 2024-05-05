@@ -63,7 +63,7 @@ const handleIncrementSeason = () => {
       {
         header: "Name",
         accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
-        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.fullName)
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.firstName.default + " " + props.row.original.lastName.default)
       },
             {
         header: "GP",
@@ -200,8 +200,8 @@ return (
       </div>
           {seasons && (
           <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
-          <div className="flex">
-          <label className="px-1 text-lg" htmlFor="season">Season:</label>
+          <div className="flex items-center">
+            <label className="px-1 text-lg" htmlFor="season">Season:</label>
             <select
               className="flex w-32 justify-end"
               value={seasonId}
@@ -222,8 +222,8 @@ return (
                   );
                 })}
             </select>
-            <button onClick={handleDecrementSeason}><MdOutlineChevronLeft size={30} /></button>
-            <button onClick={handleIncrementSeason}><MdOutlineChevronRight size={30}/></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason}><MdOutlineChevronLeft size={28} /></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason}><MdOutlineChevronRight size={28}/></button>
 
           </div>
           {seasonData && seasonData?.skaters &&
