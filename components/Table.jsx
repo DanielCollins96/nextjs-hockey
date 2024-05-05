@@ -73,9 +73,9 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
         {table.getRowModel().rows?.map((row, i) => {
 
           const isNHL = row?.original['league.name'] == 'National Hockey League'
-          console.log({isNHL})
+
           return (
-            <tr key={row.id} className={`whitespace-nowrap ` + (isNHL ? "bg-slate-300" : "")}>
+            <tr key={row.id} className={`whitespace-nowrap ` + (isNHL ? "bg-slate-200" : "")}>
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td

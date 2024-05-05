@@ -25,38 +25,38 @@ teamId,
 }) {
 
   const router = useRouter();
-  const {id, season} = router.query;
-  const [seasonId, setSeasonId] = useState(season || "20232024");
-  const seasonData = seasons.find(season => season.season === seasonId);
+  const {id, season: querySeason} = router.query;
+  const [seasonId, setSeasonId] = useState(querySeason || "20232024");
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const seasonIndex = seasons.findIndex(season => season.season === seasonId);
+    return seasonIndex === -1 ? 0 : seasonIndex;
+  });
+  console.log(currentIndex);
 
-  console.log(seasonData);
-  
+  const [seasonData, setSeasonData] = useState({});
+
   useEffect(() => {
-    setSeasonId(season || "20232024")
-  }, [season]);
+    const data = seasons.find(season => season.season === seasonId);
+    setSeasonData(data);
+  }, [seasonId, seasons]);
 
+  useEffect(() => {
+    if (seasons[currentIndex]) {
+      setSeasonId(seasons[currentIndex].season);
+    }
+  }, [currentIndex, seasons]);
 
   const handleDecrementSeason = () => {
-    setSeasonId(current => {
-      const currentIndex = seasons.findIndex(season => season.season === current);
-      const nextIndex = currentIndex + 1;
-      return nextIndex < seasons.length ? seasons[nextIndex].season : current;
-}
-)
-
+    if (currentIndex < seasons.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
-const handleIncrementSeason = () => {
-  setSeasonId(current => {
-    const currentIndex = seasons.findIndex(season => season.season === current);
-    const prevIndex = currentIndex - 1;
-    return prevIndex >= 0 ? seasons[prevIndex].season : current;
-  });
-};
 
-  const roster_table_data = useMemo(
-    () => seasons?.[season] || [],
-    [season, seasonData]
-  );
+  const handleIncrementSeason = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
 
   const roster_goalie_table_columns = useMemo(
     () => [
@@ -207,7 +207,8 @@ return (
               value={seasonId}
               onChange={(event) => {
                 const newSeasonId = event.target.value;
-                setSeasonId(newSeasonId);
+                const newIndex = seasons.findIndex(season => season.season === newSeasonId);
+                setCurrentIndex(newIndex);
                 router.push({
                   pathname: router.pathname, // Current path
                   query: { ...router.query, season: newSeasonId }, // Updated query parameter
@@ -217,13 +218,13 @@ return (
                 seasons?.map((szn) => {
                   return (
                     <option key={szn.season} value={szn.season}>
-                      {JSON.stringify(szn.season)}
+                      {szn.season}
                     </option>
                   );
                 })}
             </select>
-            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason}><MdOutlineChevronLeft size={28} /></button>
-            <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason}><MdOutlineChevronRight size={28}/></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasons.length - 1}><MdOutlineChevronLeft size={28} /></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
 
           </div>
           {seasonData && seasonData?.skaters &&
@@ -261,28 +262,23 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({params}) {
-  console.log(params);
   let abbreviation = null
   let data = null
-  // import conn and query with params id
   try {
   const sql = `
-    SELECT abbreviation
-    FROM staging1.team 
-    WHERE id = ${params.id} 
-  ` 
-  abbreviation = await conn.query(sql)
-  
+      SELECT abbreviation
+      FROM staging1.team 
+      WHERE id = ${params.id} 
+    ` 
+    abbreviation = await conn.query(sql)  
   } catch (error) {
     console.log(error)
   }
-console.log(abbreviation);
+
   if (abbreviation) {
   let url = `https://api-web.nhle.com/v1/club-stats-season/${abbreviation.rows[0].abbreviation}`
-  console.log(url);
   const response = await fetch(url);
   data = await response.json();
-  console.log(data);
   }
 
   const fetchRoster = async () => {
