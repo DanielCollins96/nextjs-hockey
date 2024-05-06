@@ -27,6 +27,7 @@ teamId,
   const router = useRouter();
   const {id, season: querySeason} = router.query;
   const [seasonId, setSeasonId] = useState(querySeason || "20232024");
+
   const [currentIndex, setCurrentIndex] = useState(() => {
     const seasonIndex = seasons.findIndex(season => season.season === seasonId);
     return seasonIndex === -1 ? 0 : seasonIndex;
@@ -35,30 +36,55 @@ teamId,
   const [seasonData, setSeasonData] = useState({});
 
   useEffect(() => {
+    console.log('useeEffect seasonData');
     const data = seasons.find(season => season.season === seasonId);
     setSeasonData(data);
-    router.push({
-    pathname: router.pathname, // Current path
-    query: { ...router.query, season: seasonId }, // Updated query parameter
-    },undefined,{shallow: false})
-  }, [seasonId, seasons, router]);
+
+  }, [seasonId, seasons]);
+
+// 
+useEffect(() => {
+  console.log('URL change detected:', querySeason);
+
+  if (querySeason && querySeason !== seasonId) {
+    const newIndex = seasons.findIndex(season => season.season === querySeason);
+    if (newIndex !== -1) {  // Ensure the season exists
+      setCurrentIndex(newIndex);
+      setSeasonId(querySeason);  // This will also update the displayed data via other useEffects
+    } else {
+      console.log('Season not found for:', querySeason);
+    }
+  }
+}, [querySeason]);
 
   useEffect(() => {
-    if (seasons[currentIndex]) {
-      setSeasonId(seasons[currentIndex].season);
+    console.log('useeEffect router');
+
+    if (router.query.season !== seasonId) {
+      router.push({
+      pathname: router.pathname, // Current path
+      query: { ...router.query, season: seasonId }, // Updated query parameter
+      },undefined,{shallow: false})
     }
-  }, [currentIndex, seasons]);
+  }, [seasonId])
 
   const handleDecrementSeason = () => {
-    if (currentIndex < seasons.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
+  console.log('Next season');
+  if (currentIndex < seasons.length - 1) {
+    const newIndex = currentIndex + 1;
+    setCurrentIndex(newIndex);
+    setSeasonId(seasons[newIndex].season);
+  }
   };
 
   const handleIncrementSeason = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
+  console.log('Previous season');
+  console.log(currentIndex);
+  if (currentIndex > 0) {
+    const newIndex = currentIndex - 1;
+    setCurrentIndex(newIndex);
+    setSeasonId(seasons[newIndex].season);
+  }
   };
 
   const roster_goalie_table_columns = useMemo(
@@ -211,7 +237,7 @@ return (
               onChange={(event) => {
                 const newSeasonId = event.target.value;
                 const newIndex = seasons.findIndex(season => season.season === newSeasonId);
-                // setSeasonId(newSeasonId);
+                setSeasonId(newSeasonId);
                 setCurrentIndex(newIndex);;
               }}>
               {seasons &&
