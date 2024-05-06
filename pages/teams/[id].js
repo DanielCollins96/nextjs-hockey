@@ -31,14 +31,17 @@ teamId,
     const seasonIndex = seasons.findIndex(season => season.season === seasonId);
     return seasonIndex === -1 ? 0 : seasonIndex;
   });
-  console.log(currentIndex);
 
   const [seasonData, setSeasonData] = useState({});
 
   useEffect(() => {
     const data = seasons.find(season => season.season === seasonId);
     setSeasonData(data);
-  }, [seasonId, seasons]);
+    router.push({
+    pathname: router.pathname, // Current path
+    query: { ...router.query, season: seasonId }, // Updated query parameter
+    },undefined,{shallow: false})
+  }, [seasonId, seasons, router]);
 
   useEffect(() => {
     if (seasons[currentIndex]) {
@@ -208,11 +211,8 @@ return (
               onChange={(event) => {
                 const newSeasonId = event.target.value;
                 const newIndex = seasons.findIndex(season => season.season === newSeasonId);
-                setCurrentIndex(newIndex);
-                router.push({
-                  pathname: router.pathname, // Current path
-                  query: { ...router.query, season: newSeasonId }, // Updated query parameter
-                },undefined,{shallow: true});
+                // setSeasonId(newSeasonId);
+                setCurrentIndex(newIndex);;
               }}>
               {seasons &&
                 seasons?.map((szn) => {
