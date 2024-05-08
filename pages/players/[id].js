@@ -193,10 +193,10 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
     const { id } = params
-    let person = null
+    let person = []
     try {
         person = await getPlayer(id)
-        if (person.length == 0) {
+        if (!person || person.length === 0) {
             return {
             props: {
                 playerId: params.id,
