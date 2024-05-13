@@ -6,7 +6,7 @@ import {useState, useMemo, useEffect} from "react";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 
 import ReactTable from "../../components/Table";
-import {getTeamIds} from "../../lib/queries";
+import {getTeamIds, getTeamSeasons} from "../../lib/queries";
 import {
   LineChart,
   Line,
@@ -21,7 +21,8 @@ import conn from "../../lib/db";
 export default function TeamPage({
 teamId,
   seasons = [],
-  abbreviation
+  abbreviation,
+  teamRecords
 }) {
 
   const router = useRouter();
@@ -210,6 +211,50 @@ useEffect(() => {
     []
   );
 
+  const team_table_data = useMemo(() => teamRecords, [teamRecords]);
+
+  const team_table_columns = useMemo(
+    () => [
+      {
+        header: "Year",
+        accessorKey: "seasonId",
+      },
+        {
+          header: "W",
+          accessorKey: "wins",
+        },
+        {
+          header: "L",
+          accessorKey: "losses",
+        },
+        // {
+        //   header: "ROW",
+        //   accessorKey: "row",
+        // },
+        // {
+        //   header: "S/O W",
+        //   accessorKey: "winsInShootout",
+        // },
+        {
+          header: "Pts",
+          accessorKey: "points",
+        },
+        {
+          header: "GFPG",
+          accessorKey: "goalsForPerGame",
+        },
+        {
+          header: "GAPG",
+          accessorKey: "goalsAgainstPerGame",
+        },
+        // {
+        //   header: "Place",
+        //   accessorKey: "place",
+        // },
+    ],
+    []
+  );
+
 return (
   <div>
           <Head>
@@ -227,6 +272,8 @@ return (
           <a className="hover:text-blue-700">{team_data[0]?.officialSiteUrl}</a>
         </Link> */}
       </div>
+            <div className="gap-1 p-1 flex flex-col lg:flex-row">
+
           {seasons && (
           <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
           <div className="flex items-center">
@@ -249,7 +296,7 @@ return (
                   );
                 })}
             </select>
-            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasons.length - 1}><MdOutlineChevronLeft size={28} /></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasons.length - 1}><MdOutlineChevronLeft size={28}/></button>
             <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
 
           </div>
@@ -269,6 +316,58 @@ return (
           }
           </div>
         )}
+        <div className="border-2 p-1 flex flex-col">
+            <div className="p-2 mx-auto">
+              {/* <input type="" /> */}
+              <ResponsiveContainer width={450} height={300}>
+                <LineChart data={team_table_data}>
+                  <YAxis />
+                  <XAxis dataKey="year" />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    name="Points"
+                    dataKey="points"
+                    strokeWidth={2}
+                    stroke="#000"
+                  />
+                  <Line
+                    type="monotone"
+                    name="Wins"
+                    dataKey="wins"
+                    strokeWidth={2}
+                    stroke="#009966"
+                  />
+                  <Line
+                    type="monotone"
+                    name="S/O Wins"
+                    dataKey="winsInShootout"
+                    strokeWidth={2}
+                    stroke="#11F"
+                  />
+                  <Line
+                    type="monotone"
+                    name="Losses"
+                    dataKey="losses"
+                    strokeWidth={2}
+                    stroke="#FF0000"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+      <div className="p-2 mx-auto">
+              {team_table_data && (
+                <ReactTable
+                  // columns={newColumns}
+                    columns={team_table_columns}
+                  data={team_table_data}
+                  sortKey="year"
+                />
+              )}
+      </div>
+      </div>
+      </div>
   </div>
 )
 
@@ -289,32 +388,34 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
   let abbreviation = null
-  let data = null
-  try {
-  const sql = `
-      SELECT abbreviation
-      FROM staging1.team 
-      WHERE id = ${params.id} 
-    ` 
-    abbreviation = await conn.query(sql)  
-  } catch (error) {
-    console.log(error)
-  }
-
-  if (abbreviation) {
-  let url = `https://api-web.nhle.com/v1/club-stats-season/${abbreviation.rows[0].abbreviation}`
-  const response = await fetch(url);
-  data = await response.json();
-  }
+  let seasonData = null
 
   const fetchRoster = async () => {
-    const fetchPromises = data.map(year => {
+    const fetchPromises = seasonData.map(year => {
       const yearUrl = `https://api-web.nhle.com/v1/club-stats/${abbreviation.rows[0].abbreviation}/${year.season}/2`;
       return fetch(yearUrl).then(response => response.json());
     });
 
     return Promise.all(fetchPromises);
   };
+
+  try {
+  const sql = ` 
+      SELECT abbreviation
+      FROM staging1.team 
+      WHERE id = $1
+    ` 
+    abbreviation = await conn.query(sql,[params.id])  
+  } catch (error) {
+    console.log(error)
+  }
+
+  if (abbreviation) {
+    let url = `https://api-web.nhle.com/v1/club-stats-season/${abbreviation.rows[0].abbreviation}`
+    const response = await fetch(url);
+    seasonData = await response.json();
+  }
+
 
   const rosterData = (await fetchRoster()).sort((a,b) => {
     // return b.season.localeCompare(a.season)
@@ -328,12 +429,14 @@ export async function getStaticProps({params}) {
   })
   ;
 
+  let teamRecords = await getTeamSeasons(params.id);
 
   return {
     props: {
       teamId: params.id,
       seasons: rosterData,
-      abbreviation: abbreviation.rows[0].abbreviation
+      abbreviation: abbreviation.rows[0].abbreviation,
+      teamRecords
       // yearly_data: season_stats,
       // team_name,
       // team_data,
