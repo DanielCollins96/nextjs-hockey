@@ -34,14 +34,14 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
 
   return (
     <table
-      className="border border-black p-2 m-1 max-w-xl"
+      className="border border-black p-1 m-1 max-w-xl"
     >
    <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th className="p-1 whitespace-nowrap" key={header.id} colSpan={header.colSpan}>
+                  <th className="whitespace-nowrap" key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div
                         {...{
@@ -73,8 +73,9 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
         {table.getRowModel().rows?.map((row, i) => {
 
           const isNHL = row?.original['league.name'] == 'National Hockey League'
+
           return (
-            <tr key={row.id} className={`whitespace-nowrap ${isNHL ? "bg-slate-200" : ""}}`}>
+            <tr key={row.id} className={`whitespace-nowrap ` + (isNHL ? "bg-slate-200" : "")}>
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
@@ -99,7 +100,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
               <td
                 key={header.id}
                 colSpan={header.colSpan}
-                className="border-black px-1"
+                className="border-black"
               >
                 {header.isPlaceholder
                   ? null

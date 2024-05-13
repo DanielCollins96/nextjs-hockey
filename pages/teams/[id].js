@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import Link from "next/link";
 import Head from "next/head";
 import {useRouter} from "next/router";
@@ -5,7 +6,7 @@ import {useState, useMemo, useEffect} from "react";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 
 import ReactTable from "../../components/Table";
-import {getRoster} from "../../lib/queries";
+import {getTeamIds, getTeamSeasons} from "../../lib/queries";
 import {
   LineChart,
   Line,
@@ -15,47 +16,208 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import conn from "../../lib/db";
 
 export default function TeamPage({
-  yearly_data,
-  team_name,
-  team_data,
-  rosters,
-  seasons,
+teamId,
+  seasons = [],
+  abbreviation,
+  teamRecords
 }) {
+
   const router = useRouter();
-  const {id, season} = router.query;
-  const [seasonId, setSeasonId] = useState(season || "2022-23");
+  const {id, season: querySeason} = router.query;
+  const [seasonId, setSeasonId] = useState(querySeason || "20232024");
+
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const seasonIndex = seasons.findIndex(season => season.season === seasonId);
+    return seasonIndex === -1 ? 0 : seasonIndex;
+  });
+
+  const [seasonData, setSeasonData] = useState({});
 
   useEffect(() => {
-    setSeasonId(season || "2022-23")
-  }, [season]);
+    console.log('useeEffect seasonData');
+    const data = seasons.find(season => season.season === seasonId);
+    setSeasonData(data);
+
+  }, [seasonId, seasons]);
+
+// 
+useEffect(() => {
+  console.log('URL change detected:', querySeason);
+
+  if (querySeason && querySeason !== seasonId) {
+    const newIndex = seasons.findIndex(season => season.season === querySeason);
+    if (newIndex !== -1) {  // Ensure the season exists
+      setCurrentIndex(newIndex);
+      setSeasonId(querySeason);  // This will also update the displayed data via other useEffects
+    } else {
+      console.log('Season not found for:', querySeason);
+    }
+  }
+}, [querySeason]);
+
+  useEffect(() => {
+    console.log('useeEffect router');
+
+    if (router.query.season !== seasonId) {
+      router.push({
+      pathname: router.pathname, // Current path
+      query: { ...router.query, season: seasonId }, // Updated query parameter
+      },undefined,{shallow: false})
+    }
+  }, [seasonId])
+
+  const handleDecrementSeason = () => {
+  console.log('Next season');
+  if (currentIndex < seasons.length - 1) {
+    const newIndex = currentIndex + 1;
+    setCurrentIndex(newIndex);
+    setSeasonId(seasons[newIndex].season);
+  }
+  };
 
   const handleIncrementSeason = () => {
-    const currentIndex = seasons.indexOf(seasonId);
-    if (currentIndex < seasons.length - 1) {
-      setSeasonId(seasons[currentIndex + 1]);
-    }
-  };
-  const handleDecrementSeason = () => {
-    const currentIndex = seasons.indexOf(seasonId);
-    if (currentIndex > 0) {
-      setSeasonId(seasons[currentIndex - 1]);
-    }
+  console.log('Previous season');
+  console.log(currentIndex);
+  if (currentIndex > 0) {
+    const newIndex = currentIndex - 1;
+    setCurrentIndex(newIndex);
+    setSeasonId(seasons[newIndex].season);
+  }
   };
 
-  const team_table_data = useMemo(() => yearly_data, [yearly_data]);
+  const roster_goalie_table_columns = useMemo(
+    () => [
+      {
+        header: "Name",
+        accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.firstName.default + " " + props.row.original.lastName.default)
+      },
+            {
+        header: "GP",
+        accessorFn: (d) => d["gamesPlayed"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
+      },
+      {
+        header: "G",
+        accessorFn: (d) => d["goals"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "A",
+        accessorFn: (d) => d["assists"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: 'W',
+        accessorFn: (d) => d['wins'],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('W'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
 
-  const roster_table_data = useMemo(
-    () => rosters?.[seasonId] || [],
-    [rosters, seasonId]
+    },
+      {
+        header: 'L',
+        accessorFn: (d) => d['losses'],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('L'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+
+    },
+      {
+        header: 'GAA',
+        accessorFn: (d) => d['goalsAgainstAverage'],
+        cell: props =>  <p className="text-right">{props.getValue()?.toFixed(2) || null}</p>,
+        footer: ({ table }) => { 
+          const nhlGames = table.getFilteredRowModel().rows
+          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
+          let total = totalGaa / gp
+          return total.toFixed(2) || null
+        }
+      },
+      {
+        header: 'SV%',
+        accessorFn: (d) => d['savePercentage'],
+        cell: props => <p className="text-right">{props.getValue()?.toFixed(3) || null}</p>,
+        footer: ({ table }) => { 
+          const nhlGames = table.getFilteredRowModel()?.rows
+          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
+          let total = totalSvPct / gp
+          return total.toFixed(3) || null
+        },
+        
+    },
+      {
+        header: "PIM",
+        accessorFn: (d) => d["penaltyMinutes"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+    ])
+
+  const roster_player_table_columns = useMemo(
+    () => [
+      {
+        header: "Name",
+        accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.fullName)
+      },
+      {
+        header: "Pos.",
+        accessorFn: (d) => d["positionCode"],
+      },
+      {
+        header: "GP",
+        accessorFn: (d) => d["gamesPlayed"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
+      },
+      {
+        header: "G",
+        accessorFn: (d) => d["goals"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "A",
+        accessorFn: (d) => d["assists"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "P",
+        accessorFn: (d) => d["points"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "PIM",
+        accessorFn: (d) => d["penaltyMinutes"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+      {
+        header: "+/-",
+        accessorFn: (d) => d["plusMinus"],
+        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
+        cell: props => <p className="text-right">{props.getValue()}</p>
+      },
+    ],
+    []
   );
+
+  const team_table_data = useMemo(() => teamRecords, [teamRecords]);
 
   const team_table_columns = useMemo(
     () => [
       {
         header: "Year",
-        accessorKey: "year",
+        accessorKey: "seasonId",
       },
         {
           header: "W",
@@ -65,86 +227,38 @@ export default function TeamPage({
           header: "L",
           accessorKey: "losses",
         },
-        {
-          header: "OTL",
-          accessorKey: "ot",
-        },
+        // {
+        //   header: "ROW",
+        //   accessorKey: "row",
+        // },
+        // {
+        //   header: "S/O W",
+        //   accessorKey: "winsInShootout",
+        // },
         {
           header: "Pts",
-          accessorKey: "pts",
+          accessorKey: "points",
         },
         {
           header: "GFPG",
-          accessorKey: "goalsPerGame",
+          accessorKey: "goalsForPerGame",
         },
         {
           header: "GAPG",
           accessorKey: "goalsAgainstPerGame",
         },
-        {
-          header: "Place",
-          accessorKey: "place",
-        },
+        // {
+        //   header: "Place",
+        //   accessorKey: "place",
+        // },
     ],
     []
   );
 
-  const roster_table_columns = useMemo(
-    () => [
-      {
-        header: "Name",
-        accessorKey: "fullName",
-        cell: props => props.row.original?.id ? (<Link href={`/players/${props.row.original.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
-
-      },
-      {
-        header: "Pos.",
-        accessorFn: (d) => d["primaryPosition.code"],
-      },
-      {
-        header: "GP",
-        accessorFn: (d) => d["stat.games"],
-        cell: props => <p className="text-right">{props.getValue()}</p>,
-        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
-      },
-      {
-        header: "G",
-        accessorFn: (d) => d["stat.goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "A",
-        accessorFn: (d) => d["stat.assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "P",
-        accessorFn: (d) => d["stat.points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "PIM",
-        accessorFn: (d) => d["stat.pim"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-      {
-        header: "+/-",
-        accessorFn: (d) => d["stat.plusMinus"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
-    ],
-    []
-  );
-
-  return (
-    <div className="">
-      <Head>
-        <title>{team_name} Roster | the-nhl.com</title>
+return (
+  <div>
+          <Head>
+        <title>{abbreviation} Roster | the-nhl.com</title>
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
@@ -152,56 +266,61 @@ export default function TeamPage({
         ></script>
       </Head>
       <div className="text-center border border-black rounded p-2">
-        <p className="text-lg">{team_data[0]?.name}</p>
-        <p>{team_data[0]?.firstYearOfPlay}</p>
-        <Link href={`${team_data[0]?.officialSiteUrl}`}>
+        <p className="text-lg">{abbreviation}</p>
+        {/* <p>{team_data[0]?.firstYearOfPlay}</p> */}
+        {/* <Link href={`${team_data[0]?.officialSiteUrl}`}>
           <a className="hover:text-blue-700">{team_data[0]?.officialSiteUrl}</a>
-        </Link>
+        </Link> */}
       </div>
-      <div className="gap-1 p-1 flex flex-col lg:flex-row">
-        {roster_table_data && rosters && (
+            <div className="gap-1 p-1 flex flex-col lg:flex-row">
+
+          {seasons && (
           <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
-          <div className="flex">
-          <label className="px-1 text-lg" htmlFor="season">Season:</label>
+          <div className="flex items-center">
+            <label className="px-1 text-lg" htmlFor="season">Season:</label>
             <select
               className="flex w-32 justify-end"
               value={seasonId}
               onChange={(event) => {
                 const newSeasonId = event.target.value;
+                const newIndex = seasons.findIndex(season => season.season === newSeasonId);
                 setSeasonId(newSeasonId);
-                router.push({
-                  pathname: router.pathname, // Current path
-                  query: { ...router.query, season: newSeasonId }, // Updated query parameter
-                },undefined,{shallow: true});
+                setCurrentIndex(newIndex);;
               }}>
               {seasons &&
                 seasons?.map((szn) => {
                   return (
-                    <option key={szn} value={szn}>
-                      {JSON.stringify(szn)}
+                    <option key={szn.season} value={szn.season}>
+                      {szn.season}
                     </option>
                   );
                 })}
             </select>
-            <button onClick={handleIncrementSeason}><MdOutlineChevronLeft size={30} /></button>
-            <button onClick={handleDecrementSeason}><MdOutlineChevronRight size={30}/></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasons.length - 1}><MdOutlineChevronLeft size={28}/></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
 
           </div>
+          {seasonData && seasonData?.skaters &&
             <ReactTable
-              data={roster_table_data}
-              columns={roster_table_columns}
+              data={seasonData.skaters}
+              columns={roster_player_table_columns}
               sortKey="P"
             />
+          }
+          {seasonData && seasonData?.goalies &&
+            <ReactTable
+              data={seasonData.goalies}
+              columns={roster_goalie_table_columns}
+              sortKey="P"
+            />
+          }
           </div>
         )}
-        {!yearly_data ? (
-          <p className="grid place-self-top">Loading...</p>
-        ) : (
-          <div className="border-2 p-1 flex flex-col items-center">
-            <div className="p-2 flex flex-col">
+        <div className="border-2 p-1 flex flex-col">
+            <div className="p-2 mx-auto">
               {/* <input type="" /> */}
               <ResponsiveContainer width={450} height={300}>
-                <LineChart data={yearly_data}>
+                <LineChart data={team_table_data}>
                   <YAxis />
                   <XAxis dataKey="year" />
                   <Tooltip />
@@ -209,7 +328,7 @@ export default function TeamPage({
                   <Line
                     type="monotone"
                     name="Points"
-                    dataKey="pts"
+                    dataKey="points"
                     strokeWidth={2}
                     stroke="#000"
                   />
@@ -222,8 +341,8 @@ export default function TeamPage({
                   />
                   <Line
                     type="monotone"
-                    name="OT Wins"
-                    dataKey="ot"
+                    name="S/O Wins"
+                    dataKey="winsInShootout"
                     strokeWidth={2}
                     stroke="#11F"
                   />
@@ -237,7 +356,7 @@ export default function TeamPage({
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="p-2 max-w-48">
+      <div className="p-2 mx-auto">
               {team_table_data && (
                 <ReactTable
                   // columns={newColumns}
@@ -246,20 +365,20 @@ export default function TeamPage({
                   sortKey="year"
                 />
               )}
-            </div>
-          </div>
-        )}
       </div>
-    </div>
-  );
+      </div>
+      </div>
+  </div>
+)
+
 }
 
 export async function getStaticPaths() {
-  const path = "https://statsapi.web.nhl.com/api/v1/teams/";
-  const teams = await fetch(path);
-  const teamData = await teams.json();
-  let paths = teamData.teams.map((team) => ({
-    params: {id: team.id.toString()},
+  // const path = "https://statsapi.web.nhl.com/api/v1/teams/";
+  const teams = await getTeamIds();
+
+  let paths = teams?.map((team) => ({
+    params: {id: team.id},
   }));
   return {
     paths,
@@ -268,80 +387,142 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({params}) {
-  const fetchSeasons = async () => {
-    const team = await fetch(
-      `https://statsapi.web.nhl.com/api/v1/teams/${params.id}`
-    );
-    const data = await team.json();
-    const team_data = data.teams;
+  let abbreviation = null
+  let seasonData = null
 
-    const roster_data = await getRoster(params.id);
-    let rosters = roster_data
-    // .map(r => r.season = r.season.slice(0,4) +'-'+ r.season.slice(6) )
-    .reduce((r, curr) => {
-      (r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] = r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] || []).push(curr);
-      // (r[curr.season] = r[curr.season] || []).push(curr);
-      return r;
-    }, {});
-
-    let years = "20222023";
-    if (rosters) {
-      years = Object.keys(rosters);
-    }
-
-
-    let seasons = [];
-    for (let i = 2013; i <= 2022; i++) {
-      const res = await fetch(
-        `https://statsapi.web.nhl.com/api/v1/teams/${
-          params.id
-        }?expand=team.stats&season=${i}${i + 1}`
-      );
-      const seasonStats = await res.json();
-
-      if (!!seasonStats.teams) {
-        const keysToRetrieve = ['year', 'wins', 'losses','ot', 'pts', 'goalsPerGame', 'goalsAgainstPerGame', 'place'];
-
-        let season = {
-          ...seasonStats?.teams[0]?.teamStats[0]?.splits[0]?.stat,
-          ...{year: i},
-          ...{
-            wins: parseInt(
-              seasonStats.teams[0].teamStats[0].splits[0].stat.wins,
-              10
-            ),
-          },
-          ...{place: seasonStats.teams[0].teamStats[0].splits[1].stat.wins},
-          ...{name: seasonStats.teams[0].name},
-        }
-
-        const result = keysToRetrieve.reduce((obj, key) => {
-          obj[key] = season[key];
-          return obj;
-        }, {});
-
-        seasons.push(result);
-      }
-    }
-    let season_reqs = await Promise.allSettled(seasons);
-    let season_stats = season_reqs.map((season) => {
-      if (season.status === "fulfilled") {
-        return season.value;
-      }
+  const fetchRoster = async () => {
+    const fetchPromises = seasonData.map(year => {
+      const yearUrl = `https://api-web.nhle.com/v1/club-stats/${abbreviation.rows[0].abbreviation}/${year.season}/2`;
+      return fetch(yearUrl).then(response => response.json());
     });
 
-    let team_name = seasons[0]?.name || "Team";
-    return {
-      props: {
-        yearly_data: season_stats,
-        team_name,
-        team_data,
-        rosters,
-        seasons: years,
-      },
-      revalidate: 86400,
-    };
+    return Promise.all(fetchPromises);
   };
 
-  return fetchSeasons();
-}
+  try {
+  const sql = ` 
+      SELECT abbreviation
+      FROM staging1.team 
+      WHERE id = $1
+    ` 
+    abbreviation = await conn.query(sql,[params.id])  
+  } catch (error) {
+    console.log(error)
+  }
+
+  if (abbreviation) {
+    let url = `https://api-web.nhle.com/v1/club-stats-season/${abbreviation.rows[0].abbreviation}`
+    const response = await fetch(url);
+    seasonData = await response.json();
+  }
+
+
+  const rosterData = (await fetchRoster()).sort((a,b) => {
+    // return b.season.localeCompare(a.season)
+      if (a.season > b.season) {
+    return -1; // a comes before b
+  }
+  if (a.season < b.season) {
+    return 1; // b comes before a
+  }
+  return 0; // a and b are equal
+  })
+  ;
+
+  let teamRecords = await getTeamSeasons(params.id);
+
+  return {
+    props: {
+      teamId: params.id,
+      seasons: rosterData,
+      abbreviation: abbreviation.rows[0].abbreviation,
+      teamRecords
+      // yearly_data: season_stats,
+      // team_name,
+      // team_data,
+      // rosters,
+      // seasons: years,
+      }
+    }
+  }
+    
+
+
+// export async function getStaticProps({params}) {
+//   const fetchSeasons = async () => {
+//     const team = await fetch(
+//       `https://statsapi.web.nhl.com/api/v1/teams/${params.id}`
+//     );
+//     const data = await team.json();
+//     const team_data = data.teams;
+
+//     const roster_data = await getRoster(params.id);
+//     let rosters = roster_data
+//     // .map(r => r.season = r.season.slice(0,4) +'-'+ r.season.slice(6) )
+//     .reduce((r, curr) => {
+//       (r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] = r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] || []).push(curr);
+//       // (r[curr.season] = r[curr.season] || []).push(curr);
+//       return r;
+//     }, {});
+
+//     let years = "20222023";
+//     if (rosters) {
+//       years = Object.keys(rosters);
+//     }
+
+
+//     let seasons = [];
+//     for (let i = 2013; i <= 2022; i++) {
+//       const res = await fetch(
+//         `https://statsapi.web.nhl.com/api/v1/teams/${
+//           params.id
+//         }?expand=team.stats&season=${i}${i + 1}`
+//       );
+//       const seasonStats = await res.json();
+
+//       if (!!seasonStats.teams) {
+//         const keysToRetrieve = ['year', 'wins', 'losses','ot', 'pts', 'goalsPerGame', 'goalsAgainstPerGame', 'place'];
+
+//         let season = {
+//           ...seasonStats?.teams[0]?.teamStats[0]?.splits[0]?.stat,
+//           ...{year: i},
+//           ...{
+//             wins: parseInt(
+//               seasonStats.teams[0].teamStats[0].splits[0].stat.wins,
+//               10
+//             ),
+//           },
+//           ...{place: seasonStats.teams[0].teamStats[0].splits[1].stat.wins},
+//           ...{name: seasonStats.teams[0].name},
+//         }
+
+//         const result = keysToRetrieve.reduce((obj, key) => {
+//           obj[key] = season[key];
+//           return obj;
+//         }, {});
+
+//         seasons.push(result);
+//       }
+//     }
+//     let season_reqs = await Promise.allSettled(seasons);
+//     let season_stats = season_reqs.map((season) => {
+//       if (season.status === "fulfilled") {
+//         return season.value;
+//       }
+//     });
+
+//     let team_name = seasons[0]?.name || "Team";
+//     return {
+//       props: {
+//         yearly_data: season_stats,
+//         team_name,
+//         team_data,
+//         rosters,
+//         seasons: years,
+//       },
+//       revalidate: 86400,
+//     };
+//   };
+
+//   return fetchSeasons();
+// }

@@ -2,36 +2,25 @@ import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox'; 
 import Head from 'next/head'
+import { getTeams } from '../../lib/queries';
 
-const fetchPlayers = async () => {
-  const teams = []
-  try {
-    const res = await fetch('https://statsapi.web.nhl.com/api/v1/teams?expand=team.roster');
-    if (!res.ok) {
-      throw new Error(`Failed to fetch, status: ${res.status}`)
-    }
-    const resJson = await res.json();
-    teams = resJson.teams
-  } catch (error) {
-    console.log("Error Fetching Teams:", error.message);
-  }
-    return teams
-};
-export default function Teams({playerData}) {
+
+export default function Teams({rosters}) {
 
     const [loading, setLoading] = useState(true)
-    const [filteredPlayers, setFilteredPlayers] = useState([]);
+    const [filteredTeams, setFilteredTeams] = useState([]);
 
 
     useEffect(() => {
-        setFilteredPlayers(playerData)
-    }, [playerData])
+        setFilteredTeams(rosters)
+    }, [rosters])
     
     const inputChange = (e) => {
         let searchTerm = e.target.value
         console.log(e.target.value);
-        let newList = playerData.filter((team) => team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
-        setFilteredPlayers(newList)
+        let newList = rosters
+        .filter((team) => team.team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
+        setFilteredTeams(newList)
     }
 
     return (
@@ -49,13 +38,14 @@ export default function Teams({playerData}) {
             </div>
             {/* <div className="flex flex-wrap justify-center my-2 mx-4"> */}
             <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
+            {/* <p>{JSON.stringify(filteredTeams)}</p> */}
                 {
-                    filteredPlayers &&
-                    filteredPlayers
+                    filteredTeams &&
+                    filteredTeams
                     .sort((teamA, teamB) => {
-                        return teamA.name > teamB.name ? 1 : -1
+                        return teamA.team.abbreviation > teamB.team.abbreviation ? 1 : -1
                     })                    
-                    .map((team) => <TeamBox team={team} key={team.id}/>)
+                    .map((team) => <TeamBox team={team} key={team.abbreviation}/>)
                 }       
             </div>
         </div>
@@ -63,10 +53,27 @@ export default function Teams({playerData}) {
 }
 
 export async function getStaticProps() {
-    const teams = await fetchPlayers();
+    // const teams = await fetchPlayers();
+  const teams = await getTeams();
+    // console.log(teams);
+    const fetchRosterPromises = await teams?.map(team => {
+        let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
+        console.log(url);
+        return fetch(url)
+            .then(res => res.json())
+            .then(data => ({
+                team,
+                roster: data
+            }))
+    })
+
+    const rosters = await Promise.all(fetchRosterPromises)
+
+    console.log(rosters);
+
     return {
         props: {
-            playerData: teams
+            rosters
         },
         revalidate: 3600
     }

@@ -13,9 +13,9 @@ const Players = ({playerId, stats, person, imageData}) => {
     const router = useRouter()
     const { id } = router.query
 
-    const position = person && person['primaryPosition.code'] ? person['primaryPosition.code'] : 'C';
+    const position = person && person['primaryPosition.name'] ? person['primaryPosition.name'] : 'Center';
 
-    let positionalColumns = position !== 'G' ? [
+    let positionalColumns = position !== 'Goalie' ? [
       {
         header: 'G',
         accessorFn: (d) => d["stat.goals"],
@@ -193,10 +193,10 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
     const { id } = params
-    let person = null
+    let person = []
     try {
         person = await getPlayer(id)
-        if (person.length == 0) {
+        if (!person || person.length === 0) {
             return {
             props: {
                 playerId: params.id,
@@ -208,8 +208,8 @@ export async function getStaticProps({params}) {
     } catch (error) {
         console.log(error);
     }
-    const stats = await getPlayerStats(id)
-    let url = `http://nhl.bamcontent.com/images/headshots/current/168x168/${id}.jpg`
+    const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
+    let url = `https://assets.nhle.com/mugs/nhl/latest/${id}.png`
     let imageData = null
     try {
         const response = await fetch(url);

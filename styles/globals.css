@@ -8,3 +8,13 @@
     --amplify-primary-tint: #ff7359;
     --amplify-primary-shade: #e0573e;
   }
+
+/* Specific styles for enabled buttons */
+.btn-blue {
+  @apply p-1 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50
+}
+
+/* Specific styles for disabled buttons */
+.btn-disabled {
+  @apply disabled:cursor-not-allowed disabled:opacity-50;
+}

@@ -101,7 +101,6 @@ export async function getStaticProps({params}) {
     // Group players by round number
     if (draft) {
       draft = draft.reduce((acc, player) => {
-      console.log(player)
       if (!acc[player.roundNumber]) {
         acc[player.roundNumber] = [];
       }
