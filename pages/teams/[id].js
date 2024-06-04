@@ -6,7 +6,7 @@ import {useState, useMemo, useEffect} from "react";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 
 import ReactTable from "../../components/Table";
-import {getTeamIds, getTeamSeasons} from "../../lib/queries";
+import {getTeamIds, getTeamSeasons, getTeamSkaters, getTeamGoalies} from "../../lib/queries";
 import {
   LineChart,
   Line,
@@ -19,8 +19,8 @@ import {
 import conn from "../../lib/db";
 
 export default function TeamPage({
-teamId,
   seasons = [],
+  seasonIds = [],
   abbreviation,
   teamRecords
 }) {
@@ -29,33 +29,31 @@ teamId,
   const {id, season: querySeason} = router.query;
   const [seasonId, setSeasonId] = useState(querySeason || "20232024");
 
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    const seasonIndex = seasons.findIndex(season => season.season === seasonId);
-    return seasonIndex === -1 ? 0 : seasonIndex;
-  });
+  const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId))
 
-  const [seasonData, setSeasonData] = useState({});
+  const [seasonData, setSeasonData] = useState(seasons[seasonId]);
 
   useEffect(() => {
-    console.log('useeEffect seasonData');
-    const data = seasons.find(season => season.season === seasonId);
-    setSeasonData(data);
+    if (seasons[seasonId]) {
+      setSeasonData(seasons[seasonId]);
+      setCurrentIndex(seasonIds.indexOf(seasonId));
+    }
 
-  }, [seasonId, seasons]);
+  }, [seasons, seasonId, seasonIds]);
 
 // 
 useEffect(() => {
   console.log('URL change detected:', querySeason);
 
-  if (querySeason && querySeason !== seasonId) {
-    const newIndex = seasons.findIndex(season => season.season === querySeason);
-    if (newIndex !== -1) {  // Ensure the season exists
-      setCurrentIndex(newIndex);
-      setSeasonId(querySeason);  // This will also update the displayed data via other useEffects
-    } else {
-      console.log('Season not found for:', querySeason);
-    }
-  }
+  // if (querySeason && querySeason !== seasonId) {
+  //   const newIndex = seasons.findIndex(season => season.season === querySeason);
+  //   if (newIndex !== -1) {  // Ensure the season exists
+  //     setCurrentIndex(newIndex);
+  //     setSeasonId(querySeason);  // This will also update the displayed data via other useEffects
+  //   } else {
+  //     console.log('Season not found for:', querySeason);
+  //   }
+  // }
 }, [querySeason]);
 
   useEffect(() => {
@@ -71,10 +69,10 @@ useEffect(() => {
 
   const handleDecrementSeason = () => {
   console.log('Next season');
-  if (currentIndex < seasons.length - 1) {
+  if (currentIndex < seasonIds.length - 1) {
     const newIndex = currentIndex + 1;
     setCurrentIndex(newIndex);
-    setSeasonId(seasons[newIndex].season);
+    setSeasonId(seasonIds[newIndex]);
   }
   };
 
@@ -84,7 +82,7 @@ useEffect(() => {
   if (currentIndex > 0) {
     const newIndex = currentIndex - 1;
     setCurrentIndex(newIndex);
-    setSeasonId(seasons[newIndex].season);
+    setSeasonId(seasonIds[newIndex]);
   }
   };
 
@@ -93,7 +91,7 @@ useEffect(() => {
       {
         header: "Name",
         accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
-        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.firstName.default + " " + props.row.original.lastName.default)
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : props.row.original.fullName
       },
             {
         header: "GP",
@@ -104,27 +102,47 @@ useEffect(() => {
       {
         header: "G",
         accessorFn: (d) => d["goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
+        footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('G'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },        cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "A",
         accessorFn: (d) => d["assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
+        footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('A'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },        cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: 'W',
         accessorFn: (d) => d['wins'],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('W'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
+        footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('W'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },        cell: props => <p className="text-right">{props.getValue()}</p>
 
     },
       {
         header: 'L',
         accessorFn: (d) => d['losses'],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('L'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
+        footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('L'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },        cell: props => <p className="text-right">{props.getValue()}</p>
 
     },
       {
@@ -132,31 +150,60 @@ useEffect(() => {
         accessorFn: (d) => d['goalsAgainstAverage'],
         cell: props =>  <p className="text-right">{props.getValue()?.toFixed(2) || null}</p>,
         footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
-          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
-          let total = totalGaa / gp
-          return total.toFixed(2) || null
+          const nhlGames = table.getFilteredRowModel()?.rows;
+          if (!nhlGames || nhlGames.length === 0) return null;
+
+          let gp = nhlGames.reduce((total, row) => {
+            const gpValue = Number(row.getValue('GP'));
+            return total + (isNaN(gpValue) ? 0 : gpValue);
+          }, 0);
+
+          let totalGaa = nhlGames.reduce((total, row) => {
+            const gpValue = Number(row.getValue('GP'));
+            const gaaValue = Number(row.getValue('GAA'));
+            return total + (isNaN(gpValue) || isNaN(gaaValue) ? 0 : gpValue * gaaValue);
+          }, 0);
+
+          if (gp === 0) return null;
+          let total = totalGaa / gp;
+          return total.toFixed(2) || null;
         }
       },
       {
         header: 'SV%',
         accessorFn: (d) => d['savePercentage'],
         cell: props => <p className="text-right">{props.getValue()?.toFixed(3) || null}</p>,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel()?.rows
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
-          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
-          let total = totalSvPct / gp
-          return total.toFixed(3) || null
+        footer: ({ table }) => {
+          const nhlGames = table.getFilteredRowModel()?.rows;
+          if (!nhlGames || nhlGames.length === 0) return null;
+
+          let gp = nhlGames.reduce((total, row) => {
+            const gpValue = Number(row.getValue('GP'));
+            return total + (isNaN(gpValue) ? 0 : gpValue);
+          }, 0);
+
+          let totalSvPct = nhlGames.reduce((total, row) => {
+            const gpValue = Number(row.getValue('GP'));
+            const svPctValue = Number(row.getValue('SV%'));
+            return total + (isNaN(gpValue) || isNaN(svPctValue) ? 0 : gpValue * svPctValue);
+          }, 0);
+
+          if (gp === 0) return null;
+          let total = totalSvPct / gp;
+          return total.toFixed(3) || null;
         },
         
     },
       {
         header: "PIM",
         accessorFn: (d) => d["penaltyMinutes"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
+        footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('PIM'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },        cell: props => <p className="text-right">{props.getValue()}</p>
       },
     ])
 
@@ -164,8 +211,8 @@ useEffect(() => {
     () => [
       {
         header: "Name",
-        accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
-        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.firstName.default + " " + props.row.original.lastName.default}</a></Link>) : (props.row.original.fullName)
+        accessorFn: (d) =>  (d['fullName']),
+        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
       },
       {
         header: "Pos.",
@@ -175,36 +222,64 @@ useEffect(() => {
         header: "GP",
         accessorFn: (d) => d["gamesPlayed"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
-        // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
       },
       {
         header: "G",
         accessorFn: (d) => d["goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('G'), 0),
+        footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('G'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "A",
         accessorFn: (d) => d["assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('A'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
+       footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('A'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },        cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "P",
         accessorFn: (d) => d["points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('P'), 0),
+       footer: ({ table }) => {
+          const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+            const value = Number(row.getValue('P'));
+            return total + (isNaN(value) ? 0 : value);
+          }, 0);
+          return total;
+        },
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "PIM",
         accessorFn: (d) => d["penaltyMinutes"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('PIM'), 0),
+        footer: ({ table }) => {
+            const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+              const value = Number(row.getValue('PIM'));
+              return total + (isNaN(value) ? 0 : value);
+            }, 0);
+            return total;
+          },
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
       {
         header: "+/-",
         accessorFn: (d) => d["plusMinus"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('+/-'), 0),
+        footer: ({ table }) => {
+            const total = table.getFilteredRowModel().rows?.reduce((total, row) => {
+              const value = Number(row.getValue('+/-'));
+              return total + (isNaN(value) ? 0 : value);
+            }, 0);
+            return total;
+          },  
         cell: props => <p className="text-right">{props.getValue()}</p>
       },
     ],
@@ -283,23 +358,25 @@ return (
               value={seasonId}
               onChange={(event) => {
                 const newSeasonId = event.target.value;
-                const newIndex = seasons.findIndex(season => season.season === newSeasonId);
+                const newIndex = seasonIds.indexOf(newSeasonId);
                 setSeasonId(newSeasonId);
                 setCurrentIndex(newIndex);;
               }}>
-              {seasons &&
-                seasons?.map((szn) => {
+              {seasonIds &&
+                seasonIds?.map((szn) => {
                   return (
-                    <option key={szn.season} value={szn.season}>
-                      {szn.season}
+                    <option key={szn} value={szn}>
+                      {szn}
                     </option>
                   );
-                })}
+                })
+                }
             </select>
-            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasons.length - 1}><MdOutlineChevronLeft size={28}/></button>
+            <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasonIds.length - 1}><MdOutlineChevronLeft size={28}/></button>
             <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
 
           </div>
+          
           {seasonData && seasonData?.skaters &&
             <ReactTable
               data={seasonData.skaters}
@@ -374,9 +451,7 @@ return (
 }
 
 export async function getStaticPaths() {
-  // const path = "https://statsapi.web.nhl.com/api/v1/teams/";
   const teams = await getTeamIds();
-
   let paths = teams?.map((team) => ({
     params: {id: team.id},
   }));
@@ -388,17 +463,6 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
   let abbreviation = null
-  let seasonData = null
-
-  const fetchRoster = async () => {
-    const fetchPromises = seasonData.map(year => {
-      const yearUrl = `https://api-web.nhle.com/v1/club-stats/${abbreviation.rows[0].abbreviation}/${year.season}/2`;
-      return fetch(yearUrl).then(response => response.json());
-    });
-
-    return Promise.all(fetchPromises);
-  };
-
   try {
   const sql = ` 
       SELECT abbreviation
@@ -411,118 +475,44 @@ export async function getStaticProps({params}) {
   }
 
   if (abbreviation) {
-    let url = `https://api-web.nhle.com/v1/club-stats-season/${abbreviation.rows[0].abbreviation}`
-    const response = await fetch(url);
-    seasonData = await response.json();
+    abbreviation = abbreviation.rows[0].abbreviation
   }
 
+  let skaters = await getTeamSkaters(params.id);
+  let goalies = await getTeamGoalies(params.id);
 
-  const rosterData = (await fetchRoster()).sort((a,b) => {
-    // return b.season.localeCompare(a.season)
-      if (a.season > b.season) {
-    return -1; // a comes before b
-  }
-  if (a.season < b.season) {
-    return 1; // b comes before a
-  }
-  return 0; // a and b are equal
-  })
-  ;
+  const combinePlayersBySeason = (skaters, goalies) => {
+    const seasonMap = {};
 
+    skaters.forEach(skaters => {
+      const season = skaters.season;
+      if (!seasonMap[season]) {
+        seasonMap[season] = { skaters: [], goalies: [] };
+      }
+      seasonMap[season].skaters.push(skaters);
+    });
+
+    goalies.forEach(goalie => {
+      const season = goalie.season;
+      if (!seasonMap[season]) {
+        seasonMap[season] = { skaters: [], goalies: [] };
+      }
+      seasonMap[season].goalies.push(goalie);
+    });
+
+    return seasonMap;
+  };
+
+  const seasonMap = combinePlayersBySeason(skaters, goalies);
+  const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
   let teamRecords = await getTeamSeasons(params.id);
 
   return {
     props: {
-      teamId: params.id,
-      seasons: rosterData,
-      abbreviation: abbreviation.rows[0].abbreviation,
-      teamRecords
-      // yearly_data: season_stats,
-      // team_name,
-      // team_data,
-      // rosters,
-      // seasons: years,
+      seasons: seasonMap,
+      seasonIds: seasons,
+      abbreviation,
+      teamRecords,
       }
     }
   }
-    
-
-
-// export async function getStaticProps({params}) {
-//   const fetchSeasons = async () => {
-//     const team = await fetch(
-//       `https://statsapi.web.nhl.com/api/v1/teams/${params.id}`
-//     );
-//     const data = await team.json();
-//     const team_data = data.teams;
-
-//     const roster_data = await getRoster(params.id);
-//     let rosters = roster_data
-//     // .map(r => r.season = r.season.slice(0,4) +'-'+ r.season.slice(6) )
-//     .reduce((r, curr) => {
-//       (r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] = r[curr.season.slice(0,4)+'-'+curr.season.slice(6)] || []).push(curr);
-//       // (r[curr.season] = r[curr.season] || []).push(curr);
-//       return r;
-//     }, {});
-
-//     let years = "20222023";
-//     if (rosters) {
-//       years = Object.keys(rosters);
-//     }
-
-
-//     let seasons = [];
-//     for (let i = 2013; i <= 2022; i++) {
-//       const res = await fetch(
-//         `https://statsapi.web.nhl.com/api/v1/teams/${
-//           params.id
-//         }?expand=team.stats&season=${i}${i + 1}`
-//       );
-//       const seasonStats = await res.json();
-
-//       if (!!seasonStats.teams) {
-//         const keysToRetrieve = ['year', 'wins', 'losses','ot', 'pts', 'goalsPerGame', 'goalsAgainstPerGame', 'place'];
-
-//         let season = {
-//           ...seasonStats?.teams[0]?.teamStats[0]?.splits[0]?.stat,
-//           ...{year: i},
-//           ...{
-//             wins: parseInt(
-//               seasonStats.teams[0].teamStats[0].splits[0].stat.wins,
-//               10
-//             ),
-//           },
-//           ...{place: seasonStats.teams[0].teamStats[0].splits[1].stat.wins},
-//           ...{name: seasonStats.teams[0].name},
-//         }
-
-//         const result = keysToRetrieve.reduce((obj, key) => {
-//           obj[key] = season[key];
-//           return obj;
-//         }, {});
-
-//         seasons.push(result);
-//       }
-//     }
-//     let season_reqs = await Promise.allSettled(seasons);
-//     let season_stats = season_reqs.map((season) => {
-//       if (season.status === "fulfilled") {
-//         return season.value;
-//       }
-//     });
-
-//     let team_name = seasons[0]?.name || "Team";
-//     return {
-//       props: {
-//         yearly_data: season_stats,
-//         team_name,
-//         team_data,
-//         rosters,
-//         seasons: years,
-//       },
-//       revalidate: 86400,
-//     };
-//   };
-
-//   return fetchSeasons();
-// }
