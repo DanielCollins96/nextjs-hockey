@@ -41,7 +41,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th className="whitespace-nowrap" key={header.id} colSpan={header.colSpan}>
+                  <th className="whitespace-nowrap bg-white border border-blue-600" key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div
                         {...{

@@ -205,6 +205,26 @@ useEffect(() => {
           return total;
         },        cell: props => <p className="text-right">{props.getValue()}</p>
       },
+      {
+        header: "PO GP",
+        accessorFn: (d) => d["playoffGamesPlayed"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
+      {
+        header: "PO P",
+        accessorFn: (d) => d["playoffPoints"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
+      {
+        header: "PO W",
+        accessorFn: (d) => d["playoffWins"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
+      {
+        header: "PO L",
+        accessorFn: (d) => d["playoffLosses"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
     ])
 
   const roster_player_table_columns = useMemo(
@@ -214,6 +234,9 @@ useEffect(() => {
         accessorFn: (d) =>  (d['fullName']),
         cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
       },
+      {
+        header: "Regular Season",
+        columns: [
       {
         header: "Pos.",
         accessorFn: (d) => d["positionCode"],
@@ -281,7 +304,36 @@ useEffect(() => {
             return total;
           },  
         cell: props => <p className="text-right">{props.getValue()}</p>
+      }]},
+      {
+      header: "Playoffs",
+      columns: [
+      {
+        header: "GP",
+        accessorFn: (d) => d["playoffGamesPlayed"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
       },
+      {
+        header: "G",
+        accessorFn: (d) => d["playoffGoals"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
+      {
+        header: "A",
+        accessorFn: (d) => d["playoffAssists"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
+      {
+        header: "P",
+        accessorFn: (d) => d["playoffPoints"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      },
+      {
+        header: "PIM",
+        accessorFn: (d) => d["playoffPenaltyMinutes"],
+        cell: props => <p className="text-right">{props.getValue()}</p>,
+      }]
+      }
     ],
     []
   );
