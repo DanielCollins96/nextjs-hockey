@@ -27,11 +27,16 @@ export default function TeamPage({
 
   const router = useRouter();
   const {id, season: querySeason} = router.query;
+
   const [seasonId, setSeasonId] = useState(querySeason || "20232024");
-
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId))
-
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
+
+  const [showPlayoffStats, setShowPlayoffStats] = useState(true);
+
+const togglePlayoffStats = () => {
+  setShowPlayoffStats(prev => !prev);
+};
 
   useEffect(() => {
     if (seasons[seasonId]) {
@@ -87,12 +92,17 @@ useEffect(() => {
   };
 
   const roster_goalie_table_columns = useMemo(
-    () => [
+    () => {
+    const baseColumns =
+    [
       {
         header: "Name",
         accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
         cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : props.row.original.fullName
       },
+      {
+        header: "Regular Season",
+        columns: [
             {
         header: "GP",
         accessorFn: (d) => d["gamesPlayed"],
@@ -204,7 +214,11 @@ useEffect(() => {
           }, 0);
           return total;
         },        cell: props => <p className="text-right">{props.getValue()}</p>
-      },
+    }]}]
+      const playoffColumns = [
+      {
+      header: "Playoffs",
+      columns: [
       {
         header: "PO GP",
         accessorFn: (d) => d["playoffGamesPlayed"],
@@ -224,11 +238,14 @@ useEffect(() => {
         header: "PO L",
         accessorFn: (d) => d["playoffLosses"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
-      },
-    ])
+      },]}
+    ]
+    return showPlayoffStats ? [...baseColumns, ...playoffColumns] : baseColumns;
+    },[showPlayoffStats]
+    )
 
   const roster_player_table_columns = useMemo(
-    () => [
+    () => {const baseColumns = [
       {
         header: "Name",
         accessorFn: (d) =>  (d['fullName']),
@@ -304,7 +321,8 @@ useEffect(() => {
             return total;
           },  
         cell: props => <p className="text-right">{props.getValue()}</p>
-      }]},
+      }]}]
+      const playoffColumns= [
       {
       header: "Playoffs",
       columns: [
@@ -334,8 +352,11 @@ useEffect(() => {
         cell: props => <p className="text-right">{props.getValue()}</p>,
       }]
       }
-    ],
-    []
+    ]
+    return showPlayoffStats ? [...baseColumns, ...playoffColumns] : baseColumns;
+
+    },
+    [showPlayoffStats]
   );
 
   const team_table_data = useMemo(() => teamRecords, [teamRecords]);
@@ -403,7 +424,8 @@ return (
 
           {seasons && (
           <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
             <label className="px-1 text-lg" htmlFor="season">Season:</label>
             <select
               className="flex w-32 justify-end"
@@ -426,7 +448,10 @@ return (
             </select>
             <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasonIds.length - 1}><MdOutlineChevronLeft size={28}/></button>
             <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
-
+          </div>
+          <button onClick={togglePlayoffStats} className=" bg-red-500 text-white p-2 rounded">
+            {showPlayoffStats ? 'Hide Playoff Stats' : 'Show Playoff Stats'}
+          </button>
           </div>
           
           {seasonData && seasonData?.skaters &&
