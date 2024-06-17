@@ -39,6 +39,12 @@ const togglePlayoffStats = () => {
 };
 
   useEffect(() => {
+    if (window.innerWidth < 600) {
+      setShowPlayoffStats(false);
+    }
+  }, []); // Empty dependency array ensures this runs only on mount
+
+  useEffect(() => {
     if (seasons[seasonId]) {
       setSeasonData(seasons[seasonId]);
       setCurrentIndex(seasonIds.indexOf(seasonId));
@@ -328,26 +334,31 @@ useEffect(() => {
       columns: [
       {
         header: "GP",
+        id: "PO GP",
         accessorFn: (d) => d["playoffGamesPlayed"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
       },
       {
         header: "G",
+        id: "PO G",
         accessorFn: (d) => d["playoffGoals"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
       },
       {
         header: "A",
+        id: "PO A",
         accessorFn: (d) => d["playoffAssists"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
       },
       {
         header: "P",
+        id: "PO P",
         accessorFn: (d) => d["playoffPoints"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
       },
       {
         header: "PIM",
+        id: "PO PIM",
         accessorFn: (d) => d["playoffPenaltyMinutes"],
         cell: props => <p className="text-right">{props.getValue()}</p>,
       }]
@@ -423,10 +434,11 @@ return (
             <div className="gap-1 p-1 flex flex-col lg:flex-row">
 
           {seasons && (
-          <div className="border-2  w-screen p-1 flex flex-col max-w-2xl">
+          <div className="border-2 w-screen p-1 flex flex-col max-w-2xl">
           <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <label className="px-1 text-lg" htmlFor="season">Season:</label>
+          <div>
+            <label className="px-1" htmlFor="season">Season:</label>
             <select
               className="flex w-32 justify-end"
               value={seasonId}
@@ -446,11 +458,12 @@ return (
                 })
                 }
             </select>
+          </div>
             <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasonIds.length - 1}><MdOutlineChevronLeft size={28}/></button>
             <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
           </div>
           <button onClick={togglePlayoffStats} className=" bg-red-500 text-white p-2 rounded">
-            {showPlayoffStats ? 'Hide Playoff Stats' : 'Show Playoff Stats'}
+            {showPlayoffStats ? 'Hide PO Stats' : 'Show PO Stats'}
           </button>
           </div>
           
