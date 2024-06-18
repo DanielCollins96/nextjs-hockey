@@ -65,7 +65,7 @@ function onPress() {
         <div>
         <div className="relative w-5/6 max-w-sm m-auto box-border">
                 <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
-                <input autoFocus 
+                <input 
                 onChange={inputChange} 
                 className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
             </div>

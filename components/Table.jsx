@@ -34,14 +34,14 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
 
   return (
     <table
-      className="border border-black p-1 m-1 max-w-xl"
+      className="border border-black px-1 m-1 "
     >
    <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th className="whitespace-nowrap" key={header.id} colSpan={header.colSpan}>
+                  <th className="px-1 whitespace-nowrap bg-white border border-blue-600" key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div
                         {...{
@@ -79,7 +79,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
-                    className="border-black border px-1"
+                    className="border-black border px-1 text-sm"
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
