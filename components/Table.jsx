@@ -34,7 +34,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
 
   return (
     <table
-      className="border border-black p-1 m-1 "
+      className="border border-black px-1 m-1 "
     >
    <thead>
           {table.getHeaderGroups().map(headerGroup => (

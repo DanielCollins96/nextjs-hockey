@@ -6,7 +6,7 @@ import {useState, useMemo, useEffect} from "react";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 
 import ReactTable from "../../components/Table";
-import {getTeamIds, getTeamSeasons, getTeamSkaters, getTeamGoalies} from "../../lib/queries";
+import {getTeamIds, getTeamSeasons, getTeamSkaters, getTeamGoalies, getPlayoffYears} from "../../lib/queries";
 import {
   LineChart,
   Line,
@@ -32,7 +32,9 @@ export default function TeamPage({
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId))
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
 
-  const [showPlayoffStats, setShowPlayoffStats] = useState(true);
+
+  const initialShowPlayoffStats = seasonData && seasonData.madePlayoffs ? true : false;
+  const [showPlayoffStats, setShowPlayoffStats] = useState(initialShowPlayoffStats);
 
 const togglePlayoffStats = () => {
   setShowPlayoffStats(prev => !prev);
@@ -48,6 +50,9 @@ const togglePlayoffStats = () => {
     if (seasons[seasonId]) {
       setSeasonData(seasons[seasonId]);
       setCurrentIndex(seasonIds.indexOf(seasonId));
+      if (!seasons[seasonId].madePlayoffs) {
+      setShowPlayoffStats(false);
+    }
     }
 
   }, [seasons, seasonId, seasonIds]);
@@ -452,7 +457,7 @@ return (
                 seasonIds?.map((szn) => {
                   return (
                     <option key={szn} value={szn}>
-                      {szn}
+                      {szn} {seasons && seasons[szn].madePlayoffs ? '(P)' : ''}
                     </option>
                   );
                 })
@@ -462,9 +467,10 @@ return (
             <button className="btn-blue m-1 btn-disabled" onClick={handleDecrementSeason} disabled={currentIndex >= seasonIds.length - 1}><MdOutlineChevronLeft size={28}/></button>
             <button className="btn-blue m-1 btn-disabled" onClick={handleIncrementSeason} disabled={currentIndex <= 0}><MdOutlineChevronRight size={28}/></button>
           </div>
-          <button onClick={togglePlayoffStats} className=" bg-red-500 text-white p-2 rounded">
+
+          {seasonData && seasonData.madePlayoffs && (<button onClick={togglePlayoffStats} className=" bg-red-500 text-white p-2 rounded">
             {showPlayoffStats ? 'Hide PO Stats' : 'Show PO Stats'}
-          </button>
+          </button>)}
           </div>
           
           {seasonData && seasonData?.skaters &&
@@ -595,6 +601,11 @@ export async function getStaticProps({params}) {
 
   const seasonMap = combinePlayersBySeason(skaters, goalies);
   const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
+  const playoffSeasons = await getPlayoffYears(abbreviation)
+  
+  seasons.forEach(season => {
+    seasonMap[season].madePlayoffs = playoffSeasons.includes(season);
+});
   let teamRecords = await getTeamSeasons(params.id);
 
   return {
@@ -602,7 +613,7 @@ export async function getStaticProps({params}) {
       seasons: seasonMap,
       seasonIds: seasons,
       abbreviation,
-      teamRecords,
+      teamRecords
       }
     }
   }
