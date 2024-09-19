@@ -26,17 +26,34 @@ export default function TeamBox({team}) {
         </div>
         <ul  className="grid grid-cols-3 divide-x divide-y" >
           {
-            team?.roster?.skaters
-              .sort((playerA, playerB) => {
+            team?.roster?.forwards
+              ?.sort((playerA, playerB) => {
                 return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
               })
               .map((person) => {
                 return (
-                  <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
+                  <li key={person?.id} className="odd:bg-slate-100 px-1 divide-x">
                     <Link
-                      href={`/players/${encodeURIComponent(person.playerId)}`}
+                      href={`/players/${encodeURIComponent(person.id)}`}
                     >
-                      <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.firstName?.default + " " + person.lastName?.default}</a>
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName?.default + " " + person.lastName?.default}</a>
+                    </Link>
+                  </li>
+                );
+              })
+            }
+          {
+            team?.roster?.defensemen
+              ?.sort((playerA, playerB) => {
+                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
+              })
+              .map((person) => {
+                return (
+                  <li key={person?.id} className="odd:bg-slate-100 px-1 divide-x">
+                    <Link
+                      href={`/players/${encodeURIComponent(person.id)}`}
+                    >
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName?.default + " " + person.lastName?.default}</a>
                     </Link>
                   </li>
                 );
@@ -44,16 +61,16 @@ export default function TeamBox({team}) {
             }
           {
             team?.roster?.goalies
-              .sort((playerA, playerB) => {
+              ?.sort((playerA, playerB) => {
                 return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
               })
               .map((person) => {
                 return (
-                  <li key={person.person?.id} className="odd:bg-slate-100 px-1 divide-x">
+                  <li key={person?.id} className="odd:bg-slate-100 px-1 divide-x">
                     <Link
-                      href={`/players/${encodeURIComponent(person.playerId)}`}
+                      href={`/players/${encodeURIComponent(person.id)}`}
                     >
-                      <a className="text-sm hover:text-blue-700 visited:text-purple-800">{person.firstName?.default + " " + person.lastName?.default}</a>
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName?.default + " " + person.lastName?.default}</a>
                     </Link>
                   </li>
                 );
