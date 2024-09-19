@@ -27,7 +27,7 @@ export default function Teams({rosters}) {
         <div>
             <Head>
                <title>
-                NHL Rosters | the-nhl.com
+                NHL Rosters | hockeydb.xyz
                 </title> 
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
      crossOrigin="anonymous"></script>

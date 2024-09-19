@@ -149,7 +149,7 @@ const Players = ({playerId, stats, person, imageData}) => {
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
                 <title>
-                   {person?.fullName ? person.fullName : 'Player'} Hockey Stats and Profile | the-nhl.com
+                   {person?.fullName ? person.fullName : 'Player'} Hockey Stats and Profile | hockeydb.xyz
                 </title>
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
      crossOrigin="anonymous"></script>

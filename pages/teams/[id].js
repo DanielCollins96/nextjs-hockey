@@ -73,7 +73,7 @@ useEffect(() => {
 }, [querySeason]);
 
   useEffect(() => {
-    console.log('useeEffect router');
+    console.log('useEffect router');
 
     if (router.query.season !== seasonId) {
       router.push({
@@ -422,7 +422,7 @@ useEffect(() => {
 return (
   <div>
           <Head>
-        <title>{abbreviation} Roster | the-nhl.com</title>
+        <title>{abbreviation} Roster | hockeydb.xyz</title>
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
