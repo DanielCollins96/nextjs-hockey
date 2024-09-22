@@ -51,7 +51,7 @@ export default function ReactTable({columns, data, sortKey = "season", filterCol
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th className="p-1" key={header.id} colSpan={header.colSpan}>
+                  <th className="" key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div
                         {...{
@@ -93,7 +93,7 @@ export default function ReactTable({columns, data, sortKey = "season", filterCol
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
-                    className="border-black border px-1"
+                    className="border-black border px-1 text-sm"
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -130,28 +130,28 @@ export default function ReactTable({columns, data, sortKey = "season", filterCol
     </table>
     <div className="flex items-center gap-2">
         <button
-          className="border rounded p-1"
+          className="border rounded "
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
           {'<<'}
         </button>
         <button
-          className="border rounded p-1"
+          className="border rounded "
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           {'<'}
         </button>
         <button
-          className="border rounded p-1"
+          className="border rounded "
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           {'>'}
         </button>
         <button
-          className="border rounded p-1"
+          className="border rounded "
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
         >

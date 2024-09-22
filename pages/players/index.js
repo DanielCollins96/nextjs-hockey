@@ -1,21 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useQuery, useQueries } from 'react-query';
+import { useState, useMemo } from 'react'
 import Link from 'next/link';
+import { getPointLeadersBySeason } from '../../lib/queries';
 
 import ReactTable from '../../components/PaginatedTable';
 
-export default function Players() {
+export default function Players({players}) {
     // Write a query with useQuery to fetch from api/players
     const [filteredPlayers, setFilteredPlayers] = useState([]);
-
-    const fetchPlayers = async () => {
-        const res = await fetch('/api/players');
-        const resJson = await res.json();
-        return resJson;
-    }
-
-    const { isLoading, isError, data } = useQuery('players', fetchPlayers);
-
     const columns = useMemo(
         () => [
              {
@@ -77,7 +68,16 @@ export default function Players() {
         ])
     return (
         <div>
-            {data ? <ReactTable columns={columns} data={data} sortKey='P'/> : <h3>Loading...</h3>} 
+            {players ? <ReactTable columns={columns} data={players} sortKey='P'/> : <h3>Error Retrieving Stats...</h3>} 
         </div>
     )
+}
+
+export async function getStaticProps() {
+    const result = await getPointLeadersBySeason()
+    return {
+        props: {
+            players: result
+        }
+    }
 }
