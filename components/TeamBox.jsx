@@ -18,9 +18,9 @@ export default function TeamBox({team}) {
             {team.team.name}</a>
           </Link>
         </h2>
-        <div className="pl-8 sm:pl-16 pr-2 cursor-pointer" onClick={() => setActive(v => !v)}>
+        <div className="grow cursor-pointer" onClick={() => setActive(v => !v)}>
           {
-            active ? <MdOutlineChevronLeft style={{"transition": "transform .3s","transform": "rotate(-90deg)"}}  size={24}/> : <MdOutlineChevronLeft style={{"transition": "transform .3s","transform": "rotate(0deg)"}} size={24}/>
+            active ? <MdOutlineChevronLeft className="ml-auto" style={{"transition": "transform .3s","transform": "rotate(-90deg)"}}  size={24}/> : <MdOutlineChevronLeft  className="ml-auto" style={{"transition": "transform .3s","transform": "rotate(0deg)"}} size={24}/>
           }
         </div>
         </div>

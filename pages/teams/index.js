@@ -57,7 +57,7 @@ export async function getStaticProps() {
   const teams = await getTeams();
     // console.log(teams);
     const fetchRosterPromises = await teams?.map(team => {
-        let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
+        let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`
         console.log(url);
         return fetch(url)
             .then(res => res.json())
