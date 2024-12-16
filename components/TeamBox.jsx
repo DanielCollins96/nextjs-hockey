@@ -36,7 +36,7 @@ export default function TeamBox({team}) {
                     <Link
                       href={`/players/${encodeURIComponent(person.id)}`}
                     >
-                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName?.default + " " + person.lastName?.default}</a>
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName + " " + person.lastName}</a>
                     </Link>
                   </li>
                 );
@@ -53,7 +53,7 @@ export default function TeamBox({team}) {
                     <Link
                       href={`/players/${encodeURIComponent(person.id)}`}
                     >
-                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName?.default + " " + person.lastName?.default}</a>
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName + " " + person.lastName}</a>
                     </Link>
                   </li>
                 );
@@ -70,7 +70,7 @@ export default function TeamBox({team}) {
                     <Link
                       href={`/players/${encodeURIComponent(person.id)}`}
                     >
-                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName?.default + " " + person.lastName?.default}</a>
+                      <a className="text-sm hover:text-blue-700 visited:text-purple-800"><b>{person.sweaterNumber ?  `${person.sweaterNumber} ` :""}</b>{person.firstName + " " + person.lastName}</a>
                     </Link>
                   </li>
                 );

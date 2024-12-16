@@ -96,7 +96,18 @@ export async function getStaticProps() {
             .then(res => res.json())
             .then(data => ({
                 team,
-                roster: data
+                roster: ['forwards', 'defensemen', 'goalies'].reduce((acc,position) =>
+                {
+                acc[position] = data[position]?.map(person => ({
+                    position: position,
+                    id: person.id,
+                    sweaterNumber: person.sweaterNumber,
+                    firstName: person.firstName?.default,
+                    lastName: person.lastName?.default,
+                })) || []
+                return acc
+                }
+            ,{}),
             }))
     })
 
