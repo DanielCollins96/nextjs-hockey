@@ -109,7 +109,10 @@ useEffect(() => {
       {
         header: "Name",
         accessorFn: (d) =>  (d['firstName']['default'] + " " + d['lastName']['default']),
-        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : props.row.original.fullName
+        cell: props => props.row.original?.playerId ? (<Link
+          href={`/players/${props.row.original.playerId}`}
+          passHref
+          className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</Link>) : props.row.original.fullName
       },
       {
         header: "Regular Season",
@@ -260,7 +263,10 @@ useEffect(() => {
       {
         header: "Name",
         accessorFn: (d) =>  (d['fullName']),
-        cell: props => props.row.original?.playerId ? (<Link href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</a></Link>) : (props.row.original.fullName)
+        cell: props => props.row.original?.playerId ? (<Link
+          href={`/players/${props.row.original.playerId}`}
+          passHref
+          className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.fullName}</Link>) : (props.row.original.fullName)
       },
       {
         header: "Regular Season",

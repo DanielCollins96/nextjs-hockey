@@ -110,7 +110,10 @@ const Players = ({playerId, stats, person}) => {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
                 //  cell: (props) => props.getValue(),
-                 cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link href={`/teams/${row.original['team.id']}?season=${row.original.season}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</a></Link>) : (row.original['team.name'])
+                 cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link
+                     href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
+                     passHref
+                     className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</Link>) : (row.original['team.name'])
              },
             {
                  header: 'Lge',
@@ -139,11 +142,13 @@ const Players = ({playerId, stats, person}) => {
     , [])
 
     if (!person) {
-        return <p className='text-lg font-bold text-center'>Player Not Found... Return {' '}
-    <Link href="/">
-      <a className='text-blue-600 hover:text-blue-800'>Home</a>
-    </Link>
-        </p>
+        return (
+            <p className='text-lg font-bold text-center'>Player Not Found... Return {' '}
+        <Link href="/" className='text-blue-600 hover:text-blue-800'>
+          Home
+        </Link>
+            </p>
+        );
     }
     return (
         <div className="flex flex-col sm:flex-row mt-2">

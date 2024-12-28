@@ -9,32 +9,32 @@ const Header = () => {
     const { user, setUser } = UseAuth();
 
     return (
-        <header className="w-full bg-white flex justify-between ml-1 py-2">
-            <Link href="/">
-                <a className="self-center text-xl font-bold">
-                    <p className="text-xl m-2">NHL Stats Home &copy;</p>
-                </a>
+        (<header className="w-full bg-white flex justify-between ml-1 py-2">
+            <Link href="/" className="self-center text-xl font-bold">
+
+                <p className="text-xl m-2">NHL Stats Home &copy;</p>
+
             </Link>
             <nav className="self-center my-2 mr-2 sm:my-0">
                 <ul className="flex">
                     <li className="my-auto px-2">
-                        <Link href="/teams">
-                            <a className="text-xl">Teams</a>
+                        <Link href="/teams" className="text-xl">
+                            Teams
                         </Link>
                     </li>
                     <li className="my-auto px-3 py-1">
-                        <Link href="/players">
-                            <a className="text-xl">Players</a>
+                        <Link href="/players" className="text-xl">
+                            Players
                         </Link>
                     </li>
                     <li className="my-auto px-3 py-1">
-                        <Link href="/drafts">
-                            <a className="text-xl">Drafts</a>
+                        <Link href="/drafts" className="text-xl">
+                            Drafts
                         </Link>
                     </li>
                     { !user ?
                     <li>
-                        <Link href="/login" passHref>
+                        <Link href="/login" passHref legacyBehavior>
                             <button 
                                 className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                             >
@@ -50,9 +50,8 @@ const Header = () => {
                     }
                 </ul>
                 </nav>
-        </header>
-
-    )
+        </header>)
+    );
 };
 
 export default Header;

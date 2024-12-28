@@ -21,12 +21,15 @@ export default function Drafts({id,draft}) {
     {
       header: 'Drafted By',
       accessorFn: d => d['overallPickNumber'],
-      cell: ({row}) => (<Link href={`/teams/${row.original.draftedByTeamId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{row.original.triCode}</a></Link>)
+      cell: ({row}) => (<Link
+        href={`/teams/${row.original.draftedByTeamId}`}
+        passHref
+        className=" hover:text-blue-700 visited:text-purple-800">{row.original.triCode}</Link>)
     },
     {
       header: 'Player',
       accessorFn: d => d['playerName'],
-      cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={`/players/${props.row.original.playerId}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{props.row.original.playerName}</a></Link>) : (props.row.original.playerName)
+      cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={`/players/${props.row.original.playerId}`} passHref >{props.row.original.playerName}</Link>) : (props.row.original.playerName)
 
     },
     {

@@ -18,12 +18,18 @@ export default function Players({players}) {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
                 //  cell: (props) => props.getValue(),
-                 cell: ({row}) =>(<Link href={`/teams/${row.original['team.id']}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</a></Link>)
+                 cell: ({row}) =>(<Link
+                     href={`/teams/${row.original['team.id']}`}
+                     passHref
+                     className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</Link>)
              },
              {
                  header: 'Name',
                  accessorKey: 'fullName',
-            cell: ({row}) => (<Link href={`/players/${row.original.id}`} passHref ><a className=" hover:text-blue-700 visited:text-purple-800">{row.original.fullName}</a></Link>)
+            cell: ({row}) => (<Link
+                href={`/players/${row.original.id}`}
+                passHref
+                className=" hover:text-blue-700 visited:text-purple-800">{row.original.fullName}</Link>)
              },
                    {
         header: "Pos.",

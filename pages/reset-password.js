@@ -18,16 +18,16 @@ export default function ForgotPassword() {
     const { isSubmitting } = formState;
 
     return (
-        <div className="mx-auto mt-10 px-3">
+        (<div className="mx-auto mt-10 px-3">
             <RequestResetForm />
             <div className="flex flex-col gap-1 mt-6">
-                <Link href="/reset-verification">
-                    <a className="underline hover:no-underline mb-2">Have a code?</a>
+                <Link href="/reset-verification" className="underline hover:no-underline mb-2">
+                    Have a code?
                 </Link>
-                <Link href="/login">
-                    <a className=" underline hover:no-underline">Back to login</a>
+                <Link href="/login" className=" underline hover:no-underline">
+                    Back to login
                 </Link>
             </div>
-        </div>
-    )
+        </div>)
+    );
 }
