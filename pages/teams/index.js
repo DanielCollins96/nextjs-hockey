@@ -68,7 +68,7 @@ export async function getStaticProps() {
                 acc[position] = data[position]?.map(person => ({
                     position: position,
                     id: person.id,
-                    sweaterNumber: person.sweaterNumber,
+                    sweaterNumber: person.sweaterNumber ?? null,
                     firstName: person.firstName?.default,
                     lastName: person.lastName?.default,
                 })) || []

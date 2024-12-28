@@ -71,8 +71,7 @@ function onPress() {
             </div>
             <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
                 {
-                    
-                    searchedTeams
+                    searchedTeams && searchedTeams
                     .sort((teamA, teamB) => {
                         return teamA.name > teamB.name ? 1 : -1
                     })                    
@@ -86,8 +85,18 @@ function onPress() {
 
 export async function getStaticProps() {
     // const teams = await fetchPlayers();
-  const teams = await getTeams();
     
+  try {
+    const teams = await getTeams();
+    if (!teams) {
+      console.error('Teams data is undefined');
+      return {
+          props: {
+              rosters: [],
+              error: 'Failed to fetch teams'
+          }
+      }
+    }
     const fetchRosterPromises = await teams?.map(team => {
         // let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
         let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`
@@ -101,7 +110,7 @@ export async function getStaticProps() {
                 acc[position] = data[position]?.map(person => ({
                     position: position,
                     id: person.id,
-                    sweaterNumber: person.sweaterNumber,
+                    sweaterNumber: person.sweaterNumber ?? null,
                     firstName: person.firstName?.default,
                     lastName: person.lastName?.default,
                 })) || []
@@ -119,4 +128,14 @@ export async function getStaticProps() {
         },
         revalidate: 3600
     }
+  } catch (error) {
+            console.error('Error in getStaticProps:', error);
+        return {
+            props: {
+                rosters: [],
+                error: 'Failed to fetch data'
+            }
+        }
+  }
+    
 }
