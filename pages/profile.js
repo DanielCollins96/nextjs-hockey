@@ -32,7 +32,7 @@ function Profile() {
   const fetchPosts = async () => {
     console.log('fetching');
     try {
-      const result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: user.username}} }))    
+      let result = await API.graphql(graphqlOperation(queries.listPosts, {filter: {userId: {eq: user.username}} }))    
       console.log({result});
       result = result.data.listPosts.items
       result = result.filter((post) => {
