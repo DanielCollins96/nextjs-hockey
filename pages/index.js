@@ -88,16 +88,17 @@ export async function getStaticProps() {
     
   try {
     const teams = await getTeams();
-    if (!teams) {
+    if (!teams || !Array.isArray(teams)) {
       console.error('Teams data is undefined');
       return {
           props: {
               rosters: [],
               error: 'Failed to fetch teams'
-          }
+          },
+          revalidate: 3600
       }
     }
-    const fetchRosterPromises = await teams?.map(team => {
+    const fetchRosterPromises = await teams.map(team => {
         // let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
         let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`
         console.log(url);
