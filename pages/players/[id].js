@@ -3,13 +3,10 @@ import Head from 'next/head'
 import Link from 'next/link';
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
-import {getAllPlayerIds, getPlayer, getPlayerStats} from '../../lib/queries'
+import {getPlayer, getPlayerStats} from '../../lib/queries'
 import ReactTable from '../../components/Table';
-// https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
-
 
 const Players = ({playerId, stats, person}) => {
-
     const router = useRouter()
     const { id } = router.query
 
@@ -109,7 +106,6 @@ const Players = ({playerId, stats, person}) => {
              {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
-                //  cell: (props) => props.getValue(),
                  cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link
                      href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
                      passHref
@@ -118,7 +114,6 @@ const Players = ({playerId, stats, person}) => {
             {
                  header: 'Lge',
                  accessorFn: (d) => d['league.name'].replace('National Hockey League', 'NHL'),
-                //  cell: props => props,
                  footer: 'NHL',
              },
             {
@@ -162,7 +157,6 @@ const Players = ({playerId, stats, person}) => {
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <img src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="" />
                 <div className="w-56 p-1 m-1">
-
                 <p className="text-2xl font-bold">{person?.fullName}</p>
                 <p>Birth Date: {person?.birthDate}</p>
                 <p>Nationality: {person?.birthCountry}</p>
@@ -180,48 +174,41 @@ const Players = ({playerId, stats, person}) => {
     )
 };
 
-export async function getStaticPaths() {
-
-    const ids = await getAllPlayerIds()
-    let paths = ids?.map((res) => {
-        return {
-            params: {
-                id: res.id
-            }
-        }
-    })
-    return {
-        paths,
-        fallback: true
-    }
-}
-
-export async function getStaticProps({params}) {
+export async function getServerSideProps({params}) {
     const { id } = params
     let person = []
+    
     try {
         person = await getPlayer(id)
         if (!person || person.length === 0) {
             return {
-            props: {
-                playerId: params.id,
-                stats: null,
-                person: null,
+                props: {
+                    playerId: params.id,
+                    stats: null,
+                    person: null,
                 }
             }
         }
     } catch (error) {
         console.log(error);
+        return {
+            props: {
+                playerId: params.id,
+                stats: null,
+                person: null,
+            }
+        }
     }
+
     const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
 
     return {
         props: {
             playerId: params.id,
             stats,
-            person: person ? person[0] : null
-            },
-            revalidate: 43200
-}}
+            person: person ? person[0] : null,
+        }
+    }
+}
 
 export default Players;
