@@ -5,14 +5,19 @@ import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 import {getAllPlayerIds, getPlayer, getPlayerStats} from '../../lib/queries'
 import ReactTable from '../../components/Table';
-// https://statsapi.web.nhl.com/api/v1/people/8474056/stats/?stats=statsSingleSeason&season=20122013
-
 
 const Players = ({playerId, stats, person}) => {
-
     const router = useRouter()
-    const { id } = router.query
+    
+    // If the page is not yet generated, this will be displayed
+    // initially until getStaticProps() finishes running
+    if (router.isFallback) {
+        return <div className="flex justify-center items-center min-h-screen">
+            <p className="text-xl">Loading...</p>
+        </div>
+    }
 
+    const { id } = router.query
     const position = person && person['primaryPosition.name'] ? person['primaryPosition.name'] : 'Center';
 
     let positionalColumns = position !== 'Goalie' ? [
@@ -109,7 +114,6 @@ const Players = ({playerId, stats, person}) => {
              {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
-                //  cell: (props) => props.getValue(),
                  cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link
                      href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
                      passHref
@@ -118,7 +122,6 @@ const Players = ({playerId, stats, person}) => {
             {
                  header: 'Lge',
                  accessorFn: (d) => d['league.name'].replace('National Hockey League', 'NHL'),
-                //  cell: props => props,
                  footer: 'NHL',
              },
             {
@@ -150,6 +153,7 @@ const Players = ({playerId, stats, person}) => {
             </p>
         );
     }
+    
     return (
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
@@ -162,7 +166,6 @@ const Players = ({playerId, stats, person}) => {
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <img src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="" />
                 <div className="w-56 p-1 m-1">
-
                 <p className="text-2xl font-bold">{person?.fullName}</p>
                 <p>Birth Date: {person?.birthDate}</p>
                 <p>Nationality: {person?.birthCountry}</p>
@@ -181,47 +184,64 @@ const Players = ({playerId, stats, person}) => {
 };
 
 export async function getStaticPaths() {
+    try {
+        const ids = await getAllPlayerIds()
+        // Generate the paths we want to pre-render based on ids
+        const paths = ids?.map((res) => ({
+            params: { id: res.id.toString() }
+        }))
 
-    const ids = await getAllPlayerIds()
-    let paths = ids?.map((res) => {
-        return {
-            params: {
-                id: res.id
-            }
-        }
-    })
-    return {
-        paths,
-        fallback: true
+        // We'll pre-render these paths at build time.
+        // { fallback: true } means other routes will be rendered at runtime.
+        return { paths, fallback: true }
+    } catch (error) {
+        console.error('Error in getStaticPaths:', error)
+        // Return minimal paths with fallback true if there's an error
+        return { paths: [], fallback: true }
     }
 }
 
 export async function getStaticProps({params}) {
     const { id } = params
     let person = []
+    
     try {
         person = await getPlayer(id)
         if (!person || person.length === 0) {
             return {
+                props: {
+                    playerId: params.id,
+                    stats: null,
+                    person: null,
+                },
+                // Revalidate if player not found to check again later
+                revalidate: 3600 // Revalidate every hour
+            }
+        }
+        
+        const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
+
+        return {
+            props: {
+                playerId: params.id,
+                stats,
+                person: person[0],
+            },
+            // Revalidate every 12 hours for found players
+            revalidate: 43200
+        }
+    } catch (error) {
+        console.error('Error in getStaticProps:', error)
+        return {
             props: {
                 playerId: params.id,
                 stats: null,
                 person: null,
-                }
-            }
-        }
-    } catch (error) {
-        console.log(error);
-    }
-    const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
-
-    return {
-        props: {
-            playerId: params.id,
-            stats,
-            person: person ? person[0] : null
             },
-            revalidate: 43200
-}}
+            // Revalidate every hour if there's an error
+            revalidate: 3600
+        }
+    }
+}
 
 export default Players;
