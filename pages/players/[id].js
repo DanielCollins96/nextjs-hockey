@@ -8,150 +8,166 @@ import ReactTable from '../../components/Table';
 
 const Players = ({playerId, stats, person}) => {
     const router = useRouter()
-    
-    // If the page is not yet generated, this will be displayed
-    // initially until getStaticProps() finishes running
-    if (router.isFallback) {
-        return <div className="flex justify-center items-center min-h-screen">
-            <p className="text-xl">Loading...</p>
-        </div>
-    }
-
     const { id } = router.query
+    
+    // Move position calculation before hooks
     const position = person && person['primaryPosition.name'] ? person['primaryPosition.name'] : 'Center';
 
-    let positionalColumns = position !== 'Goalie' ? [
-      {
-        header: 'G',
-        accessorFn: (d) => d["stat.goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('G'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-   {
-        header: 'A',
-        accessorFn: (d) => d["stat.assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('A'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-      {
-        header: 'P',
-        accessorFn: (d) => d["stat.points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('P'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-    {
-        header: 'PIM',
-        accessorFn: (d) => d["stat.pim"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('PIM'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-    {
-        header: '+/-',
-        accessorFn: (d) => d["stat.plusMinus"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('+/-'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>    },
-    ] : [
-      {
-        header: 'W',
-        accessorFn: (d) => d['stat.wins'],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('W'), 0),
-    },
-      {
-        header: 'L',
-        accessorFn: (d) => d['stat.losses'],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('L'), 0),
-    },
-      {
-        header: 'GAA',
-        accessorFn: (d) => d['stat.goalAgainstAverage'],
-        cell: props => props.getValue()?.toFixed(2) || null,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    )
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
-          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
-          let total = totalGaa / gp
-          return total.toFixed(2) || null
+    // Define positionalColumns before any hooks
+    const positionalColumns = useMemo(() => {
+        if (position !== 'Goalie') {
+            return [
+                {
+                    header: 'G',
+                    accessorFn: (d) => d["stat.goals"],
+                    footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                                ).reduce((total, row) => total + row.getValue('G'), 0),
+                    cell: props => <p className="text-right">{props.getValue()}</p>
+                },
+                {
+                    header: 'A',
+                    accessorFn: (d) => d["stat.assists"],
+                    footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                                ).reduce((total, row) => total + row.getValue('A'), 0),
+                    cell: props => <p className="text-right">{props.getValue()}</p>
+                },
+                {
+                    header: 'P',
+                    accessorFn: (d) => d["stat.points"],
+                    footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                                ).reduce((total, row) => total + row.getValue('P'), 0),
+                    cell: props => <p className="text-right">{props.getValue()}</p>
+                },
+                {
+                    header: 'PIM',
+                    accessorFn: (d) => d["stat.pim"],
+                    footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                                ).reduce((total, row) => total + row.getValue('PIM'), 0),
+                    cell: props => <p className="text-right">{props.getValue()}</p>
+                },
+                {
+                    header: '+/-',
+                    accessorFn: (d) => d["stat.plusMinus"],
+                    footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                                ).reduce((total, row) => total + row.getValue('+/-'), 0),
+                    cell: props => <p className="text-right">{props.getValue()}</p>
+                },
+            ]
         }
-      },
-      {
-        header: 'SV%',
-        accessorFn: (d) => d['stat.savePercentage'],
-        cell: props => props.getValue()?.toFixed(3) || null,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    )
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
-          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
-          let total = totalSvPct / gp
-          return total.toFixed(3) || null
-        }
-    },
-    ]
+        return [
+            {
+                header: 'W',
+                accessorFn: (d) => d['stat.wins'],
+                footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                            ).reduce((total, row) => total + row.getValue('W'), 0),
+            },
+            {
+                header: 'L',
+                accessorFn: (d) => d['stat.losses'],
+                footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
+                                row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                            ).reduce((total, row) => total + row.getValue('L'), 0),
+            },
+            {
+                header: 'GAA',
+                accessorFn: (d) => d['stat.goalAgainstAverage'],
+                cell: props => props.getValue()?.toFixed(2) || null,
+                footer: ({ table }) => { 
+                    const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
+                                row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                            )
+                    let gp = nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+                    let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
+                    let total = totalGaa / gp
+                    return total.toFixed(2) || null
+                }
+            },
+            {
+                header: 'SV%',
+                accessorFn: (d) => d['stat.savePercentage'],
+                cell: props => props.getValue()?.toFixed(3) || null,
+                footer: ({ table }) => { 
+                    const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
+                                row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
+                            )
+                    let gp = nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
+                    let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
+                    let total = totalSvPct / gp
+                    return total.toFixed(3) || null
+                }
+            },
+        ]
+    }, [position])
 
     const columns = useMemo(
         () => [
-             {
-                 header: 'Season',
-                 accessorKey: 'season',
-             },
-             {
-                 header: 'Team',
-                 accessorFn: (d) => d['team.name'],
-                 cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link
-                     href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
-                     passHref
-                     className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</Link>) : (row.original['team.name'])
-             },
             {
-                 header: 'Lge',
-                 accessorFn: (d) => d['league.name'].replace('National Hockey League', 'NHL'),
-                 footer: 'NHL',
-             },
+                header: 'Season',
+                accessorKey: 'season',
+            },
             {
-                 header: 'GP',
-                 accessorFn: (d) => d["stat.games"],
-                 cell: props => <p className="text-right">{props.getValue()}</p>,
-                 footer: ({ table }) => {
-                   const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
+                header: 'Team',
+                accessorFn: (d) => d['team.name'],
+                cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (
+                    <Link
+                        href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
+                        passHref
+                        className=" hover:text-blue-700 visited:text-purple-800"
+                    >
+                        {row.original['team.name']}
+                    </Link>
+                ) : (row.original['team.name'])
+            },
+            {
+                header: 'Lge',
+                accessorFn: (d) => d['league.name'].replace('National Hockey League', 'NHL'),
+                footer: 'NHL',
+            },
+            {
+                header: 'GP',
+                accessorFn: (d) => d["stat.games"],
+                cell: props => <p className="text-right">{props.getValue()}</p>,
+                footer: ({ table }) => {
+                    const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
                         row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
                     );
-
                     return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)
                 },    
-             },
+            },
             ...positionalColumns
         ],
-        [position]
+        [positionalColumns]
     )
+
     const data = useMemo(
         () => stats
-    , [])
+    , [stats])
 
+    // Handle loading state
+    if (router.isFallback) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <p className="text-xl">Loading...</p>
+            </div>
+        )
+    }
+
+    // Handle not found state
     if (!person) {
         return (
-            <p className='text-lg font-bold text-center'>Player Not Found... Return {' '}
-        <Link href="/" className='text-blue-600 hover:text-blue-800'>
-          Home
-        </Link>
+            <p className='text-lg font-bold text-center'>
+                Player Not Found... Return {' '}
+                <Link href="/" className='text-blue-600 hover:text-blue-800'>
+                    Home
+                </Link>
             </p>
-        );
+        )
     }
     
     return (
@@ -160,18 +176,21 @@ const Players = ({playerId, stats, person}) => {
                 <title>
                    {person?.fullName ? person.fullName : 'Player'} Hockey Stats and Profile | hockeydb.xyz
                 </title>
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-     crossOrigin="anonymous"></script>
+                <script 
+                    async 
+                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
+                    crossOrigin="anonymous"
+                />
             </Head>
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <img src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="" />
                 <div className="w-56 p-1 m-1">
-                <p className="text-2xl font-bold">{person?.fullName}</p>
-                <p>Birth Date: {person?.birthDate}</p>
-                <p>Nationality: {person?.birthCountry}</p>
-                <p>Position: {person?.primaryPosition?.name}</p>
-                <p>Primary Number: {person?.primaryNumber}</p>
-                <p>Age: {person?.currentAge}</p>
+                    <p className="text-2xl font-bold">{person?.fullName}</p>
+                    <p>Birth Date: {person?.birthDate}</p>
+                    <p>Nationality: {person?.birthCountry}</p>
+                    <p>Position: {person?.primaryPosition?.name}</p>
+                    <p>Primary Number: {person?.primaryNumber}</p>
+                    <p>Age: {person?.currentAge}</p>
                 </div>
                 <div className='border'>
                     <p>Drafted: {person?.draft_seasons ? person?.draft_seasons : 'Undrafted'}</p>
@@ -181,22 +200,17 @@ const Players = ({playerId, stats, person}) => {
             {stats ? <ReactTable columns={columns} data={stats} /> : <h3>Loading...</h3>} 
         </div>
     )
-};
+}
 
 export async function getStaticPaths() {
     try {
         const ids = await getAllPlayerIds()
-        // Generate the paths we want to pre-render based on ids
         const paths = ids?.map((res) => ({
             params: { id: res.id.toString() }
         }))
-
-        // We'll pre-render these paths at build time.
-        // { fallback: true } means other routes will be rendered at runtime.
         return { paths, fallback: true }
     } catch (error) {
         console.error('Error in getStaticPaths:', error)
-        // Return minimal paths with fallback true if there's an error
         return { paths: [], fallback: true }
     }
 }
@@ -214,8 +228,7 @@ export async function getStaticProps({params}) {
                     stats: null,
                     person: null,
                 },
-                // Revalidate if player not found to check again later
-                revalidate: 3600 // Revalidate every hour
+                revalidate: 3600
             }
         }
         
@@ -227,7 +240,6 @@ export async function getStaticProps({params}) {
                 stats,
                 person: person[0],
             },
-            // Revalidate every 12 hours for found players
             revalidate: 43200
         }
     } catch (error) {
@@ -238,7 +250,6 @@ export async function getStaticProps({params}) {
                 stats: null,
                 person: null,
             },
-            // Revalidate every hour if there's an error
             revalidate: 3600
         }
     }
