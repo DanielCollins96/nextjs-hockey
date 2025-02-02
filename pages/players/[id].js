@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import {getAllPlayerIds, getPlayer, getPlayerStats} from '../../lib/queries'
 import ReactTable from '../../components/Table';
 
-const Players = ({playerId, stats, person}) => {
+const Players = ({playerId, stats, person, notFound}) => {
     const router = useRouter()
     const { id } = router.query
     
@@ -159,7 +159,7 @@ const Players = ({playerId, stats, person}) => {
     }
 
     // Handle not found state
-    if (!person) {
+    if (!notFound) {
         return (
             <p className='text-lg font-bold text-center'>
                 Player Not Found... Return {' '}
@@ -217,40 +217,47 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
     const { id } = params
-    let person = []
     
     try {
-        person = await getPlayer(id)
+        const person = await getPlayer(id)
+        
+        // If no person found, return notFound: true instead of null props
         if (!person || person.length === 0) {
             return {
                 props: {
+                    notFound: true,
                     playerId: params.id,
                     stats: null,
-                    person: null,
+                    person: null
                 },
-                revalidate: 3600
+                // Lower revalidate time for not found pages
+                revalidate: 1800 // 30 minutes
             }
         }
         
         const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
 
+        // Return full data with longer revalidate time
         return {
             props: {
+                notFound: false,
                 playerId: params.id,
                 stats,
-                person: person[0],
+                person: person[0]
             },
-            revalidate: 43200
+            revalidate: 43200 // 12 hours for valid pages
         }
     } catch (error) {
         console.error('Error in getStaticProps:', error)
+        // On error, return not found with very short revalidate time
         return {
             props: {
+                notFound: true,
                 playerId: params.id,
                 stats: null,
-                person: null,
+                person: null
             },
-            revalidate: 3600
+            revalidate: 300 // 5 minutes on error
         }
     }
 }
