@@ -1,9 +1,15 @@
-module.exports = {
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.ya?ml$/,
-      use: 'yaml-loader',
-    })
-    return config
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'assets.nhle.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 }
+
+module.exports = nextConfig

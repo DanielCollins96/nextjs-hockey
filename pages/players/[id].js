@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import Head from 'next/head'
 import Link from 'next/link';
+import Image from 'next/image'
 import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 import {getPlayer, getPlayerStats} from '../../lib/queries'
@@ -155,7 +156,7 @@ const Players = ({playerId, stats, person}) => {
      crossOrigin="anonymous"></script>
             </Head>
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
-                <img src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="" />
+                <Image src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="player headshot" width={200} height={0}/>
                 <div className="w-56 p-1 m-1">
                 <p className="text-2xl font-bold">{person?.fullName}</p>
                 <p>Birth Date: {person?.birthDate}</p>
