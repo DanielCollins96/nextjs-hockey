@@ -567,8 +567,8 @@ export async function getStaticProps({params}) {
   let abbreviation = null
   try {
   const sql = ` 
-      SELECT abbreviation
-      FROM staging1.team 
+      SELECT "triCode"
+      FROM newapi.team 
       WHERE id = $1
     ` 
     abbreviation = await conn.query(sql,[params.id])  
@@ -577,12 +577,13 @@ export async function getStaticProps({params}) {
   }
 
   if (abbreviation) {
-    abbreviation = abbreviation.rows[0].abbreviation
+    abbreviation = abbreviation.rows[0].triCode
   }
 
   let skaters = await getTeamSkaters(params.id);
   let goalies = await getTeamGoalies(params.id);
-
+console.log(skaters);
+console.log(goalies);
   const combinePlayersBySeason = (skaters, goalies) => {
     const seasonMap = {};
 
@@ -612,7 +613,7 @@ export async function getStaticProps({params}) {
   seasons.forEach(season => {
     seasonMap[season].madePlayoffs = playoffSeasons.includes(season);
 });
-  let teamRecords = await getTeamSeasons(params.id);
+  let teamRecords = await getTeamSeasons(params.id) || [];
 
   return {
     props: {

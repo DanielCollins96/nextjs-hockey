@@ -17,7 +17,7 @@ export default function TeamBox({team}) {
             href={`/teams/${encodeURIComponent(team.team.id)}`}
             className="flex  gap-3 ml-3 pr-3 hover:text-blue-700">
 
-            {team.team.name}
+            {team.team.fullName}
           </Link>
         </h2>
         <div className="grow cursor-pointer" onClick={() => setActive(v => !v)}>
