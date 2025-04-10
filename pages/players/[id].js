@@ -201,13 +201,13 @@ export async function getServerSideProps({params}) {
         }
     }
 
-    const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
+    const stats = await getPlayerStats(id, person["primaryPosition.name"])
 
     return {
         props: {
             playerId: params.id,
             stats,
-            person: person ? person[0] : null,
+            person: person,
         }
     }
 }
