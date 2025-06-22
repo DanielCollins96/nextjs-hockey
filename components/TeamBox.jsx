@@ -30,7 +30,7 @@ export default function TeamBox({team}) {
           {
             team?.roster?.forwards
               ?.sort((playerA, playerB) => {
-                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
+                return playerA.firstName > playerB.firstName ? 1 : -1;
               })
               .map((person) => {
                 return (
@@ -47,7 +47,7 @@ export default function TeamBox({team}) {
           {
             team?.roster?.defensemen
               ?.sort((playerA, playerB) => {
-                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
+                return playerA.firstName > playerB.firstName ? 1 : -1;
               })
               .map((person) => {
                 return (
@@ -64,7 +64,7 @@ export default function TeamBox({team}) {
           {
             team?.roster?.goalies
               ?.sort((playerA, playerB) => {
-                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
+                return playerA.firstName > playerB.firstName ? 1 : -1;
               })
               .map((person) => {
                 return (

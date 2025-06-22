@@ -43,9 +43,9 @@ export default function Teams({rosters}) {
                     filteredTeams &&
                     filteredTeams
                     .sort((teamA, teamB) => {
-                        return teamA.team.abbreviation > teamB.team.abbreviation ? 1 : -1
+                        return teamA.team.fullName > teamB.team.fullName ? 1 : -1
                     })                    
-                    .map((team) => <TeamBox team={team} key={team.abbreviation}/>)
+                    .map((team) => <TeamBox team={team} key={team.team.id}/>)
                 }       
             </div>
         </div>

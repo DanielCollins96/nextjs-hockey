@@ -73,9 +73,9 @@ function onPress() {
                 {
                     searchedTeams && searchedTeams
                     .sort((teamA, teamB) => {
-                        return teamA.name > teamB.name ? 1 : -1
+                        return teamA.team.fullName > teamB.team.fullName ? 1 : -1
                     })                    
-                    .map((team) => <TeamBox team={team} key={team.id}/>)
+                    .map((team) => <TeamBox team={team} key={team.team.id}/>)
                 }       
             </div>
         </div>
