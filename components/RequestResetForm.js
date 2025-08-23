@@ -63,9 +63,4 @@ export default function RequestResetForm() {
             </div>
         )
     }
-                    </div>
-            </form>
-            </div>
-        )
-    }
     
