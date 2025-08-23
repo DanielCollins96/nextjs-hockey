@@ -5,9 +5,7 @@ import { UseAuth } from '../contexts/Auth';
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FaSpinner } from "react-icons/fa";
-import { useToasts } from 'react-toast-notifications'
-
-
+import toast from 'react-hot-toast';
 
 export default function RequestResetForm() {
         const router = useRouter()
@@ -16,8 +14,6 @@ export default function RequestResetForm() {
         const [isLoading, setIsLoading] = useState(false)
         const [submitError, setSubmitError] = useState('')
     
-        const { addToast } = useToasts()
-        
         const { authState, setAuthState } = UseAuth()
         
         const onSubmit = async (data) => {
@@ -27,11 +23,10 @@ export default function RequestResetForm() {
             let { username } = data
             console.log(username);
             let user = await Auth.forgotPassword(username)
-            addToast('Check your email for a reset link', { appearance: 'success', autoDismiss: true })
+            toast.success('Check your email for a reset link')
             } catch (error) {
                 console.log(error);
-                // setSubmitError(error.message)
-            addToast(error.message, { appearance: 'error', autoDismiss: true})
+                toast.error(error.message)
                 try {
                     console.log(user)
                     setSubmitError(user.message)
@@ -63,6 +58,11 @@ export default function RequestResetForm() {
                         :
                         <p className=""></p>
                         }
+                    </div>
+            </form>
+            </div>
+        )
+    }
                     </div>
             </form>
             </div>
