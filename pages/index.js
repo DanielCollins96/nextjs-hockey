@@ -88,9 +88,13 @@ export default function Home({teams}) {
           {searchedTeams &&
             searchedTeams
               .sort((teamA, teamB) => {
-                return teamA.name > teamB.name ? 1 : -1;
+                return teamA.team.abbreviation > teamB.team.abbreviation
+                  ? 1
+                  : -1;
               })
-              .map((team) => <TeamBox team={team} key={team.team.id} />)}
+              .map((team) => (
+                <TeamBox team={team} key={team.team.abbreviation} />
+              ))}
         </div>
       </div>
     </div>
