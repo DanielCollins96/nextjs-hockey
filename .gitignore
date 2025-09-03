@@ -54,10 +54,13 @@ amplify-build-config.json
 amplify-gradle-config.json
 amplifytools.xcconfig
 .secret-*
+
 # Sentry
 .sentryclirc
-
-# Sentry
 next.config.original.js
 
+# VSCode
 .vscode/settings.json
+
+# OpenNext build artifacts
+.open-next/
