@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:cloudflare": "npx @opennextjs/cloudflare@latest",
+    "deploy": "npx wrangler deploy"
   },
   "dependencies": {
     "@aws-amplify/notifications": "^1.1.4",
@@ -38,6 +40,7 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.7.1",
     "@tailwindcss/typography": "^0.5.7",
     "autoprefixer": "^10.4.12",
     "eslint": "7.32.0",
@@ -45,6 +48,7 @@
     "eslint-config-prettier": "^8.3.0",
     "postcss": "^8.4.16",
     "tailwindcss": "^3.1.8",
+    "wrangler": "^4.33.2",
     "yaml-loader": "^0.8.1"
   }
 }

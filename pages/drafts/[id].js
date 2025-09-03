@@ -86,15 +86,25 @@ export default function Drafts({id,draft}) {
 }
 
 export async function getStaticPaths() {
-    let draftYears = await getAllDraftYears()
-    draftYears = draftYears.map(draft => {
-        return { params: { id: draft.draftYear } }
-    })
+    // For Cloudflare deployment, we'll use fallback: 'blocking'
+    // to generate pages on-demand when database is available
+    try {
+        let draftYears = await getAllDraftYears()
+        const paths = draftYears ? draftYears.map(draft => ({
+            params: { id: draft.draftYear }
+        })) : []
 
-  return {
-    paths: draftYears,
-    fallback: false
-  }
+        return {
+            paths,
+            fallback: 'blocking'
+        }
+    } catch (error) {
+        console.log('Database connection failed during build, using fallback: blocking')
+        return {
+            paths: [],
+            fallback: 'blocking'
+        }
+    }
 }
 
 export async function getStaticProps({params}) {

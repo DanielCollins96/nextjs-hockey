@@ -640,14 +640,23 @@ export default function TeamPage({
 }
 
 export async function getStaticPaths() {
-  const teams = await getTeamIds();
-  let paths = teams?.map((team) => ({
-    params: {id: team.id},
-  }));
-  return {
-    paths,
-    fallback: false,
-  };
+  try {
+    const teams = await getTeamIds();
+    const paths = teams ? teams.map((team) => ({
+      params: {id: team.id},
+    })) : [];
+    
+    return {
+      paths,
+      fallback: 'blocking',
+    };
+  } catch (error) {
+    console.log('Database connection failed during build, using fallback: blocking')
+    return {
+      paths: [],
+      fallback: 'blocking',
+    };
+  }
 }
 
 export async function getStaticProps({params}) {
