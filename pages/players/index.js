@@ -80,10 +80,20 @@ export default function Players({players}) {
 }
 
 export async function getStaticProps() {
-    const result = await getPointLeadersBySeason()
-    return {
-        props: {
-            players: result
+    try {
+        const result = await getPointLeadersBySeason()
+        return {
+            props: {
+                players: result || null
+            }
+        }
+    } catch (error) {
+        console.log('Database connection failed, returning null players')
+        return {
+            props: {
+                players: null
+            },
+            revalidate: 60, // Try again in 1 minute
         }
     }
 }

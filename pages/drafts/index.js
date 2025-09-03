@@ -16,15 +16,22 @@ export default function Drafts({draftYears}) {
 }
 
 export async function getStaticProps() {
-;
-  const draftYears = await getAllDraftYears()
-  // const draftYears = await res.json();
-
-  return {
-    props: {
-      draftYears,
-    },
-    // Revalidate every 6 months (you can adjust the time as needed)
-    revalidate: 60 * 60 * 24 * 180, // 180 days
-  };
+  try {
+    const draftYears = await getAllDraftYears()
+    return {
+      props: {
+        draftYears: draftYears || [],
+      },
+      // Revalidate every 6 months (you can adjust the time as needed)
+      revalidate: 60 * 60 * 24 * 180, // 180 days
+    };
+  } catch (error) {
+    console.log('Database connection failed, returning empty draft years')
+    return {
+      props: {
+        draftYears: [],
+      },
+      revalidate: 60, // Try again in 1 minute
+    };
+  }
 }

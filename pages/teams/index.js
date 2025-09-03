@@ -53,39 +53,59 @@ export default function Teams({rosters}) {
 }
 
 export async function getStaticProps() {
-    // const teams = await fetchPlayers();
-  const teams = await getTeams();
-    // console.log(teams);
-    const fetchRosterPromises = await teams?.map(team => {
-        let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`
-        console.log(url);
-        return fetch(url)
-            .then(res => res.json())
-            .then(data => ({
-                team,
-                roster: ['forwards', 'defensemen', 'goalies'].reduce((acc,position) =>
-                {
-                acc[position] = data[position]?.map(person => ({
-                    position: position,
-                    id: person.id,
-                    sweaterNumber: person.sweaterNumber ?? null,
-                    firstName: person.firstName?.default,
-                    lastName: person.lastName?.default,
-                })) || []
-                return acc
-                }
-            ,{}),
-            }))
-    })
+    try {
+        // const teams = await fetchPlayers();
+        const teams = await getTeams();
+        // console.log(teams);
+        
+        if (!teams) {
+            return {
+                props: {
+                    rosters: []
+                },
+                revalidate: 60, // Try again in 1 minute
+            }
+        }
+        
+        const fetchRosterPromises = teams.map(team => {
+            let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`
+            console.log(url);
+            return fetch(url)
+                .then(res => res.json())
+                .then(data => ({
+                    team,
+                    roster: ['forwards', 'defensemen', 'goalies'].reduce((acc,position) =>
+                    {
+                    acc[position] = data[position]?.map(person => ({
+                        position: position,
+                        id: person.id,
+                        sweaterNumber: person.sweaterNumber ?? null,
+                        firstName: person.firstName?.default,
+                        lastName: person.lastName?.default,
+                    })) || []
+                    return acc
+                    }
+                ,{}),
+                }))
+        })
 
-    const rosters = await Promise.all(fetchRosterPromises)
+        const rosters = await Promise.all(fetchRosterPromises)
 
-    console.log(rosters);
+        console.log(rosters);
 
-    return {
-        props: {
-            rosters
-        },
-        revalidate: 3600
+        return {
+            props: {
+                rosters
+            },
+            revalidate: 3600
+        }
+    } catch (error) {
+        console.log('Database connection failed, returning empty rosters')
+        return {
+            props: {
+                rosters: []
+            },
+            revalidate: 60, // Try again in 1 minute
+        }
     }
 }
