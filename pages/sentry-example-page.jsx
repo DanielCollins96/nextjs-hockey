@@ -1,5 +1,15 @@
 import Head from "next/head";
-import * as Sentry from "@sentry/nextjs";
+// Conditionally import Sentry based on build target
+let Sentry;
+if (process.env.BUILD_TARGET !== 'cloudflare') {
+  Sentry = require("@sentry/nextjs");
+} else {
+  // Stub for Cloudflare builds
+  Sentry = {
+    diagnoseSdkConnectivity: () => Promise.resolve('sentry-unreachable'),
+    startSpan: (config, callback) => callback(),
+  };
+}
 import { useState, useEffect } from "react";
 
 class SentryExampleFrontendError extends Error {

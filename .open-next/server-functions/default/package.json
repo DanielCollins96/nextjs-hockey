@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:cloudflare": "npx @opennextjs/cloudflare@latest",
+    "build:cloudflare": "BUILD_TARGET=cloudflare npx @opennextjs/cloudflare@latest build",
     "deploy": "npx wrangler deploy"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "next": "^14.2.0",
     "next-connect": "^0.9.1",
     "pg": "^8.11.0",
+    "pg-cloudflare": "^1.2.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.17.5",
