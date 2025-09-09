@@ -61,3 +61,7 @@ amplifytools.xcconfig
 next.config.original.js
 
 .vscode/settings.json
+
+# Open Next
+.open-next
+.open-next/**
