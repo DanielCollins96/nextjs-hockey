@@ -2,8 +2,12 @@ name = "nextjs-hockey"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Point to the Worker script that OpenNext generated
+# worker entrypoint produced by OpenNext
 main = ".open-next/worker.js"
 
 [build]
 command = "npx @opennextjs/cloudflare@latest build"
+
+# Serve the generated static assets as a site bucket
+[site]
+bucket = ".open-next/assets"
