@@ -3,6 +3,7 @@ import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox'; 
 import Head from 'next/head'
 import { getTeams } from '../../lib/queries';
+import pLimit from 'p-limit';
 
 
 export default function Teams({rosters}) {
@@ -53,39 +54,82 @@ export default function Teams({rosters}) {
 }
 
 export async function getStaticProps() {
-    // const teams = await fetchPlayers();
-  const teams = await getTeams();
-    // console.log(teams);
-    const fetchRosterPromises = await teams?.map(team => {
-        let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`
-        console.log(url);
-        return fetch(url)
-            .then(res => res.json())
-            .then(data => ({
-                team,
-                roster: ['forwards', 'defensemen', 'goalies'].reduce((acc,position) =>
-                {
-                acc[position] = data[position]?.map(person => ({
-                    position: position,
-                    id: person.id,
-                    sweaterNumber: person.sweaterNumber ?? null,
-                    firstName: person.firstName?.default,
-                    lastName: person.lastName?.default,
-                })) || []
-                return acc
+    try {
+        const teams = await getTeams();
+        if (!teams || !Array.isArray(teams)) {
+            throw new Error('Failed to fetch teams or invalid teams data');
+        }
+
+        const limit = pLimit(1); // Limit to 1 concurrent requests
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        const fetchRoster = async (team) => {
+            try {
+                const url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`;
+                const res = await fetch(url);
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch roster for ${team.abbreviation}: ${res.status} ${res.statusText}`);
                 }
-            ,{}),
-            }))
-    })
 
-    const rosters = await Promise.all(fetchRosterPromises)
+                const data = await res.json();
+                return {
+                    team,
+                    roster: ['forwards', 'defensemen', 'goalies'].reduce((acc, position) => {
+                        acc[position] = data[position]?.map(person => ({
+                            position,
+                            id: person.id,
+                            sweaterNumber: person.sweaterNumber ?? null,
+                            firstName: person.firstName?.default,
+                            lastName: person.lastName?.default,
+                        })) || [];
+                        return acc;
+                    }, {})
+                };
+            } catch (error) {
+                console.error(`Error fetching roster for ${team.abbreviation}:`, error);
+                return {
+                    team,
+                    roster: {
+                        forwards: [],
+                        defensemen: [],
+                        goalies: []
+                    }
+                };
+            } finally {
+                // Add a small random delay between requests to avoid bursts
+                await delay(Math.random() * 100 + 200);
+            }
+        };
 
-    console.log(rosters);
+        // Use p-limit to limit concurrent requests
+        const rosterPromises = teams.map(team => limit(() => fetchRoster(team)));
+        const rosters = await Promise.all(rosterPromises);
+        
+        // Filter out completely empty rosters
+        const validRosters = rosters.filter(roster => 
+            roster.roster.forwards.length > 0 || 
+            roster.roster.defensemen.length > 0 || 
+            roster.roster.goalies.length > 0
+        );
 
-    return {
-        props: {
-            rosters
-        },
-        revalidate: 3600
+        if (!validRosters.length) {
+            throw new Error('No valid rosters were fetched successfully');
+        }
+
+        return {
+            props: {
+                rosters: validRosters
+            },
+            revalidate: 3600
+        };
+    } catch (error) {
+        console.error('Error in getStaticProps:', error);
+        return {
+            props: {
+                rosters: []
+            },
+            revalidate: 60 // Retry sooner on error
+        };
     }
 }

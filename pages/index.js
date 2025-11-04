@@ -3,6 +3,7 @@ import {useRouter} from "next/router";
 import {useEffect, useState, useRef} from "react";
 import TeamBox from "../components/TeamBox";
 import {getTeams} from "../lib/queries";
+import pLimit from 'p-limit';
 
 export default function Home({teams}) {
   const router = useRouter();
@@ -102,60 +103,93 @@ export default function Home({teams}) {
 }
 
 export async function getStaticProps() {
-  // const teams = await fetchPlayers();
-
   try {
     const teams = await getTeams();
     if (!teams || !Array.isArray(teams)) {
-      console.error("Teams data is undefined");
+      throw new Error('Failed to fetch teams or invalid teams data');
+    }
+
+    const limit = pLimit(1); // Limit to 1 concurrent requests
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    const fetchRoster = async (team) => {
+      try {
+        const url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`;
+        console.log(`Fetching roster for ${team.abbreviation}...`);
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch roster for ${team.abbreviation}: ${res.status} ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log(`Successfully fetched roster for ${team.abbreviation}`);
+        return {
+          team,
+          roster: ['forwards', 'defensemen', 'goalies'].reduce((acc, position) => {
+            acc[position] = data[position]?.map(person => ({
+              position,
+              id: person.id,
+              sweaterNumber: person.sweaterNumber ?? null,
+              firstName: person.firstName?.default,
+              lastName: person.lastName?.default,
+            })) || [];
+            return acc;
+          }, {})
+        };
+      } catch (error) {
+        console.error(`Error fetching roster for ${team.abbreviation}:`, error);
+        return {
+          team,
+          roster: {
+            forwards: [],
+            defensemen: [],
+            goalies: []
+          }
+        };
+      } finally {
+        // Add a small random delay between requests to avoid bursts
+        await delay(Math.random() * 100 + 200);
+      }
+    };
+
+    // Use p-limit to limit concurrent requests
+    const rosterPromises = teams.map(team => limit(() => fetchRoster(team)));
+    const rosters = await Promise.all(rosterPromises);
+    
+    // Filter out completely empty rosters
+    const validRosters = rosters.filter(roster => 
+      roster.roster.forwards.length > 0 || 
+      roster.roster.defensemen.length > 0 || 
+      roster.roster.goalies.length > 0
+    );
+
+    if (!validRosters.length) {
+      console.error('No valid rosters were fetched successfully');
       return {
         props: {
-          rosters: [],
-          error: "Failed to fetch teams",
+          teams: [],
+          error: 'No valid rosters available'
         },
-        revalidate: 3600,
+        revalidate: 60 // Retry sooner when no valid data
       };
     }
-    const fetchRosterPromises = await teams.map((team) => {
-      // let url = `https://api-web.nhle.com/v1/club-stats/${team.abbreviation}/now`
-      let url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`;
-      console.log(url);
-      return fetch(url)
-        .then((res) => res.json())
-        .then((data) => ({
-          team,
-          roster: ["forwards", "defensemen", "goalies"].reduce(
-            (acc, position) => {
-              acc[position] =
-                data[position]?.map((person) => ({
-                  position: position,
-                  id: person.id,
-                  sweaterNumber: person.sweaterNumber ?? null,
-                  firstName: person.firstName?.default,
-                  lastName: person.lastName?.default,
-                })) || [];
-              return acc;
-            },
-            {}
-          ),
-        }));
-    });
-
-    const rosters = await Promise.all(fetchRosterPromises);
 
     return {
       props: {
-        teams: rosters,
+        teams: validRosters,
+        error: null
       },
-      revalidate: 3600,
+      revalidate: 3600
     };
   } catch (error) {
-    console.error("Error in getStaticProps:", error);
+    console.error('Error in getStaticProps:', error);
     return {
       props: {
-        rosters: [],
-        error: "Failed to fetch data",
+        teams: [],
+        error: error.message || 'Failed to fetch data'
       },
+      revalidate: 60 // Retry sooner on error
     };
   }
 }
