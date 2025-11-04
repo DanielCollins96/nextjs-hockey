@@ -109,7 +109,9 @@ export async function getStaticProps() {
       throw new Error('Failed to fetch teams or invalid teams data');
     }
 
-    const limit = pLimit(1); // Limit to 1 concurrent requests
+    // Use more conservative limits in production
+    const isProduction = process.env.VERCEL === '1';
+    const limit = pLimit(isProduction ? 1 : 2);  // Reduced to 2 concurrent in dev
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
     const fetchRoster = async (team) => {
@@ -148,8 +150,8 @@ export async function getStaticProps() {
           }
         };
       } finally {
-        // Add a small random delay between requests to avoid bursts
-        await delay(Math.random() * 100 + 200);
+        // Longer delay in production to avoid rate limits
+        await delay(isProduction ? 1000 : 500);  // Increased to 300ms in dev
       }
     };
 
