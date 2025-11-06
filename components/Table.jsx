@@ -34,14 +34,14 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
 
   return (
     <table
-      className="border border-black px-1 m-1 "
+      className="border border-black dark:border-gray-600 px-1 m-1"
     >
    <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th className="px-1 whitespace-nowrap bg-white border border-blue-600" key={header.id} colSpan={header.colSpan}>
+                  <th className="px-1 whitespace-nowrap bg-white dark:bg-gray-800 dark:text-white border border-blue-600 dark:border-blue-500" key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div
                         {...{
@@ -75,11 +75,11 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
           const isNHL = row?.original['league.name'] == 'National Hockey League'
 
           return (
-            <tr key={row.id} className={`whitespace-nowrap ` + (isNHL ? "bg-slate-200" : "")}>
+            <tr key={row.id} className={`whitespace-nowrap ` + (isNHL ? "bg-slate-200 dark:bg-gray-700" : "dark:bg-gray-800")}>
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
-                    className="border-black border px-1 text-sm"
+                    className="border-black dark:border-gray-600 border px-1 text-sm dark:text-gray-200"
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -94,7 +94,7 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
         {table.getFooterGroups().map((footerGroup, idx) => (
           <tr
             key={footerGroup.id}
-            className="bg-slate-300 py-px text-center font-bold"
+            className="bg-slate-300 dark:bg-gray-700 py-px text-center font-bold dark:text-white"
           >
             {footerGroup.headers.map((header) => (
               <td

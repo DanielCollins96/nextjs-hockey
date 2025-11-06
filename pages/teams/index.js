@@ -34,8 +34,8 @@ export default function Teams({rosters}) {
      crossOrigin="anonymous"></script>
             </Head>
             <div className="relative w-5/6 max-w-sm m-auto box-border">
-                <label className="absolute left-0 top-0 font-bold m-4" htmlFor="filter">Search By Team</label>
-                <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full" type="text" name="filter" id="filter" />
+                <label className="absolute left-0 top-0 font-bold m-4 dark:text-white" htmlFor="filter">Search By Team</label>
+                <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 dark:bg-gray-700 dark:text-white w-full" type="text" name="filter" id="filter" />
             </div>
             {/* <div className="flex flex-wrap justify-center my-2 mx-4"> */}
             <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
@@ -62,7 +62,7 @@ export async function getStaticProps() {
 
         // Use more conservative limits in production
         const isProduction = process.env.VERCEL === '1';
-        const limit = pLimit(isProduction ? 1 : 2);  // Same limits as home page
+        const limit = pLimit(isProduction ? 1 : 3);  // Same limits as home page
         const delay = ms => new Promise(res => setTimeout(res, ms));
 
         const fetchRoster = async (team) => {
@@ -100,7 +100,7 @@ export async function getStaticProps() {
                 };
             } finally {
                 // Longer delay in production to avoid rate limits
-                await delay(isProduction ? 1000 : 500);  // Same delay as home page
+                await delay(isProduction ? 1000 : 600);  // Same delay as home page
             }
         };
 

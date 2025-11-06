@@ -18,3 +18,33 @@
 .btn-disabled {
   @apply disabled:cursor-not-allowed disabled:opacity-50;
 }
+
+/* react-tabs dark mode overrides to ensure tabs are readable */
+.react-tabs__tab-list {
+  /* keep a neutral background that switches with site theme */
+  background: #f3f4f6; /* light: gray-100 */
+}
+.dark .react-tabs__tab-list {
+  background: #0f1724; /* dark: near-gray-900 */
+}
+.react-tabs__tab {
+  color: #111827; /* gray-900 */
+  padding: .25rem .75rem;
+  border-radius: .375rem;
+}
+.dark .react-tabs__tab {
+  color: #f3f4f6; /* gray-100 */
+}
+.react-tabs__tab--selected {
+  background: #fecaca; /* red-300 */
+  color: #000000;
+}
+.dark .react-tabs__tab--selected {
+  background: #991b1b; /* red-700 */
+  color: #ffffff;
+}
+
+/* make sure react-tabs panels match site bg */
+.react-tabs__tab-panel {
+  background: inherit;
+}

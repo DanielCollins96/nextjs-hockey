@@ -2,6 +2,7 @@ import {motion} from "framer-motion";
 import {useRouter} from "next/router";
 import {useEffect, useState, useRef} from "react";
 import TeamBox from "../components/TeamBox";
+import Puck from "../components/Puck";
 import {getTeams} from "../lib/queries";
 import pLimit from 'p-limit';
 
@@ -32,7 +33,7 @@ export default function Home({teams}) {
     <div className="">
       <div className="grid place-content-center m-4">
         <button
-          className="bg-blue-200 px-3 py-1 rounded"
+          className="bg-blue-200 dark:bg-blue-700 dark:text-white px-3 py-1 rounded hover:bg-blue-300 dark:hover:bg-blue-600"
           onClick={() => onPress()}
         >
           Reset Puck
@@ -52,18 +53,12 @@ export default function Home({teams}) {
             // drag={true}
           />
           <div className="grid inset-0 relative w-24 place-content-end">
-            <motion.img
+            {/* Inline motion SVG Puck -- color controlled via text color to avoid CSS filter repaints */}
+            <Puck
               ref={inputRef}
-              className="absolute bottom-0"
-              src="/ice-hockey-puck.svg"
-              alt="Puck"
-              width="100"
-              height="100"
-              initial={{opacity: 0}}
-              animate={{opacity: 1}}
-              transition={{delay: 0.1}}
-              whileTap={{scale: 0.9}}
-              drag={true}
+              className="absolute bottom-0 text-black dark:text-white transition-colors duration-150"
+              width={100}
+              height={100}
               onUpdate={onUpdate}
             />
           </div>
@@ -72,14 +67,14 @@ export default function Home({teams}) {
       <div>
         <div className="relative w-5/6 max-w-sm m-auto box-border">
           <label
-            className="absolute left-0 top-0 font-bold m-4"
+            className="absolute left-0 top-0 font-bold m-4 dark:text-white"
             htmlFor="filter"
           >
             Search By Team
           </label>
           <input
             onChange={inputChange}
-            className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 w-full"
+            className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 dark:bg-gray-700 dark:text-white w-full"
             type="text"
             name="filter"
             id="filter"
@@ -111,7 +106,7 @@ export async function getStaticProps() {
 
     // Use more conservative limits in production
     const isProduction = process.env.VERCEL === '1';
-    const limit = pLimit(isProduction ? 1 : 2);  // Reduced to 2 concurrent in dev
+    const limit = pLimit(isProduction ? 1 : 3);  // Reduced to 3 concurrent in dev
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
     const fetchRoster = async (team) => {
@@ -151,7 +146,7 @@ export async function getStaticProps() {
         };
       } finally {
         // Longer delay in production to avoid rate limits
-        await delay(isProduction ? 1000 : 500);  // Increased to 300ms in dev
+        await delay(isProduction ? 1000 : 600);  // Increased to 300ms in dev
       }
     };
 

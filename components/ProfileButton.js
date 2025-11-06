@@ -9,7 +9,7 @@ export default function ProfileButton() {
 
     const { logout } = UseAuth()
     return (
-        (<div className="text-right relative">
+        (<div className="relative">
             <Menu as="div" className="relative inline-block text-left">
                 <Menu.Button className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
                     <span className="m-auto tracking-wide">Profile</span>

@@ -118,26 +118,34 @@ function Profile() {
   };
 
   if (!user) {
-    return <p className="text-xl mx-auto mt-12">Login to view profile!</p>;
+    return (
+      <p className="text-xl mx-auto mt-12 text-gray-900 dark:text-gray-100">
+        Login to view profile!
+      </p>
+    );
   }
 
   return (
     <div>
       <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">
-        <div className="bg-white m-2 p-2">
+        <div className="bg-white dark:bg-gray-800 dark:text-gray-100 m-2 p-2 rounded">
           {user && (
-            <h2 className="font-bold">Welcome, {user?.attributes?.email}</h2>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">
+              Welcome, {user?.attributes?.email}
+            </h2>
           )}
-          <div className="bg-red-200 p-12">My Bio</div>
+          <div className="dark:text-white p-12 rounded">
+            My Bio
+          </div>
         </div>
         <div className="w-11/12 sm:w-3/4 flex flex-col p-2 gap-2">
           <Tabs>
-            <TabList className="flex gap-3" activeTabClassName="bg-red-300">
-              <Tab>Posts</Tab>
-              <Tab>Settings</Tab>
-              <Tab>Create Post</Tab>
+            <TabList className="flex gap-3 bg-gray-100 dark:bg-gray-900 p-2 rounded">
+              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Posts</Tab>
+              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Settings</Tab>
+              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Create Post</Tab>
             </TabList>
-            <div className="border border-black min-h-72">
+            <div className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded min-h-72 p-2">
               <TabPanel>
                 <PostsList
                   error={status === "error"}
@@ -150,7 +158,7 @@ function Profile() {
               </TabPanel>
               <TabPanel>
                 <div id="settings">
-                  <p>LOLOLOL</p>
+                  <p className="text-gray-900 dark:text-gray-100">LOLOLOL</p>
                 </div>
               </TabPanel>
               <TabPanel>

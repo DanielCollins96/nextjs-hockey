@@ -4,6 +4,7 @@ import {Auth} from "aws-amplify";
 import ProfileButton from "./ProfileButton";
 import {FaUserCircle, FaSignOutAlt, FaBars, FaTimes} from "react-icons/fa";
 import {useState, useEffect} from "react";
+import DarkModeToggle from "./DarkModeToggle";
 
 const Header = () => {
   const {user, setUser} = UseAuth();
@@ -23,8 +24,8 @@ const Header = () => {
 
   return (
     <>
-      <header className="w-full bg-white flex justify-between ml-1 py-2">
-        <Link href="/" className="self-center text-xl font-bold">
+      <header className="w-full bg-gray-100 dark:bg-gray-800 flex justify-between ml-1 py-2">
+        <Link href="/" className="self-center text-xl font-bold dark:text-white">
           <p className="text-xl m-2">NHL Stats Home &copy;</p>
         </Link>
         {/* Hamburger for mobile */}
@@ -39,19 +40,22 @@ const Header = () => {
         <nav className="self-center my-2 mr-2 sm:my-0 hidden sm:block">
           <ul className="flex">
             <li className="my-auto px-2">
-              <Link href="/teams" className="text-xl">
+              <Link href="/teams" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
                 Teams
               </Link>
             </li>
             <li className="my-auto px-3 py-1">
-              <Link href="/players" className="text-xl">
+              <Link href="/players" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
                 Players
               </Link>
             </li>
             <li className="my-auto px-3 py-1">
-              <Link href="/drafts" className="text-xl">
+              <Link href="/drafts" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
                 Drafts
               </Link>
+            </li>
+            <li className="my-auto px-3 py-1">
+              <DarkModeToggle />
             </li>
             {!user ? (
               <li>
@@ -80,12 +84,12 @@ const Header = () => {
         onClick={() => setSidebarOpen(false)}
       />
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-50 transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } sm:hidden`}
       >
         <div className="flex justify-between items-center p-4 border-b">
-          <span className="font-bold text-xl">Menu</span>
+          <span className="font-bold text-xl dark:text-white">Menu</span>
           <button
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
@@ -99,7 +103,7 @@ const Header = () => {
               <Link
                 href="/teams"
                 onClick={() => setSidebarOpen(false)}
-                className="text-lg"
+                className="text-lg dark:text-white"
               >
                 Teams
               </Link>
@@ -108,7 +112,7 @@ const Header = () => {
               <Link
                 href="/players"
                 onClick={() => setSidebarOpen(false)}
-                className="text-lg"
+                className="text-lg dark:text-white"
               >
                 Players
               </Link>
@@ -117,10 +121,15 @@ const Header = () => {
               <Link
                 href="/drafts"
                 onClick={() => setSidebarOpen(false)}
-                className="text-lg"
+                className="text-lg dark:text-white"
               >
                 Drafts
               </Link>
+            </li>
+            <li>
+              <div className="py-2">
+                <DarkModeToggle />
+              </div>
             </li>
             {!user ? (
               <li>
