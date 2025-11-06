@@ -37,31 +37,19 @@ export default function TeamBox({team}) {
         </div>
         <ul className="grid grid-cols-3 divide-x divide-y dark:divide-gray-600">
           {
-            team?.roster?.forwards
-              ?.sort((playerA, playerB) => {
-                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
-              })
-              .map((person) => (
-                <PlayerListItem key={person.id} person={person} />
-              ))
+            team?.roster?.forwards?.map((person) => (
+              <PlayerListItem key={person.id} person={person} />
+            ))
           }
           {
-            team?.roster?.defensemen
-              ?.sort((playerA, playerB) => {
-                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
-              })
-              .map((person) => (
-                <PlayerListItem key={person.id} person={person} />
-              ))
+            team?.roster?.defensemen?.map((person) => (
+              <PlayerListItem key={person.id} person={person} />
+            ))
           }
           {
-            team?.roster?.goalies
-              ?.sort((playerA, playerB) => {
-                return playerA.firstName.default > playerB.firstName.default ? 1 : -1;
-              })
-              .map((person) => (
-                <PlayerListItem key={person.id} person={person} />
-              ))
+            team?.roster?.goalies?.map((person) => (
+              <PlayerListItem key={person.id} person={person} />
+            ))
           }
         </ul>
         <div 

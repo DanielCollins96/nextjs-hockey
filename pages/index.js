@@ -123,16 +123,24 @@ export async function getStaticProps() {
 
         const data = await res.json();
         console.log(`Successfully fetched roster for ${team.abbreviation}`);
+        
         return {
           team,
           roster: ['forwards', 'defensemen', 'goalies'].reduce((acc, position) => {
-            acc[position] = data[position]?.map(person => ({
+            const players = data[position]?.map(person => ({
               position,
               id: person.id,
               sweaterNumber: person.sweaterNumber ?? null,
               firstName: person.firstName?.default,
               lastName: person.lastName?.default,
             })) || [];
+            
+            // Sort alphabetically by full name
+            acc[position] = players.sort((a, b) => {
+              const nameA = `${a.firstName || ''} ${a.lastName || ''}`;
+              const nameB = `${b.firstName || ''} ${b.lastName || ''}`;
+              return nameA.localeCompare(nameB);
+            });
             return acc;
           }, {})
         };
@@ -148,7 +156,7 @@ export async function getStaticProps() {
         };
       } finally {
         // Longer delay in production to avoid rate limits
-        await delay(isProduction ? 1000 : 600);  // Increased to 300ms in dev
+        await delay(isProduction ? 1000 : 500);  // Increased to 300ms in dev
       }
     };
 
