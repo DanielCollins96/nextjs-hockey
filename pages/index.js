@@ -58,7 +58,7 @@ export default function Home({teams}) {
             <Puck
               key={puckKey}
               ref={inputRef}
-              className="absolute bottom-0 text-black dark:text-white transition-colors duration-150"
+              className="absolute bottom-0 text-black dark:text-gray-400 transition-colors duration-150"
               width={100}
               height={100}
               onUpdate={onUpdate}

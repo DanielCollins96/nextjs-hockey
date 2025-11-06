@@ -517,11 +517,11 @@ export default function TeamPage({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div>
-                  <label className="px-1" htmlFor="season">
+                  <label className="px-1 dark:text-white font-medium" htmlFor="season">
                     Season:
                   </label>
                   <select
-                    className="flex w-32 justify-end"
+                    className="w-40 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={seasonId}
                     onChange={(event) => {
                       const newSeasonId = event.target.value;
