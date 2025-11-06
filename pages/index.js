@@ -10,6 +10,7 @@ export default function Home({teams}) {
   const router = useRouter();
 
   const [searchedTeams, setSearchedTeams] = useState(teams);
+  const [puckKey, setPuckKey] = useState(0);
 
   const inputRef = useRef();
 
@@ -27,7 +28,7 @@ export default function Home({teams}) {
   }
 
   function onPress() {
-    router.reload();
+    setPuckKey(prev => prev + 1);
   }
   return (
     <div className="">
@@ -55,6 +56,7 @@ export default function Home({teams}) {
           <div className="grid inset-0 relative w-24 place-content-end">
             {/* Inline motion SVG Puck -- color controlled via text color to avoid CSS filter repaints */}
             <Puck
+              key={puckKey}
               ref={inputRef}
               className="absolute bottom-0 text-black dark:text-white transition-colors duration-150"
               width={100}
