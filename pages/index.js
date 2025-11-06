@@ -15,11 +15,48 @@ export default function Home({teams}) {
   const inputRef = useRef();
 
   const inputChange = (e) => {
-    let searchTerm = e.target.value;
-    console.log(e.target.value);
-    let newList = teams.filter((team) =>
-      team.team.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let searchTerm = e.target.value.trim();
+    console.log('Search term:', searchTerm);
+    
+    if (!searchTerm) {
+      setSearchedTeams(teams);
+      return;
+    }
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Filter teams by team name OR by player name/number
+    let newList = teams.filter((team) => {
+      // Check if team name matches
+      if (team.team.name.toLowerCase().includes(searchLower)) {
+        return true;
+      }
+      
+      // Check if any player name or number matches
+      const allPlayers = [
+        ...(team.roster?.forwards || []),
+        ...(team.roster?.defensemen || []),
+        ...(team.roster?.goalies || [])
+      ];
+      
+      return allPlayers.some(player => {
+        // Check name matches
+        const fullName = `${player.firstName || ''} ${player.lastName || ''}`.toLowerCase();
+        const lastName = (player.lastName || '').toLowerCase();
+        const firstName = (player.firstName || '').toLowerCase();
+        
+        const nameMatch = fullName.includes(searchLower) || 
+               lastName.includes(searchLower) || 
+               firstName.includes(searchLower);
+        
+        // Check number match - convert both to strings for comparison
+        const sweaterStr = player.sweaterNumber != null ? String(player.sweaterNumber) : '';
+        const numberMatch = sweaterStr.includes(searchTerm);
+        
+        return nameMatch || numberMatch;
+      });
+    });
+    
     setSearchedTeams(newList);
   };
 
@@ -72,7 +109,7 @@ export default function Home({teams}) {
             className="absolute left-0 top-0 font-bold m-4 dark:text-white"
             htmlFor="filter"
           >
-            Search By Team
+            Search By Team or Player
           </label>
           <input
             onChange={inputChange}
@@ -80,6 +117,7 @@ export default function Home({teams}) {
             type="text"
             name="filter"
             id="filter"
+            placeholder="e.g., Bruins, McDavid, 97..."
           />
         </div>
         <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">

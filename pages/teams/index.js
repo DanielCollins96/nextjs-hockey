@@ -9,19 +9,66 @@ import pLimit from 'p-limit';
 export default function Teams({rosters}) {
 
     const [loading, setLoading] = useState(true)
-    const [filteredTeams, setFilteredTeams] = useState([]);
+    const [filteredTeams, setFilteredTeams] = useState(rosters || []);
 
 
     useEffect(() => {
-        setFilteredTeams(rosters)
+        if (rosters && rosters.length > 0) {
+            setFilteredTeams(rosters)
+        }
     }, [rosters])
     
     const inputChange = (e) => {
-        let searchTerm = e.target.value
-        console.log(e.target.value);
-        let newList = rosters
-        .filter((team) => team.team.name.toLowerCase().includes(searchTerm.toLowerCase()) )
-        setFilteredTeams(newList)
+        let searchTerm = e.target.value.trim();
+        console.log('Search term:', searchTerm);
+        
+        if (!searchTerm) {
+            setFilteredTeams(rosters);
+            return;
+        }
+        
+        const searchLower = searchTerm.toLowerCase();
+        
+        // Filter teams by team name OR by player name/number
+        let newList = rosters.filter((team) => {
+            // Check if team name matches
+            if (team.team.name.toLowerCase().includes(searchLower)) {
+                return true;
+            }
+            
+            // Check if any player name or number matches
+            const allPlayers = [
+                ...(team.roster?.forwards || []),
+                ...(team.roster?.defensemen || []),
+                ...(team.roster?.goalies || [])
+            ];
+            
+            const hasMatch = allPlayers.some(player => {
+                // Check name matches
+                const fullName = `${player.firstName || ''} ${player.lastName || ''}`.toLowerCase();
+                const lastName = (player.lastName || '').toLowerCase();
+                const firstName = (player.firstName || '').toLowerCase();
+                
+                const nameMatch = fullName.includes(searchLower) || 
+                       lastName.includes(searchLower) || 
+                       firstName.includes(searchLower);
+                
+                // Check number match - convert both to strings for comparison
+                const sweaterStr = player.sweaterNumber != null ? String(player.sweaterNumber) : '';
+                const numberMatch = sweaterStr.includes(searchTerm);
+                
+                if (numberMatch) {
+                    console.log(`Number match: ${player.firstName} ${player.lastName} #${player.sweaterNumber} on ${team.team.name}`);
+                }
+                
+                return nameMatch || numberMatch;
+            });
+            
+            return hasMatch;
+        });
+        
+        console.log(`Found ${newList.length} teams matching "${searchTerm}"`);
+        setFilteredTeams(newList);
     }
 
     return (
@@ -34,8 +81,8 @@ export default function Teams({rosters}) {
      crossOrigin="anonymous"></script>
             </Head>
             <div className="relative w-5/6 max-w-sm m-auto box-border">
-                <label className="absolute left-0 top-0 font-bold m-4 dark:text-white" htmlFor="filter">Search By Team</label>
-                <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 dark:bg-gray-700 dark:text-white w-full" type="text" name="filter" id="filter" />
+                <label className="absolute left-0 top-0 font-bold m-4 dark:text-white" htmlFor="filter">Search By Team or Player</label>
+                <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 dark:bg-gray-700 dark:text-white w-full" type="text" name="filter" id="filter" placeholder="e.g., Bruins, McDavid, 97..." />
             </div>
             {/* <div className="flex flex-wrap justify-center my-2 mx-4"> */}
             <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
