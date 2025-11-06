@@ -68,7 +68,7 @@ const Header = () => {
               </li>
             ) : (
               <li>
-                <ProfileButton />
+                <ProfileButton onNavigate={() => setSidebarOpen(false)} />
               </li>
             )}
           </ul>
@@ -145,7 +145,7 @@ const Header = () => {
               </li>
             ) : (
               <li>
-                <ProfileButton />
+                <ProfileButton onNavigate={() => setSidebarOpen(false)} />
               </li>
             )}
           </ul>

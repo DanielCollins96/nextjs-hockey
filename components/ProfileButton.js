@@ -5,7 +5,7 @@ import { UseAuth } from '../contexts/Auth';
 
 import {BiChevronDown} from 'react-icons/bi'
 
-export default function ProfileButton() {
+export default function ProfileButton({ onNavigate }) {
 
     const { logout } = UseAuth()
     return (
@@ -19,14 +19,14 @@ export default function ProfileButton() {
                     <div className="flex flex-col gap-1 divide-y text-center">
                         <Menu.Item>
                             {({active}) => (
-                                <Link href="/messages" className={`${active ? 'font-bold' : ''}`}>
+                                <Link href="/messages" className={`${active ? 'font-bold' : ''}`} onClick={onNavigate}>
                                     Messages
                                 </Link>
                             )}
                         </Menu.Item>
                         <Menu.Item>
                             {({active}) => (
-                                <Link href="/profile" className={`${active ? 'font-bold' : ''}`}>
+                                <Link href="/profile" className={`${active ? 'font-bold' : ''}`} onClick={onNavigate}>
                                     My Account
                                 </Link>
                             )}
