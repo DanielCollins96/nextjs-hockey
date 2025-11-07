@@ -1,5 +1,5 @@
-import {useState, useCallback} from "react";
-import { MdExpandMore, MdExpandLess, MdOutlineChevronLeft, MdAccessibility } from "react-icons/md";
+import {useState} from "react";
+import { MdOutlineChevronLeft } from "react-icons/md";
 import Link from 'next/link'
 
 export default function TeamBox({team}) {
@@ -18,7 +18,7 @@ export default function TeamBox({team}) {
 
   return (
     <div>
-      <div className={`relative overflow-hidden border border-black dark:border-gray-600 rounded bg-white dark:bg-gray-800 m-1 ${active ? 'max-h-full': 'max-h-32'} transition-maxHeight duration-500 ease-in-out`}>
+      <div className={`relative overflow-hidden border border-black dark:border-gray-600 rounded bg-white dark:bg-gray-800 m-1 ${active ? 'max-h-[300px]': 'max-h-32'} transition-all duration-200 ease-in-out`}>
         <div className="flex justify-between items-center">
           <h2 className="text-xl text-left p-2">
             <Link
@@ -30,8 +30,8 @@ export default function TeamBox({team}) {
           <div className="grow cursor-pointer" onClick={() => setActive(v => !v)}>
             {
               active ? 
-                <MdOutlineChevronLeft className="ml-auto dark:text-white" style={{"transition": "transform .3s","transform": "rotate(-90deg)"}} size={24}/> : 
-                <MdOutlineChevronLeft className="ml-auto dark:text-white" style={{"transition": "transform .3s","transform": "rotate(0deg)"}} size={24}/>
+                <MdOutlineChevronLeft className="ml-auto dark:text-white" style={{transition: 'transform .3s', transform: 'rotate(-90deg)'}} size={24}/> : 
+                <MdOutlineChevronLeft className="ml-auto dark:text-white" style={{transition: 'transform .3s', transform: 'rotate(0deg)'}} size={24}/>
             }
           </div>
         </div>
