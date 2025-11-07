@@ -28,14 +28,17 @@ const Header = () => {
         <Link href="/" className="self-center text-xl font-bold dark:text-white">
           <p className="text-xl m-2">NHL Stats Home &copy;</p>
         </Link>
-        {/* Hamburger for mobile */}
-        <button
-          className="sm:hidden flex items-center px-3 py-2"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open sidebar"
-        >
-          <FaBars size={24} />
-        </button>
+        {/* Mobile: Dark mode toggle and hamburger */}
+        <div className="flex items-center sm:hidden">
+          <DarkModeToggle />
+          <button
+            className="ml-4 flex items-center px-3 py-2"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
+          >
+            <FaBars size={24} />
+          </button>
+        </div>
         {/* Desktop nav */}
         <nav className="self-center my-2 mr-2 sm:my-0 hidden sm:block">
           <ul className="flex">
@@ -125,11 +128,6 @@ const Header = () => {
               >
                 Drafts
               </Link>
-            </li>
-            <li>
-              <div className="py-2">
-                <DarkModeToggle />
-              </div>
             </li>
             {!user ? (
               <li>
