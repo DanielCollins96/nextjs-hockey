@@ -194,7 +194,7 @@ export async function getStaticProps() {
         };
       } finally {
         // Longer delay in production to avoid rate limits
-        await delay(isProduction ? 1000 : 500);  // Increased to 300ms in dev
+        await delay(isProduction ? 1000 : 600);  // Increased to 600ms in dev
       }
     };
 
