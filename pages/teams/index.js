@@ -109,7 +109,7 @@ export async function getStaticProps() {
 
         // Use more conservative limits in production
         const isProduction = process.env.VERCEL === '1';
-        const limit = pLimit(isProduction ? 1 : 2);  // Same limits as home page
+        const limit = pLimit(isProduction ? 2 : 3);  // Same limits as home page
         const delay = ms => new Promise(res => setTimeout(res, ms));
 
         const fetchRoster = async (team) => {
@@ -154,7 +154,7 @@ export async function getStaticProps() {
                 };
             } finally {
                 // Longer delay in production to avoid rate limits
-                await delay(isProduction ? 1000 : 500);  // Same delay as home page
+                await delay(isProduction ? 1000 : 700);  // Same delay as home page
             }
         };
 
