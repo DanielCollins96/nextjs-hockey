@@ -504,16 +504,12 @@ export default function TeamPage({
           crossOrigin="anonymous"
         ></script>
       </Head>
-      <div className="text-center border border-black rounded p-2">
+      <div className="text-center border border-black dark:border-white p-1 rounded p-2">
         <p className="text-lg">{abbreviation}</p>
-        {/* <p>{team_data[0]?.firstYearOfPlay}</p> */}
-        {/* <Link href={`${team_data[0]?.officialSiteUrl}`}>
-          <a className="hover:text-blue-700">{team_data[0]?.officialSiteUrl}</a>
-        </Link> */}
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {seasons && (
-          <div className="border-2 w-screen p-1 flex flex-col max-w-2xl">
+          <div className="border border-black dark:border-white w-screen p-1 flex flex-col max-w-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div>
@@ -583,7 +579,7 @@ export default function TeamPage({
             )}
           </div>
         )}
-        <div className="border-2 p-1 flex flex-col">
+        <div className="border border-black dark:border-white p-1 flex flex-col">
           <div className="p-2 mx-auto">
             {/* <input type="" /> */}
             <ResponsiveContainer width={450} height={300}>
