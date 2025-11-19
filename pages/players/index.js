@@ -25,16 +25,16 @@ export default function Players({players}) {
              },
              {
                  header: 'Name',
-                 accessorKey: 'fullName',
-            cell: ({row}) => (<Link
-                href={`/players/${row.original.id}`}
+                 accessorKey: 'player_name',
+                cell: ({row}) => (<Link
+                href={`/players/${row.original["playerId"]}`}
                 passHref
-                className=" hover:text-blue-700 visited:text-purple-800">{row.original.fullName}</Link>)
+                className=" hover:text-blue-700 visited:text-purple-800">{row.original.player_name}</Link>)
              },
-                   {
-        header: "Pos.",
-        accessorFn: (d) => d["primaryPosition.code"],
-      },
+            {
+                header: "Pos.",
+                accessorFn: (d) => d["position"],
+            },
             {
                  header: 'GP',
                  accessorFn: (d) => d["stat.games"],
@@ -74,7 +74,7 @@ export default function Players({players}) {
         ])
     return (
         <div>
-            {players ? <ReactTable columns={columns} data={players} sortKey='P'/> : <h3>Error Retrieving Stats...</h3>} 
+            {players ? <ReactTable columns={columns} data={players} sortKey='P' filterCol={['player_name']}/> : <h3>Error Retrieving Stats...</h3>} 
         </div>
     )
 }
