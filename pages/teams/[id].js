@@ -33,7 +33,7 @@ export default function TeamPage({
   const router = useRouter();
   const {id, season: querySeason} = router.query;
 
-  const [seasonId, setSeasonId] = useState(querySeason || "20242025");
+  const [seasonId, setSeasonId] = useState(querySeason || "20252026");
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId));
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
 
@@ -693,7 +693,7 @@ export async function getStaticProps({params}) {
   const playoffSeasons = await getPlayoffYears(abbreviation);
 
   seasons.forEach((season) => {
-    seasonMap[season].madePlayoffs = playoffSeasons.includes(season);
+    seasonMap[season].madePlayoffs = playoffSeasons?.includes(season) || false;
   });
   let teamRecords = await getTeamSeasons(params.id);
 
