@@ -107,10 +107,10 @@ const Players = ({playerId, stats, person}) => {
              {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
-                 cell: ({row}) => row.original['league.name'] == 'National Hockey League' ? (<Link
+                 cell: ({row}) => (row.original['league.name'] === 'National Hockey League' || row.original['league.name'] === 'NHL') ? (<Link
                      href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
                      passHref
-                     className=" hover:text-blue-700 visited:text-purple-800">{row.original['team.name']}</Link>) : (row.original['team.name'])
+                     className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300">{row.original['team.name']}</Link>) : (row.original['team.name'])
              },
             {
                  header: 'Lge',
