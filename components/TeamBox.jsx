@@ -18,7 +18,7 @@ export default function TeamBox({team}) {
 
   return (
     <div>
-      <div className={`relative overflow-hidden border border-black dark:border-gray-600 rounded bg-white dark:bg-gray-800 m-1 ${active ? 'max-h-[400px]': 'max-h-32'} transition-all duration-200 ease-in-out`}>
+      <div className={`relative overflow-hidden border border-black dark:border-gray-600 rounded bg-white dark:bg-gray-800 m-1 ${active ? 'max-h-[600px]': 'max-h-32'} transition-all duration-200 ease-in-out`}>
         <div className="flex justify-between items-center">
           <h2 className="text-xl text-left p-2">
             <Link
