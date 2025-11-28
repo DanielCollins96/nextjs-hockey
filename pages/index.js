@@ -3,8 +3,7 @@ import {useRouter} from "next/router";
 import {useEffect, useState, useRef} from "react";
 import TeamBox from "../components/TeamBox";
 import Puck from "../components/Puck";
-import {getTeams} from "../lib/queries";
-import pLimit from 'p-limit';
+import {getTeams, getActiveRosters} from "../lib/queries";
 
 export default function Home({teams}) {
   const router = useRouter();
@@ -139,68 +138,66 @@ export default function Home({teams}) {
 
 export async function getStaticProps() {
   try {
-    const teams = await getTeams();
+    const [teams, activeRosters] = await Promise.all([
+      getTeams(),
+      getActiveRosters()
+    ]);
+
     if (!teams || !Array.isArray(teams)) {
       throw new Error('Failed to fetch teams or invalid teams data');
     }
 
-    // Use more conservative limits in production
-    const isProduction = process.env.VERCEL === '1';
-    const limit = pLimit(isProduction ? 2 : 3);  // Reduced to 3 concurrent in dev
-    const delay = ms => new Promise(res => setTimeout(res, ms));
-
-    const fetchRoster = async (team) => {
-      try {
-        const url = `https://api-web.nhle.com/v1/roster/${team.abbreviation}/current`;
-        console.log(`Fetching roster for ${team.abbreviation}...`);
-        const res = await fetch(url);
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch roster for ${team.abbreviation}: ${res.status} ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        console.log(`Successfully fetched roster for ${team.abbreviation}`);
-        
-        return {
-          team,
-          roster: ['forwards', 'defensemen', 'goalies'].reduce((acc, position) => {
-            const players = data[position]?.map(person => ({
-              position,
-              id: person.id,
-              sweaterNumber: person.sweaterNumber ?? null,
-              firstName: person.firstName?.default,
-              lastName: person.lastName?.default,
-            })) || [];
-            
-            // Sort alphabetically by full name
-            acc[position] = players.sort((a, b) => {
-              const nameA = `${a.firstName || ''} ${a.lastName || ''}`;
-              const nameB = `${b.firstName || ''} ${b.lastName || ''}`;
-              return nameA.localeCompare(nameB);
-            });
-            return acc;
-          }, {})
+    // Group roster players by team abbreviation and position
+    const rostersByTeam = {};
+    
+    for (const player of activeRosters) {
+      const abbrev = player.teamAbbreviation;
+      if (!rostersByTeam[abbrev]) {
+        rostersByTeam[abbrev] = {
+          forwards: [],
+          defensemen: [],
+          goalies: []
         };
-      } catch (error) {
-        console.error(`Error fetching roster for ${team.abbreviation}:`, error);
-        return {
-          team,
-          roster: {
-            forwards: [],
-            defensemen: [],
-            goalies: []
-          }
-        };
-      } finally {
-        // Longer delay in production to avoid rate limits
-        await delay(isProduction ? 1000 : 700);  // Increased to 600ms in dev
       }
-    };
 
-    // Use p-limit to limit concurrent requests
-    const rosterPromises = teams.map(team => limit(() => fetchRoster(team)));
-    const rosters = await Promise.all(rosterPromises);
+      const playerData = {
+        position: player.positionGroup,
+        id: player.playerId,
+        sweaterNumber: player.sweaterNumber ?? null,
+        firstName: player.firstName,
+        lastName: player.lastName,
+      };
+
+      // Map positionGroup to the roster category
+      if (player.positionGroup === 'forwards') {
+        rostersByTeam[abbrev].forwards.push(playerData);
+      } else if (player.positionGroup === 'defensemen') {
+        rostersByTeam[abbrev].defensemen.push(playerData);
+      } else if (player.positionGroup === 'goalies') {
+        rostersByTeam[abbrev].goalies.push(playerData);
+      }
+    }
+
+    // Sort players alphabetically within each position group
+    for (const abbrev of Object.keys(rostersByTeam)) {
+      for (const position of ['forwards', 'defensemen', 'goalies']) {
+        rostersByTeam[abbrev][position].sort((a, b) => {
+          const nameA = `${a.firstName || ''} ${a.lastName || ''}`;
+          const nameB = `${b.firstName || ''} ${b.lastName || ''}`;
+          return nameA.localeCompare(nameB);
+        });
+      }
+    }
+
+    // Combine teams with their rosters
+    const rosters = teams.map(team => ({
+      team,
+      roster: rostersByTeam[team.abbreviation] || {
+        forwards: [],
+        defensemen: [],
+        goalies: []
+      }
+    }));
     
     // Filter out completely empty rosters
     const validRosters = rosters.filter(roster => 
