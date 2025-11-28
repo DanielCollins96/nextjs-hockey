@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Head from 'next/head'
 import Link from 'next/link';
 import Image from 'next/image'
-import { useQuery, useQueries } from 'react-query';
 import { useRouter } from 'next/router';
 import {getPlayer, getPlayerStats} from '../../lib/queries'
 import ReactTable from '../../components/Table';
@@ -11,92 +10,118 @@ const Players = ({playerId, stats, person}) => {
     const router = useRouter()
     const { id } = router.query
 
-    const position = person && person['primaryPosition.name'] ? person['primaryPosition.name'] : 'Center';
+    const position = person && person['position'] ? person['position'] : 'Center';
 
-    let positionalColumns = position !== 'Goalie' ? [
-      {
-        header: 'G',
-        accessorFn: (d) => d["stat.goals"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('G'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-   {
-        header: 'A',
-        accessorFn: (d) => d["stat.assists"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('A'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-      {
-        header: 'P',
-        accessorFn: (d) => d["stat.points"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('P'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-    {
-        header: 'PIM',
-        accessorFn: (d) => d["stat.pim"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('PIM'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>
-    },
-    {
-        header: '+/-',
-        accessorFn: (d) => d["stat.plusMinus"],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('+/-'), 0),
-        cell: props => <p className="text-right">{props.getValue()}</p>    },
-    ] : [
-      {
-        header: 'W',
-        accessorFn: (d) => d['stat.wins'],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('W'), 0),
-    },
-      {
-        header: 'L',
-        accessorFn: (d) => d['stat.losses'],
-        footer: ({ table }) => table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    ).reduce((total, row) => total + row.getValue('L'), 0),
-    },
-      {
-        header: 'GAA',
-        accessorFn: (d) => d['stat.goalAgainstAverage'],
-        cell: props => props.getValue()?.toFixed(2) || null,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    )
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
-          let totalGaa = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('GAA')), 0)
-          let total = totalGaa / gp
-          return total.toFixed(2) || null
-        }
-      },
-      {
-        header: 'SV%',
-        accessorFn: (d) => d['stat.savePercentage'],
-        cell: props => props.getValue()?.toFixed(3) || null,
-        footer: ({ table }) => { 
-          const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    )
-          let gp =  nhlGames.reduce((total, row) => total + row.getValue('GP'), 0)
-          let totalSvPct = nhlGames.reduce((total, row) => total + (row.getValue('GP') * row.getValue('SV%')), 0)
-          let total = totalSvPct / gp
-          return total.toFixed(3) || null
-        }
-    },
-    ]
+    // Helper to check NHL league as returned by SQL (leagueAbbrev)
+    const isNHLRow = (row) => row?.original && row.original['league.name'] === 'NHL';
+
+        const positionalColumns = useMemo(() => position !== 'G' ? [
+            {
+                header: 'G',
+                accessorFn: (d) => d["stat.goals"],
+                footer: ({ table }) => {
+                                const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.original['stat.games'] != null && isNHLRow(row)
+                                ).reduce((total, row) => total + (Number(row.original['stat.goals']) || 0), 0) || 0;
+                                return <div className="text-right pr-1">{sum}</div>
+                            },
+                cell: props => <p className="text-right">{props.getValue()}</p>
+        },
+     {
+                header: 'A',
+                accessorFn: (d) => d["stat.assists"],
+                footer: ({ table }) => {
+                                const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.original['stat.games'] != null && isNHLRow(row)
+                                ).reduce((total, row) => total + (Number(row.original['stat.assists']) || 0), 0) || 0;
+                                return <div className="text-right pr-1">{sum}</div>
+                            },
+                cell: props => <p className="text-right">{props.getValue()}</p>
+        },
+            {
+                header: 'P',
+                accessorFn: (d) => d["stat.points"],
+                footer: ({ table }) => {
+                                const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.original['stat.games'] != null && isNHLRow(row)
+                                ).reduce((total, row) => total + (Number(row.original['stat.points']) || 0), 0) || 0;
+                                return <div className="text-right pr-1">{sum}</div>
+                            },
+                cell: props => <p className="text-right">{props.getValue()}</p>
+        },
+        {
+                header: 'PIM',
+                accessorFn: (d) => d["stat.pim"],
+                footer: ({ table }) => {
+                                const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.original['stat.games'] != null && isNHLRow(row)
+                                ).reduce((total, row) => total + (Number(row.original['stat.pim']) || 0), 0) || 0;
+                                return <div className="text-right pr-1">{sum}</div>
+                            },
+                cell: props => <p className="text-right">{props.getValue()}</p>
+        },
+        {
+                header: '+/-',
+                accessorFn: (d) => d["stat.plusMinus"],
+                footer: ({ table }) => {
+                                const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                                    row.original['stat.games'] != null && isNHLRow(row)
+                                ).reduce((total, row) => total + (Number(row.original['stat.plusMinus']) || 0), 0) || 0;
+                                return <div className="text-right pr-1">{sum}</div>
+                            },
+                cell: props => <p className="text-right">{props.getValue()}</p>    },
+        ] : [
+            {
+                header: 'W',
+                accessorFn: (d) => d['stat.wins'],
+                footer: ({ table }) => {
+                                                const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                                                        row.original['stat.games'] != null && isNHLRow(row)
+                                                ).reduce((total, row) => total + (Number(row.original['stat.wins']) || 0), 0) || 0;
+                                                return <div className="text-right pr-1">{sum}</div>
+                                        },
+                cell: props => <p className="text-right">{props.getValue()}</p>,
+            },
+            {
+                header: 'L',
+                accessorFn: (d) => d['stat.losses'],
+                footer: ({ table }) => {
+                        const sum = table.getFilteredRowModel().rows?.filter((row) => 
+                            row.original['stat.games'] != null && isNHLRow(row)
+                        ).reduce((total, row) => total + (Number(row.original['stat.losses']) || 0), 0) || 0;
+                        return <div className="text-right pr-1">{sum}</div>
+                    },
+                cell: props => <p className="text-right">{props.getValue()}</p>,
+        },
+            {
+                header: 'GAA',
+                accessorFn: (d) => d['stat.goalAgainstAverage'],
+                cell: props => <p className="text-right">{props.getValue() != null ? Number(props.getValue()).toFixed(2) : null}</p>,
+                footer: ({ table }) => { 
+                    const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
+                                                row.original['stat.games'] != null && isNHLRow(row)
+                                        ) || [];
+                    const gp = nhlGames.reduce((total, row) => total + (Number(row.original['stat.games']) || 0), 0);
+                    const totalGaa = nhlGames.reduce((total, row) => total + ((Number(row.original['stat.games']) || 0) * (Number(row.original['stat.goalAgainstAverage']) || 0)), 0);
+                    const avg = gp ? totalGaa / gp : null;
+                    return avg != null ? <div className="text-right pr-1">{avg.toFixed(2)}</div> : <div className="text-right pr-1">-</div>;
+                }
+            },
+            {
+                header: 'SV%',
+                accessorFn: (d) => d['stat.savePercentage'],
+                cell: props => <p className="text-right">{props.getValue() != null ? Number(props.getValue()).toFixed(3) : null}</p>,
+                footer: ({ table }) => { 
+                    const nhlGames = table.getFilteredRowModel().rows?.filter((row) => 
+                                                row.original['stat.games'] != null && isNHLRow(row)
+                                        ) || [];
+                    const gp = nhlGames.reduce((total, row) => total + (Number(row.original['stat.games']) || 0), 0);
+                    const totalSvPct = nhlGames.reduce((total, row) => total + ((Number(row.original['stat.games']) || 0) * (Number(row.original['stat.savePercentage']) || 0)), 0);
+                    const avg = gp ? totalSvPct / gp : null;
+                    return avg != null ? <div className="text-right 1">{avg.toFixed(3)}</div> : <div className="text-right pr-1">-</div>;
+                }
+        },
+        ], [position]);
 
     const columns = useMemo(
         () => [
@@ -107,35 +132,34 @@ const Players = ({playerId, stats, person}) => {
              {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
-                 cell: ({row}) => (row.original['league.name'] === 'National Hockey League' || row.original['league.name'] === 'NHL') ? (<Link
+                 cell: ({row}) => row.original['league.name'] === 'NHL' ? (<Link
                      href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
                      passHref
                      className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300">{row.original['team.name']}</Link>) : (row.original['team.name'])
              },
             {
                  header: 'Lge',
-                 accessorFn: (d) => d['league.name'].replace('National Hockey League', 'NHL'),
+                 accessorFn: (d) => d['league.name'],
                  footer: 'NHL',
              },
             {
                  header: 'GP',
                  accessorFn: (d) => d["stat.games"],
                  cell: props => <p className="text-right">{props.getValue()}</p>,
-                 footer: ({ table }) => {
+                footer: ({ table }) => {
                    const filteredRows = table.getFilteredRowModel().rows?.filter((row) => 
-                        row.getValue('GP') !== null && row.getValue('Lge')?.includes('NHL')
-                    );
+                        row.original['stat.games'] != null && isNHLRow(row)
+                    ) || [];
 
-                    return filteredRows.reduce((total, row) => total + row.getValue('GP'), 0)
+                    const sum = filteredRows.reduce((total, row) => total + (Number(row.original['stat.games']) || 0), 0)
+                    return <div className="text-right pr-1">{sum}</div>
                 },    
              },
             ...positionalColumns
         ],
-        [position]
+        [positionalColumns]
     )
-    const data = useMemo(
-        () => stats
-    , [])
+    const data = useMemo(() => stats, [stats])
 
     if (!person) {
         return (
@@ -155,6 +179,7 @@ const Players = ({playerId, stats, person}) => {
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
      crossOrigin="anonymous"></script>
             </Head>
+
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <Image src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="player headshot" width={200} height={0}/>
                 <div className="w-56 p-1 m-1">
@@ -170,7 +195,7 @@ const Players = ({playerId, stats, person}) => {
                     <p>Position: {person?.draft_position ? '#' + person?.draft_position : 'N/A'}</p>
                 </div>
             </div>
-            {stats ? <ReactTable columns={columns} data={stats} /> : <h3>Loading...</h3>} 
+            {stats ? <ReactTable columns={columns} data={data} /> : <h3>Loading...</h3>} 
         </div>
     )
 };
@@ -200,8 +225,9 @@ export async function getServerSideProps({params}) {
             }
         }
     }
+    console.log(person[0]);
 
-    const stats = await getPlayerStats(id, person[0]["primaryPosition.name"])
+    const stats = await getPlayerStats(id, person[0]["position"])
 
     return {
         props: {
