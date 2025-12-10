@@ -650,7 +650,7 @@ export async function getStaticProps({params}) {
   let abbreviation = null;
   try {
     const sql = ` 
-      SELECT DISTINCT "rawTriCode" abbreviation
+      SELECT DISTINCT "rawTricode" abbreviation
       FROM newapi.teams
       WHERE id = $1
     `;
