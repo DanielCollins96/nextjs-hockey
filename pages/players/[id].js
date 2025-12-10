@@ -174,7 +174,7 @@ const Players = ({playerId, stats, person}) => {
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
                 <title>
-                   {person?.fullName ? person.fullName : 'Player'} Hockey Stats and Profile | hockeydb.xyz
+                   {person?.player_name ? person.player_name : 'Player'} Hockey Stats and Profile | hockeydb.xyz
                 </title>
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
      crossOrigin="anonymous"></script>
@@ -183,12 +183,12 @@ const Players = ({playerId, stats, person}) => {
             <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
                 <Image src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="player headshot" width={200} height={0}/>
                 <div className="w-56 p-1 m-1">
-                <p className="text-2xl font-bold">{person?.fullName}</p>
-                <p>Birth Date: {person?.birthDate}</p>
+                <p className="text-2xl font-bold">{person?.player_name}</p>
+                <p>Birth Date: {person?.birthdate}</p>
                 <p>Nationality: {person?.birthCountry}</p>
-                <p>Position: {person?.primaryPosition?.name}</p>
-                <p>Primary Number: {person?.primaryNumber}</p>
-                <p>Age: {person?.currentAge}</p>
+                <p>Position: {person?.position}</p>
+                <p>Primary Number: {person?.sweaterNumber}</p>
+                {/* <p>Age: {person?.currentAge}</p> */}
                 </div>
                 <div className='border'>
                     <p>Drafted: {person?.draft_seasons ? person?.draft_seasons : 'Undrafted'}</p>
