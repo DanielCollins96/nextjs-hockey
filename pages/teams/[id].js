@@ -28,6 +28,7 @@ export default function TeamPage({
   seasons = [],
   seasonIds = [],
   abbreviation,
+  fullName,
   teamRecords,
 }) {
   const router = useRouter();
@@ -497,7 +498,7 @@ export default function TeamPage({
   return (
     <div>
       <Head>
-        <title>{abbreviation} Roster | hockeydb.xyz</title>
+        <title>{fullName || abbreviation} Roster | hockeydb.xyz</title>
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
@@ -505,7 +506,7 @@ export default function TeamPage({
         ></script>
       </Head>
       <div className="text-center border border-black dark:border-white p-1 rounded p-2">
-        <p className="text-lg">{abbreviation}</p>
+        <p className="text-lg">{fullName} ({abbreviation})</p>
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {seasons && (
@@ -648,19 +649,20 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({params}) {
   let abbreviation = null;
+  let fullName = null;
   try {
     const sql = ` 
-      SELECT DISTINCT "rawTricode" abbreviation
+      SELECT DISTINCT "rawTricode" abbreviation, "fullName"
       FROM newapi.teams
       WHERE id = $1
     `;
-    abbreviation = await conn.query(sql, [params.id]);
+    const result = await conn.query(sql, [params.id]);
+    if (result.rows.length > 0) {
+      abbreviation = result.rows[0].abbreviation;
+      fullName = result.rows[0].fullName;
+    }
   } catch (error) {
     console.log(error);
-  }
-
-  if (abbreviation) {
-    abbreviation = abbreviation.rows[0].abbreviation;
   }
 
   let skaters = await getTeamSkaters(params.id);
@@ -702,6 +704,7 @@ export async function getStaticProps({params}) {
       seasons: seasonMap,
       seasonIds: seasons,
       abbreviation,
+      fullName,
       teamRecords,
     },
     // Regenerate this page at most once every 24 hours (86400 seconds)
