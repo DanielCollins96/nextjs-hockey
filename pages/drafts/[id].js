@@ -6,25 +6,43 @@ import Link from 'next/link'
 
 export default function Drafts({id,draft}) {
 
-  // usestate for round 1
-  const [round, setRound] = useState(1)  
+  // usestate for round - 'all' shows all rounds
+  const [round, setRound] = useState('all')  
+
+  // Get all players combined for 'all' view
+  const allPlayers = Object.values(draft).flat()
+
+  // Alternate row colors when round changes - only when sorted by round, overallPick, or no sort
+  const getRowClassName = (row, index, allRows, sorting) => {
+    // Apply colors when sorted by round, overallPick, or no sort applied
+    const sortId = sorting?.[0]?.id;
+    const showColors = !sortId || sortId === 'round' || sortId === 'overallPick';
+    if (!showColors) return "dark:bg-gray-800";
+    
+    const roundNum = row.original?.round;
+    return roundNum % 2 === 0 
+      ? "bg-slate-200 dark:bg-gray-700" 
+      : "bg-white dark:bg-gray-800";
+  }
 
   const columns =  [
     {
+      id: 'round',
       header: 'Round',
-      accessorFn: d => d['roundNumber']
+      accessorFn: d => d['round']
     },
     {
+      id: 'overallPick',
       header: 'Num.',
-      accessorFn: d => d['overallPickNumber']
+      accessorFn: d => d['overallPick']
     },
     {
       header: 'Drafted By',
-      accessorFn: d => d['overallPickNumber'],
+      accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
         href={`/teams/${row.original.draftedByTeamId}`}
         passHref
-        className=" hover:text-blue-700 visited:text-purple-800">{row.original.triCode}</Link>)
+        className=" hover:text-blue-700 visited:text-purple-800">{row.original.teamAbbrev}</Link>)
     },
     {
       header: 'Player',
@@ -34,7 +52,7 @@ export default function Drafts({id,draft}) {
     },
     {
       header: 'Pos',
-      accessorFn: d => d['position']
+      accessorFn: d => d['positionCode']
     },
     {
       header: 'Drafted From',
@@ -77,9 +95,11 @@ export default function Drafts({id,draft}) {
     </button>
     <br />
     <h3 className='text-lg font-bold grid place-content-center'>{id} NHL Draft</h3> 
+      <button className={`p-1 m-1 w-12 border ${round === 'all' ? 'bg-blue-200': ''}`} onClick={() => setRound('all')}>All</button>
       {Object.keys(draft).map((num) => <button className={`p-1 m-1 w-12 border ${round == num ? 'bg-blue-200': ''}`} key={num} onClick={() => setRound(num)}>{num}</button>)}
     </div>
-      {draft && draft[round] && <ReactTable columns={columns} data={draft[round]} pageSize={40}/> }
+      {draft && round === 'all' && <ReactTable columns={columns} data={allPlayers} pageSize={50} rowClassName={getRowClassName} sortKey="overallPick" sortDesc={false}/> }
+      {draft && round !== 'all' && draft[round] && <ReactTable columns={columns} data={draft[round]} pageSize={40} sortKey="overallPick" sortDesc={false}/> }
   
   </div>
   )
@@ -88,7 +108,7 @@ export default function Drafts({id,draft}) {
 export async function getStaticPaths() {
     let draftYears = await getAllDraftYears()
     draftYears = draftYears.map(draft => {
-        return { params: { id: draft.draftYear } }
+        return { params: { id: String(draft.draftYear) } }
     })
 
   return {
@@ -104,10 +124,10 @@ export async function getStaticProps({params}) {
     // Group players by round number
     if (draft) {
       draft = draft.reduce((acc, player) => {
-      if (!acc[player.roundNumber]) {
-        acc[player.roundNumber] = [];
+      if (!acc[player.round]) {
+        acc[player.round] = [];
       }
-      acc[player.roundNumber].push(player);
+      acc[player.round].push(player);
       return acc
       },{})
     }

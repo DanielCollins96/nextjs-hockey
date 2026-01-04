@@ -11,11 +11,11 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 
-export default function ReactTable({columns, data, sortKey = "season"}) {
+export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
-            desc: true,
+            desc: sortDesc,
           },]);
 
   const table = useReactTable(
@@ -70,12 +70,14 @@ export default function ReactTable({columns, data, sortKey = "season"}) {
           ))}
         </thead>
       <tbody className="">
-        {table.getRowModel().rows?.map((row, i) => {
+        {table.getRowModel().rows?.map((row, i, allRows) => {
 
           const isNHL = row?.original['league.name'] == 'National Hockey League' || row?.original['league.name'] == 'NHL';
+          const customRowClass = rowClassName ? rowClassName(row, i, allRows, sorting) : null;
+          const defaultRowClass = isNHL ? "bg-slate-200 dark:bg-gray-700" : "dark:bg-gray-800";
 
           return (
-            <tr key={row.id} className={`whitespace-nowrap ` + (isNHL ? "bg-slate-200 dark:bg-gray-700" : "dark:bg-gray-800")}>
+            <tr key={row.id} className={`whitespace-nowrap ` + (customRowClass ?? defaultRowClass)}>
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
