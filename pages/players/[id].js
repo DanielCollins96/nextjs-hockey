@@ -12,6 +12,14 @@ const Players = ({playerId, stats, person}) => {
 
     const position = person && person['position'] ? person['position'] : 'Center';
 
+    const hasDraftData = (data) => {
+        if (!data) return false;
+        const s = String(data).trim();
+        if (s === '[null]' || s === 'null' || s === '') return false;
+        if (Array.isArray(data) && data.filter(Boolean).length === 0) return false;
+        return true;
+    };
+
     // Helper to check NHL league as returned by SQL (leagueAbbrev)
     const isNHLRow = (row) => row?.original && row.original['league.name'] === 'NHL';
 
@@ -188,11 +196,19 @@ const Players = ({playerId, stats, person}) => {
                 <p>Nationality: {person?.birthCountry}</p>
                 <p>Position: {person?.position}</p>
                 <p>Primary Number: {person?.sweaterNumber}</p>
+                <p>Shoots/Catches: {person?.shootsCatches}</p>
                 {/* <p>Age: {person?.currentAge}</p> */}
                 </div>
-                <div className='border'>
-                    <p>Drafted: {person?.draft_seasons ? person?.draft_seasons : 'Undrafted'}</p>
-                    <p>Position: {person?.draft_position ? '#' + person?.draft_position : 'N/A'}</p>
+                <div className='border p-2'>
+                    <p className="text-sm">
+                        {hasDraftData(person?.draft_seasons) ? (
+                            <>
+                                <span className="font-semibold">Draft:</span> {person?.draft_seasons}, {person?.displayAbbrev} {person?.ordinalPick ? `(${person?.ordinalPick} overall)` : ''}
+                            </>
+                        ) : (
+                            <span className="font-semibold">Undrafted</span>
+                        )}
+                    </p>
                 </div>
             </div>
             {stats ? <ReactTable columns={columns} data={data} /> : <h3>Loading...</h3>} 

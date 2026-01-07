@@ -476,6 +476,10 @@ export default function TeamPage({
       //   accessorKey: "winsInShootout",
       // },
       {
+        header: "OTL",
+        accessorKey: "otLosses",
+      },
+      {
         header: "Pts",
         accessorKey: "points",
       },
