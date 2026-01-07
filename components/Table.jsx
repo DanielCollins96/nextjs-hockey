@@ -26,6 +26,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
       sorting,
       },
       onSortingChange: setSorting,
+      sortDescFirst: true,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       // getPaginationRowModel: getPaginationRowModel(),
