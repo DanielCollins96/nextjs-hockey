@@ -1,10 +1,15 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link';
-import { getPointLeadersBySeason } from '../../lib/queries';
+import { useRouter } from 'next/router';
+import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
+import { getPointLeadersBySeason, getAvailableSeasons } from '../../lib/queries';
 
 import ReactTable from '../../components/PaginatedTable';
 
-export default function Players({players}) {
+export default function Players({players, season, availableSeasons}) {
+    const router = useRouter();
+    const [selectedSeason, setSelectedSeason] = useState(season);
+    const [currentIndex, setCurrentIndex] = useState(availableSeasons.indexOf(season));
     // Write a query with useQuery to fetch from api/players
     const [filteredPlayers, setFilteredPlayers] = useState([]);
     const columns = useMemo(
@@ -72,18 +77,108 @@ export default function Players({players}) {
         cell: props => <p className="text-right">{props.getValue()}</p>
     },
         ])
+
+    const handleSeasonChange = (event) => {
+        const newSeason = event.target.value;
+        setSelectedSeason(newSeason);
+        const newIndex = availableSeasons.indexOf(parseInt(newSeason));
+        setCurrentIndex(newIndex);
+        router.push(
+            {
+                pathname: router.pathname,
+                query: { year: newSeason }
+            },
+            undefined,
+            { shallow: false }
+        );
+    };
+
+    const handlePreviousSeason = () => {
+        if (currentIndex > 0) {
+            const newIndex = currentIndex - 1;
+            const newSeason = availableSeasons[newIndex];
+            setCurrentIndex(newIndex);
+            setSelectedSeason(newSeason);
+            router.push(
+                {
+                    pathname: router.pathname,
+                    query: { year: newSeason }
+                },
+                undefined,
+                { shallow: false }
+            );
+        }
+    };
+
+    const handleNextSeason = () => {
+        if (currentIndex < availableSeasons.length - 1) {
+            const newIndex = currentIndex + 1;
+            const newSeason = availableSeasons[newIndex];
+            setCurrentIndex(newIndex);
+            setSelectedSeason(newSeason);
+            router.push(
+                {
+                    pathname: router.pathname,
+                    query: { year: newSeason }
+                },
+                undefined,
+                { shallow: false }
+            );
+        }
+    };
+
     return (
         <div>
+            <div className="border border-black dark:border-white p-1 rounded p-2 mb-4">
+                <div className="flex items-center space-x-2">
+                    <label className="px-1 dark:text-white font-medium" htmlFor="season">
+                        Season:
+                    </label>
+                    <select
+                        className="w-40 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedSeason}
+                        onChange={handleSeasonChange}
+                    >
+                        {availableSeasons &&
+                            availableSeasons.map((szn) => (
+                                <option key={szn} value={szn}>
+                                    {String(szn).slice(0, 4)}-{String(szn).slice(4)}
+                                </option>
+                            ))}
+                    </select>
+                    <button
+                        className="btn-blue m-1 btn-disabled"
+                        onClick={handleNextSeason}
+                        disabled={currentIndex >= availableSeasons.length - 1}
+                    >
+                        <MdOutlineChevronLeft size={28} />
+                    </button>
+                    <button
+                        className="btn-blue m-1 btn-disabled"
+                        onClick={handlePreviousSeason}
+                        disabled={currentIndex <= 0}
+                    >
+                        <MdOutlineChevronRight size={28} />
+                    </button>
+                </div>
+            </div>
             {players ? <ReactTable columns={columns} data={players} sortKey='P' filterCol={['player_name']}/> : <h3>Error Retrieving Stats...</h3>} 
         </div>
     )
 }
 
-export async function getStaticProps() {
-    const result = await getPointLeadersBySeason()
+export async function getServerSideProps(context) {
+    const { year } = context.query;
+    const season = year ? parseInt(year) : 20252026;
+    
+    const result = await getPointLeadersBySeason(season);
+    const availableSeasons = await getAvailableSeasons();
+    
     return {
         props: {
-            players: result
+            players: result,
+            season: season,
+            availableSeasons: availableSeasons
         }
     }
 }
