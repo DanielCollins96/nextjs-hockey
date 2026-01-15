@@ -711,7 +711,7 @@ export async function getStaticProps({params}) {
       fullName,
       teamRecords,
     },
-    // Regenerate this page at most once every 24 hours (86400 seconds)
-    revalidate: 86400,
+    // Regenerate this page at most once every hour (3600 seconds)
+    revalidate: 7200,
   };
 }
