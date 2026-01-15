@@ -12,6 +12,7 @@ import {
   getTeamSkaters,
   getTeamGoalies,
   getPlayoffYears,
+  getTeamInfo,
 } from "../../lib/queries";
 import {
   LineChart,
@@ -22,7 +23,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import conn from "../../lib/db";
 
 export default function TeamPage({
   seasons = [],
@@ -643,7 +643,7 @@ export default function TeamPage({
 export async function getStaticPaths() {
   const teams = await getTeamIds();
   let paths = teams?.map((team) => ({
-    params: {id: team.id},
+    params: {id: String(team.id)},
   }));
   return {
     paths,
@@ -655,15 +655,10 @@ export async function getStaticProps({params}) {
   let abbreviation = null;
   let fullName = null;
   try {
-    const sql = ` 
-      SELECT DISTINCT "rawTricode" abbreviation, "fullName"
-      FROM newapi.teams
-      WHERE id = $1
-    `;
-    const result = await conn.query(sql, [params.id]);
-    if (result.rows.length > 0) {
-      abbreviation = result.rows[0].abbreviation;
-      fullName = result.rows[0].fullName;
+    const teamInfo = await getTeamInfo(params.id);
+    if (teamInfo) {
+      abbreviation = teamInfo.abbreviation;
+      fullName = teamInfo.fullName;
     }
   } catch (error) {
     console.log(error);
