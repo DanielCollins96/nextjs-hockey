@@ -16,7 +16,7 @@ class Document extends NextDocument {
                     {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
      crossOrigin="anonymous"></script> */}
                 </Head>
-                <body className="bg-gray-100">
+                <body className="bg-white dark:bg-gray-900 min-w-fit">
                     <Main />
                     <NextScript />
                 </body>

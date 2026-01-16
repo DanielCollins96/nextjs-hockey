@@ -3,13 +3,13 @@ import Header from './header';
 
 export default function Layout ({children, title = 'Hockey Stats'}) {
     return (
-        <div className="bg-white dark:bg-gray-900 transition-colors">
+        <div className="bg-white dark:bg-gray-900 transition-colors min-w-fit">
             <Head>
                 <link rel="icon" href="/images/ice-hockey-puck.svg" />
                 <title>{title}</title>
             </Head>
             <Header />
-            <main className="overflow-auto min-h-screen flex flex-col dark:text-white">
+            <main className="min-h-screen dark:text-white">
             { children }
             </main>
             <footer className="p-4 text-center dark:text-white">

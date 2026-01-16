@@ -24,8 +24,8 @@ const Header = () => {
 
   return (
     <>
-      <header className="w-full bg-gray-100 dark:bg-gray-800 flex justify-between ml-1 py-2">
-        <Link href="/" className="self-center text-xl font-bold dark:text-white">
+      <header className="w-full min-w-fit bg-gray-200 p-1 dark:bg-gray-800 flex justify-between py-2">
+        <Link href="/" className="self-center pl-1 text-xl font-bold dark:text-white">
           <p className="text-xl m-2">NHL Stats Home &copy;</p>
         </Link>
         {/* Mobile: Dark mode toggle and hamburger */}
