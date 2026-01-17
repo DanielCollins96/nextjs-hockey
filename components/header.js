@@ -10,11 +10,11 @@ const Header = () => {
   const {user, setUser} = UseAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Close sidebar if screen size becomes sm or larger
+  // Close sidebar if screen size becomes md or larger
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 640) {
-        // Tailwind 'sm' breakpoint is 640px
+      if (window.innerWidth >= 768) {
+        // Tailwind 'md' breakpoint is 768px
         setSidebarOpen(false);
       }
     };
@@ -26,10 +26,10 @@ const Header = () => {
     <>
       <header className="w-full min-w-fit bg-gray-200 p-1 dark:bg-gray-800 flex justify-between py-2">
         <Link href="/" className="self-center pl-1 text-xl font-bold dark:text-white">
-          <p className="text-xl m-2">NHL Stats Home &copy;</p>
+          <p className="text-xl m-2">NHL Stats</p>
         </Link>
         {/* Mobile: Dark mode toggle and hamburger */}
-        <div className="flex items-center sm:hidden">
+        <div className="flex items-center md:hidden">
           <DarkModeToggle />
           <button
             className="ml-4 flex items-center px-3 py-2"
@@ -40,7 +40,7 @@ const Header = () => {
           </button>
         </div>
         {/* Desktop nav */}
-        <nav className="self-center my-2 mr-2 sm:my-0 hidden sm:block">
+        <nav className="self-center my-2 mr-2 sm:my-0 hidden md:block">
           <ul className="flex">
             <li className="my-auto px-2">
               <Link href="/teams" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
@@ -50,6 +50,11 @@ const Header = () => {
             <li className="my-auto px-3 py-1">
               <Link href="/players" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
                 Players
+              </Link>
+            </li>
+            <li className="my-auto px-3 py-1">
+              <Link href="/seasons" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+                Seasons
               </Link>
             </li>
             <li className="my-auto px-3 py-1">
@@ -83,13 +88,13 @@ const Header = () => {
           sidebarOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        } sm:hidden`}
+        } md:hidden`}
         onClick={() => setSidebarOpen(false)}
       />
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-50 transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } sm:hidden`}
+        } md:hidden`}
       >
         <div className="flex justify-between items-center p-4 border-b">
           <span className="font-bold text-xl dark:text-white">Menu</span>
@@ -118,6 +123,15 @@ const Header = () => {
                 className="text-lg dark:text-white"
               >
                 Players
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/seasons"
+                onClick={() => setSidebarOpen(false)}
+                className="text-lg dark:text-white"
+              >
+                Seasons
               </Link>
             </li>
             <li>

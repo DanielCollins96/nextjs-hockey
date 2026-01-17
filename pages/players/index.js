@@ -1,31 +1,33 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
-import { getPointLeadersBySeason, getGoalieLeadersBySeason, getAvailableSeasons } from '../../lib/queries';
+import { searchPlayers } from '../../lib/queries';
 import ReactTable from '../../components/PaginatedTable';
 
-export default function Players({players, goalies, season, availableSeasons}) {
+export default function PlayersIndex({ players, searchTerm }) {
     const router = useRouter();
-    const [selectedSeason, setSelectedSeason] = useState(season);
-    const [currentIndex, setCurrentIndex] = useState(availableSeasons.indexOf(season));
+    const [search, setSearch] = useState(searchTerm || '');
 
-    const formatSeasonDisplay = (szn) => {
-        return `${String(szn).slice(0, 4)}-${String(szn).slice(6, 8)}`;
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (search.trim()) {
+            router.push({
+                pathname: '/players',
+                query: { q: search.trim() }
+            });
+        } else {
+            router.push('/players');
+        }
     };
 
-    const skaterColumns = useMemo(() => [
-        {
-            header: 'Rk',
-            accessorKey: 'row_number',
-            cell: ({row}) => <div>{row.original.row_number}</div>
-        },
+    const columns = useMemo(() => [
         {
             header: 'Name',
             accessorKey: 'player_name',
-            cell: ({row}) => (
+            cell: ({ row }) => (
                 <Link
-                    href={`/players/${row.original["playerId"]}`}
+                    href={`/players/${row.original.playerId}`}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     {row.original.player_name}
@@ -33,270 +35,160 @@ export default function Players({players, goalies, season, availableSeasons}) {
             )
         },
         {
-            header: 'Team',
-            accessorFn: (d) => d['team.name'],
-            cell: ({row}) => (
-                <Link
-                    href={`/teams/${row.original['team.id']}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                    {row.original['team.name']}
-                </Link>
-            )
+            header: 'Pos',
+            accessorKey: 'position',
         },
         {
-            header: "Pos",
-            accessorFn: (d) => d["position"],
+            header: 'Team',
+            accessorKey: 'team_name',
+            cell: ({ row }) => {
+                if (row.original.team_id) {
+                    return (
+                        <Link
+                            href={`/teams/${row.original.team_id}`}
+                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                            {row.original.team_name}
+                        </Link>
+                    );
+                }
+                const season = row.original.last_season;
+                if (season) {
+                    const formatted = `${String(season).slice(0, 4)}-${String(season).slice(6, 8)}`;
+                    return <span className="text-gray-500 dark:text-gray-400 italic">{formatted}</span>;
+                }
+                return <span className="text-gray-500 dark:text-gray-400 italic">-</span>;
+            }
         },
         {
             header: 'GP',
-            accessorFn: (d) => d["stat.games"],
-            cell: props => <p className="text-right">{props.getValue()}</p>,
+            accessorKey: 'games',
+            cell: props => <p className="text-right">{props.getValue() || '-'}</p>,
         },
         {
             header: 'G',
-            accessorFn: (d) => d["stat.goals"],
-            cell: props => <p className="text-right">{props.getValue()}</p>
+            accessorKey: 'goals',
+            cell: ({ row }) => (
+                <p className="text-right">
+                    {row.original.position === 'G' ? '-' : (row.original.goals || 0)}
+                </p>
+            ),
         },
         {
             header: 'A',
-            accessorFn: (d) => d["stat.assists"],
-            cell: props => <p className="text-right">{props.getValue()}</p>
+            accessorKey: 'assists',
+            cell: ({ row }) => (
+                <p className="text-right">
+                    {row.original.position === 'G' ? '-' : (row.original.assists || 0)}
+                </p>
+            ),
         },
         {
             header: 'P',
-            accessorFn: (d) => d["stat.points"],
-            cell: props => <p className="text-right font-semibold">{props.getValue()}</p>
+            accessorKey: 'points',
+            cell: ({ row }) => (
+                <p className="text-right font-semibold">
+                    {row.original.position === 'G' ? '-' : (row.original.points || 0)}
+                </p>
+            ),
         },
         {
-            header: 'P/GP',
-            accessorFn: (d) => d["stat.games"] > 0 ? d["stat.points"] / d["stat.games"] : 0,
-            cell: props => <p className="text-right">{props.getValue().toFixed(2)}</p>,
-            sortingFn: 'basic',
-        },
-    ], [])
-
-    const goalieColumns = useMemo(() => [
-        {
-            header: 'Rk',
-            accessorKey: 'row_number',
-            cell: ({row}) => <div>{row.original.row_number}</div>
-        },
-        {
-            header: 'Name',
-            accessorKey: 'player_name',
-            cell: ({row}) => (
-                <Link
-                    href={`/players/${row.original["playerId"]}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                    {row.original.player_name}
-                </Link>
-            )
-        },
-        {
-            id: 'Team',
-            header: 'Team',
-            accessorFn: (d) => d['team.name'],
-            cell: ({row}) => (
-                <Link
-                    href={`/teams/${row.original['team.id']}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                    {row.original['team.name']}
-                </Link>
-            )
-        },
-        {
-            id: 'GP',
-            header: 'GP',
-            accessorFn: (d) => d["stat.games"],
-            cell: props => <p className="text-right">{props.getValue()}</p>,
-        },
-        {
-            id: 'W',
             header: 'W',
-            accessorFn: (d) => d["stat.wins"],
-            cell: props => <p className="text-right font-semibold">{props.getValue()}</p>
+            accessorKey: 'wins',
+            cell: ({ row }) => (
+                <p className="text-right">
+                    {row.original.position === 'G' ? (row.original.wins || 0) : '-'}
+                </p>
+            ),
         },
         {
-            id: 'L',
             header: 'L',
-            accessorFn: (d) => d["stat.losses"],
-            cell: props => <p className="text-right">{props.getValue()}</p>
+            accessorKey: 'losses',
+            cell: ({ row }) => (
+                <p className="text-right">
+                    {row.original.position === 'G' ? (row.original.losses || 0) : '-'}
+                </p>
+            ),
         },
         {
-            id: 'OTL',
-            header: 'OTL',
-            accessorFn: (d) => d["stat.otl"],
-            cell: props => <p className="text-right">{props.getValue()}</p>
+            header: 'Country',
+            accessorKey: 'birthCountry',
         },
-        {
-            id: 'GAA',
-            header: 'GAA',
-            accessorFn: (d) => d["stat.gaa"],
-            cell: props => <p className="text-right">{props.getValue()?.toFixed(2)}</p>
-        },
-        {
-            id: 'SV%',
-            header: 'SV%',
-            accessorFn: (d) => d["stat.savePct"],
-            cell: props => <p className="text-right">{props.getValue()?.toFixed(3)}</p>
-        },
-        {
-            id: 'SO',
-            header: 'SO',
-            accessorFn: (d) => d["stat.shutouts"],
-            cell: props => <p className="text-right">{props.getValue()}</p>
-        },
-    ], [])
-
-    const handleSeasonChange = (event) => {
-        const newSeason = event.target.value;
-        setSelectedSeason(newSeason);
-        const newIndex = availableSeasons.indexOf(parseInt(newSeason));
-        setCurrentIndex(newIndex);
-        router.push(
-            {
-                pathname: router.pathname,
-                query: { year: newSeason }
-            },
-            undefined,
-            { scroll: false }
-        );
-    };
-
-    const handlePreviousSeason = () => {
-        if (currentIndex > 0) {
-            const newIndex = currentIndex - 1;
-            const newSeason = availableSeasons[newIndex];
-            setCurrentIndex(newIndex);
-            setSelectedSeason(newSeason);
-            router.push(
-                {
-                    pathname: router.pathname,
-                    query: { year: newSeason }
-                },
-                undefined,
-                { scroll: false }
-            );
-        }
-    };
-
-    const handleNextSeason = () => {
-        if (currentIndex < availableSeasons.length - 1) {
-            const newIndex = currentIndex + 1;
-            const newSeason = availableSeasons[newIndex];
-            setCurrentIndex(newIndex);
-            setSelectedSeason(newSeason);
-            router.push(
-                {
-                    pathname: router.pathname,
-                    query: { year: newSeason }
-                },
-                undefined,
-                { scroll: false }
-            );
-        }
-    };
+    ], []);
 
     return (
         <div>
-            {/* Sticky Season Selector */}
+            <Head>
+                <title>NHL Players | hockeydb.xyz</title>
+            </Head>
+
             <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 py-2 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="max-w-6xl mx-auto px-2">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        NHL Stat Leaders {formatSeasonDisplay(selectedSeason)}
+                        NHL Players
                     </h1>
-                    <div className="flex items-center space-x-2">
-                        <select
-                            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={selectedSeason}
-                            onChange={handleSeasonChange}
-                        >
-                            {availableSeasons &&
-                                availableSeasons.map((szn) => (
-                                    <option key={szn} value={szn}>
-                                        {formatSeasonDisplay(szn)} Regular Season
-                                    </option>
-                                ))}
-                        </select>
+                    <form onSubmit={handleSearch} className="flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search players by name..."
+                            className="flex-1 max-w-md px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                         <button
-                            className="p-2 rounded-lg bg-red-400 dark:bg-red-600 hover:bg-red-200 dark:hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            onClick={handleNextSeason}
-                            disabled={currentIndex >= availableSeasons.length - 1}
+                            type="submit"
+                            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                         >
-                            <MdOutlineChevronLeft size={24} className="text-blue-700 dark:text-blue-300" />
+                            Search
                         </button>
-                        <button
-                            className="p-2 rounded-lg bg-red-400 dark:bg-red-600 hover:bg-red-200 dark:hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            onClick={handlePreviousSeason}
-                            disabled={currentIndex <= 0}
-                        >
-                            <MdOutlineChevronRight size={24} className="text-blue-700 dark:text-blue-300" />
-                        </button>
-                    </div>
+                    </form>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <Link href="/seasons" className="text-blue-600 dark:text-blue-400 hover:underline">
+                            View Seasonal Stat Leaders
+                        </Link>
+                    </p>
                 </div>
             </div>
 
-            {/* Tables Grid */}
-            <div className="max-w-6xl mx-auto px-2 grid grid-cols-1 xl:grid-cols-2 p-1 gap-2">
-                {/* Skating Leaders */}
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-red-600 pb-2 mb-2">
-                        Skating Leaders
-                    </h2>
-                    {players ? (
-                        <ReactTable
-                            columns={skaterColumns}
-                            data={players}
-                            sortKey='P'
-                            filterCol={['player_name']}
-                            pageSize={25}
-                        />
-                    ) : (
-                        <p className="text-gray-500">Error loading skater stats...</p>
-                    )}
-                </div>
-
-                {/* Goaltending Leaders */}
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-blue-600 pb-2 mb-2">
-                        Goaltending Leaders
-                    </h2>
-                    {goalies ? (
-                        <ReactTable
-                            columns={goalieColumns}
-                            data={goalies}
-                            sortKey='W'
-                            filterCol={['player_name']}
-                            pageSize={25}
-                        />
-                    ) : (
-                        <p className="text-gray-500">Error loading goalie stats...</p>
-                    )}
-                </div>
+            <div className="max-w-6xl mx-auto px-2 py-4">
+                {searchTerm && (
+                    <p className="mb-4 text-gray-600 dark:text-gray-400">
+                        {players.length} result{players.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;
+                    </p>
+                )}
+                {players && players.length > 0 ? (
+                    <ReactTable
+                        columns={columns}
+                        data={players}
+                        pageSize={25}
+                    />
+                ) : searchTerm ? (
+                    <p className="text-gray-500 dark:text-gray-400">
+                        No players found matching &ldquo;{searchTerm}&rdquo;
+                    </p>
+                ) : (
+                    <p className="text-gray-500 dark:text-gray-400">
+                        Enter a player name to search
+                    </p>
+                )}
             </div>
         </div>
-    )
+    );
 }
 
 export async function getServerSideProps(context) {
-    const { year } = context.query;
-    const season = year ? parseInt(year) : 20252026;
+    const { q } = context.query;
+    const searchTerm = q || '';
 
-    const [result, goalieResult, availableSeasons] = await Promise.all([
-        getPointLeadersBySeason(season),
-        getGoalieLeadersBySeason(season),
-        getAvailableSeasons()
-    ]);
+    let players = [];
+    if (searchTerm) {
+        players = await searchPlayers(searchTerm, 100);
+    }
 
     return {
         props: {
-            players: result,
-            goalies: goalieResult,
-            season: season,
-            availableSeasons: availableSeasons
+            players,
+            searchTerm
         }
-    }
+    };
 }
