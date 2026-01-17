@@ -204,7 +204,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
         <div>
             {/* Sticky Season Selector */}
             <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 py-2 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-                <div className="max-w-6xl mx-auto px-2">
+                <div className="max-w-7xl mx-auto px-2">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                         NHL Stat Leaders {formatSeasonDisplay(selectedSeason)}
                     </h1>
@@ -240,7 +240,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
             </div>
 
             {/* Tables Grid */}
-            <div className="max-w-6xl mx-auto px-2 grid grid-cols-1 xl:grid-cols-2 p-1 gap-2">
+            <div className="max-w-7xl mx-auto px-2 grid grid-cols-1 xl:grid-cols-2 p-1 gap-2">
                 {/* Skating Leaders */}
                 <div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-red-600 pb-2 mb-2">
