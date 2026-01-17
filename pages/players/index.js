@@ -68,6 +68,12 @@ export default function Players({players, goalies, season, availableSeasons}) {
             accessorFn: (d) => d["stat.points"],
             cell: props => <p className="text-right font-semibold">{props.getValue()}</p>
         },
+        {
+            header: 'P/GP',
+            accessorFn: (d) => d["stat.games"] > 0 ? d["stat.points"] / d["stat.games"] : 0,
+            cell: props => <p className="text-right">{props.getValue().toFixed(2)}</p>,
+            sortingFn: 'basic',
+        },
     ], [])
 
     const goalieColumns = useMemo(() => [
