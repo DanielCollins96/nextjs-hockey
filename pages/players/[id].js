@@ -3,10 +3,10 @@ import Head from 'next/head'
 import Link from 'next/link';
 import Image from 'next/image'
 import { useRouter } from 'next/router';
-import {getPlayer, getPlayerStats} from '../../lib/queries'
+import {getPlayer, getPlayerStats, getPlayerAwards} from '../../lib/queries'
 import ReactTable from '../../components/Table';
 
-const Players = ({playerId, stats, person}) => {
+const Players = ({playerId, stats, person, awards}) => {
     const router = useRouter()
     const { id } = router.query
 
@@ -178,6 +178,30 @@ const Players = ({playerId, stats, person}) => {
             </p>
         );
     }
+    const awardsTable = awards && awards.length > 0 ? (
+        <div className='border p-2 w-full'>
+            <p className="font-semibold mb-2">Awards ({awards.length})</p>
+            <table className="w-full text-sm">
+                <thead>
+                    <tr className="border-b">
+                        <th className="text-left py-1">Trophy</th>
+                        <th className="text-right py-1">Season</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {awards.map((award, idx) => (
+                        <tr key={idx} className="border-b border-gray-200 dark:border-gray-700">
+                            <td className="py-1 text-sm">{award.trophy_default}</td>
+                            <td className="text-right py-1 whitespace-nowrap text-sm">
+                                {String(award.seasonId).slice(0, 4)}-{String(award.seasonId).slice(6, 8)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    ) : null;
+
     return (
         <div className="flex flex-col sm:flex-row mt-2">
             <Head>
@@ -188,30 +212,53 @@ const Players = ({playerId, stats, person}) => {
      crossOrigin="anonymous"></script>
             </Head>
 
-            <div className="flex flex-row sm:flex-col h-full justify-start items-center p-2 ml-2">
-                <Image src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="player headshot" width={200} height={0}/>
-                <div className="w-56 p-1 m-1">
-                <p className="text-2xl font-bold">{person?.player_name}</p>
-                <p>Birth Date: {person?.birthdate}</p>
-                <p>Nationality: {person?.birthCountry}</p>
-                <p>Position: {person?.position}</p>
-                <p>Primary Number: {person?.sweaterNumber}</p>
-                <p>Shoots/Catches: {person?.shootsCatches}</p>
-                {/* <p>Age: {person?.currentAge}</p> */}
+            {/* Sidebar: Photo, Bio, Draft, Awards (desktop only) */}
+            <div className="flex flex-row sm:flex-col items-start sm:items-center p-2 ml-2 sm:w-60 shrink-0">
+                <Image src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="player headshot" width={200} height={0} className="shrink-0"/>
+                <div className="flex flex-col ml-2 sm:ml-0">
+                    <div className="w-full p-1 m-1">
+                        <p className="text-2xl font-bold">{person?.player_name}</p>
+                        <p>Birth Date: {person?.birthdate}</p>
+                        <p>Nationality: {person?.birthCountry}</p>
+                        <p>Position: {person?.position}</p>
+                        <p>Primary Number: {person?.sweaterNumber}</p>
+                        <p>Shoots/Catches: {person?.shootsCatches}</p>
+                    </div>
+                    <div className='border p-2 w-full'>
+                        <p className="text-sm">
+                            {hasDraftData(person?.draft_seasons) ? (
+                                <>
+                                    <span className="font-semibold">Draft:</span>{' '}
+                                    <Link
+                                        href={`/drafts/${person?.draft_seasons}`}
+                                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                                    >
+                                        {person?.draft_seasons}
+                                    </Link>
+                                    , {person?.displayAbbrev} {person?.ordinalPick ? `(${person?.ordinalPick} overall)` : ''}
+                                </>
+                            ) : (
+                                <span className="font-semibold">Undrafted</span>
+                            )}
+                        </p>
+                    </div>
                 </div>
-                <div className='border p-2'>
-                    <p className="text-sm">
-                        {hasDraftData(person?.draft_seasons) ? (
-                            <>
-                                <span className="font-semibold">Draft:</span> {person?.draft_seasons}, {person?.displayAbbrev} {person?.ordinalPick ? `(${person?.ordinalPick} overall)` : ''}
-                            </>
-                        ) : (
-                            <span className="font-semibold">Undrafted</span>
-                        )}
-                    </p>
+                {/* Awards - desktop only (hidden on mobile) */}
+                <div className="hidden sm:block mt-2 w-full">
+                    {awardsTable}
                 </div>
             </div>
-            {stats ? <ReactTable columns={columns} data={data} /> : <h3>Loading...</h3>} 
+
+            {/* Main content area */}
+            <div className="flex-1 min-w-0">
+                {/* Stats Table */}
+                {stats ? <ReactTable columns={columns} data={data} /> : <h3>Loading...</h3>}
+
+                {/* Awards - mobile only (hidden on desktop) */}
+                <div className="sm:hidden p-2 mt-2">
+                    {awardsTable}
+                </div>
+            </div>
         </div>
     )
 };
@@ -243,13 +290,17 @@ export async function getServerSideProps({params}) {
     }
     console.log(person[0]);
 
-    const stats = await getPlayerStats(id, person[0]["position"])
+    const [stats, awards] = await Promise.all([
+        getPlayerStats(id, person[0]["position"]),
+        getPlayerAwards(id)
+    ]);
 
     return {
         props: {
             playerId: params.id,
             stats,
             person: person ? person[0] : null,
+            awards,
         }
     }
 }
