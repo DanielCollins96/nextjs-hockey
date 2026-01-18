@@ -6,6 +6,7 @@ import {useState, useMemo, useEffect} from "react";
 import {MdOutlineChevronLeft, MdOutlineChevronRight} from "react-icons/md";
 
 import ReactTable from "../../components/Table";
+import { ClickableImage } from "../../components/ImageModal";
 import {
   getTeamIds,
   getTeamSeasons,
@@ -509,8 +510,14 @@ export default function TeamPage({
           crossOrigin="anonymous"
         ></script>
       </Head>
-      <div className="text-center border border-black dark:border-white p-1 rounded p-2">
-        <p className="text-lg">{fullName} ({abbreviation})</p>
+      <div className="p-1 flex items-center gap-3">
+        <ClickableImage
+          src={`https://assets.nhle.com/logos/nhl/svg/${abbreviation}_dark.svg`}
+          alt={fullName}
+          containerClassName="w-12 h-12 relative flex-shrink-0"
+          className="object-contain"
+        />
+        <p className="text-2xl font-bold">{fullName}</p>
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {seasons && (

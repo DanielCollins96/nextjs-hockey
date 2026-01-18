@@ -64,3 +64,5 @@ next.config.original.js
 .vscode/settings.json
 
 .open-next/
+
+.claude/

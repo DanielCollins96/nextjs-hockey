@@ -1,9 +1,12 @@
 import {useState} from "react";
 import { MdOutlineChevronLeft } from "react-icons/md";
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function TeamBox({team}) {
   const [active, setActive] = useState(false)
+  const teamAbbrev = team.team.abbreviation;
+  const logoUrl = `https://assets.nhle.com/logos/nhl/svg/${teamAbbrev}_dark.svg`;
 
   const PlayerListItem = ({ person }) => (
     <li key={person?.id} className="odd:bg-slate-100 dark:odd:bg-gray-700 dark:even:bg-gray-800 px-1 divide-x dark:divide-gray-600">
@@ -20,10 +23,19 @@ export default function TeamBox({team}) {
     <div>
       <div className={`relative overflow-hidden border border-black dark:border-gray-600 rounded bg-white dark:bg-gray-800 m-1 ${active ? 'max-h-[600px]': 'max-h-32'} transition-all duration-200 ease-in-out`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-xl text-left p-2">
+          <h2 className="text-xl text-left p-1">
             <Link
               href={`/teams/${encodeURIComponent(team.team.id)}`}
-              className="flex gap-3 ml-3 pr-3 hover:text-blue-700 dark:text-white dark:hover:text-blue-400">
+              className="flex items-center gap-2 ml-2 pr-3 hover:text-blue-700 dark:text-white dark:hover:text-blue-400">
+              <div className="w-8 h-8 relative flex-shrink-0">
+                <Image
+                  src={logoUrl}
+                  alt={teamAbbrev}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
               {team.team.name}
             </Link>
           </h2>
