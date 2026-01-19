@@ -1,4 +1,6 @@
 import Head from "next/head";
+import {useState, useEffect} from "react";
+import {useRouter} from "next/router";
 import {QueryClient, QueryClientProvider} from "react-query";
 import {Hydrate} from "react-query/hydration";
 import {ReactQueryDevtools} from "react-query/devtools";
@@ -18,7 +20,34 @@ Amplify.configure({
 
 const queryClient = new QueryClient();
 
+function LoadingBar({isLoading}) {
+  if (!isLoading) return null;
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200 dark:bg-gray-700">
+      <div className="h-full bg-blue-500 animate-loading-bar" />
+    </div>
+  );
+}
+
 function MyApp({Component, pageProps}) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const handleStart = () => setIsLoading(true);
+    const handleComplete = () => setIsLoading(false);
+
+    router.events.on("routeChangeStart", handleStart);
+    router.events.on("routeChangeComplete", handleComplete);
+    router.events.on("routeChangeError", handleComplete);
+
+    return () => {
+      router.events.off("routeChangeStart", handleStart);
+      router.events.off("routeChangeComplete", handleComplete);
+      router.events.off("routeChangeError", handleComplete);
+    };
+  }, [router]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
@@ -49,6 +78,7 @@ function MyApp({Component, pageProps}) {
                 gtag('config', 'G-LP1YV83204');
               `}
           </Script>
+          <LoadingBar isLoading={isLoading} />
           <Layout>
             <Component {...pageProps} />
           </Layout>
