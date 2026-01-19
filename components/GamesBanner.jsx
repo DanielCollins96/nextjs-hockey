@@ -142,7 +142,7 @@ export default function GamesBanner() {
     <div className="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 w-screen max-w-[100vw] overflow-hidden">
       <div className="flex items-center">
         {/* Date selector */}
-        <div className="flex-shrink-0 flex items-center border-r border-gray-200 dark:border-gray-700 px-1 sm:px-2 py-1 sm:py-2 bg-white dark:bg-gray-800">
+        <div className="flex-shrink-0 flex items-center self-stretch border-r border-gray-200 dark:border-gray-700 px-1 sm:px-2 bg-white dark:bg-gray-800">
           <button
             onClick={() => changeDate(-1)}
             className="p-0.5 sm:p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
@@ -184,11 +184,11 @@ export default function GamesBanner() {
           >
             <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
             {loading ? (
-              <div className="flex items-center justify-center w-full py-4">
+              <div className="flex items-center justify-center w-full py-8">
                 <span className="text-gray-500 dark:text-gray-400">Loading...</span>
               </div>
             ) : games.length === 0 ? (
-              <div className="flex items-center justify-center w-full py-4">
+              <div className="flex items-center justify-center w-full py-8">
                 <span className="text-gray-500 dark:text-gray-400">No games scheduled</span>
               </div>
             ) : (
