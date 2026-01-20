@@ -95,8 +95,8 @@ export default function Drafts({id,draft}) {
     </button>
     <br />
     <h3 className='text-lg font-bold grid place-content-center'>{id} NHL Draft</h3> 
-      <button className={`p-1 m-1 w-12 border ${round === 'all' ? 'bg-blue-200': ''}`} onClick={() => setRound('all')}>All</button>
-      {Object.keys(draft).map((num) => <button className={`p-1 m-1 w-12 border ${round == num ? 'bg-blue-200': ''}`} key={num} onClick={() => setRound(num)}>{num}</button>)}
+      <button className={`p-1 m-1 w-12 border ${round === 'all' ? 'bg-blue-200 dark:bg-blue-800': ''}`} onClick={() => setRound('all')}>All</button>
+      {Object.keys(draft).map((num) => <button className={`p-1 m-1 w-12 border ${round == num ? 'bg-blue-200 dark:bg-blue-800': ''}`} key={num} onClick={() => setRound(num)}>{num}</button>)}
     </div>
       {draft && round === 'all' && <ReactTable columns={columns} data={allPlayers} pageSize={50} rowClassName={getRowClassName} sortKey="overallPick" sortDesc={false}/> }
       {draft && round !== 'all' && draft[round] && <ReactTable columns={columns} data={draft[round]} pageSize={40} sortKey="overallPick" sortDesc={false}/> }
