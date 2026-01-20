@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { searchPlayers } from '../../lib/queries';
 import ReactTable from '../../components/PaginatedTable';
+import SEO from '../../components/SEO';
 
 export default function PlayersIndex({ players, searchTerm }) {
     const router = useRouter();
@@ -118,9 +118,11 @@ export default function PlayersIndex({ players, searchTerm }) {
 
     return (
         <div>
-            <Head>
-                <title>NHL Players | hockeydb.xyz</title>
-            </Head>
+            <SEO
+                title="NHL Players"
+                description="Search and browse NHL player statistics, career stats, and profiles. Find any current or former NHL player."
+                path="/players"
+            />
 
             <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 py-2 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="max-w-6xl mx-auto px-2">

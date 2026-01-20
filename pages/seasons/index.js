@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
 import { getPointLeadersBySeason, getGoalieLeadersBySeason, getAvailableSeasons } from '../../lib/queries';
 import ReactTable from '../../components/PaginatedTable';
+import SEO from '../../components/SEO';
 
 export default function Seasons({players, goalies, season, availableSeasons}) {
     const router = useRouter();
@@ -200,8 +201,15 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
         }
     };
 
+    const seasonDisplay = formatSeasonDisplay(selectedSeason);
+
     return (
         <div>
+            <SEO
+                title={`NHL Season Leaders ${seasonDisplay}`}
+                description={`NHL ${seasonDisplay} statistical leaders. View top scorers, goal leaders, assist leaders, and goaltending stats for the ${seasonDisplay} season.`}
+                path="/seasons"
+            />
             {/* Sticky Season Selector */}
             <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 py-2 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="max-w-7xl mx-auto px-2">

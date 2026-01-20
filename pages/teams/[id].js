@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import Link from "next/link";
-import Head from "next/head";
 import {useRouter} from "next/router";
 import {useState, useMemo, useEffect} from "react";
 import {MdOutlineChevronLeft, MdOutlineChevronRight} from "react-icons/md";
 
 import ReactTable from "../../components/Table";
 import { ClickableImage } from "../../components/ImageModal";
+import SEO, { generateTeamJsonLd } from "../../components/SEO";
 import {
   getTeamIds,
   getTeamSeasons,
@@ -500,16 +500,22 @@ export default function TeamPage({
     []
   );
 
+  const teamName = fullName || abbreviation;
+  const logoUrl = `https://assets.nhle.com/logos/nhl/svg/${abbreviation}_dark.svg`;
+  const jsonLd = generateTeamJsonLd({
+    name: teamName,
+    logo: logoUrl,
+  });
+
   return (
     <div>
-      <Head>
-        <title>{fullName || abbreviation} Roster | hockeydb.xyz</title>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-          crossOrigin="anonymous"
-        ></script>
-      </Head>
+      <SEO
+        title={`${teamName} Roster & Stats`}
+        description={`${teamName} current roster, player statistics, and team history. View skaters, goalies, and historical team records.`}
+        path={`/teams/${id}`}
+        ogImage={logoUrl}
+        jsonLd={jsonLd}
+      />
       <div className="p-1 flex items-center gap-3">
         <ClickableImage
           src={`https://assets.nhle.com/logos/nhl/svg/${abbreviation}_dark.svg`}

@@ -5,3 +5,6 @@ Disallow: /accounts
 # Allow all crawlers
 User-agent: *
 Allow: /
+
+# Sitemap
+Sitemap: https://nextjs-hockey.vercel.app/sitemap.xml

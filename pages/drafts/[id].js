@@ -2,6 +2,7 @@ import {useState} from 'react'
 import { getAllDraftYears, getDraft } from '../../lib/queries'
 import ReactTable from '../../components/Table'
 import Link from 'next/link'
+import SEO from '../../components/SEO'
 
 
 export default function Drafts({id,draft}) {
@@ -89,6 +90,11 @@ export default function Drafts({id,draft}) {
 
   return (
   <div>
+    <SEO
+      title={`${id} NHL Draft`}
+      description={`Complete ${id} NHL Draft results with all picks by round. View career statistics for each drafted player including games played, goals, assists, and points.`}
+      path={`/drafts/${id}`}
+    />
     <div className='flex p-1 gap-1'>
     <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded '>
       <Link href="/drafts">Back to Drafts</Link>

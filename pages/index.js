@@ -4,6 +4,7 @@ import {useEffect, useState, useRef} from "react";
 import TeamBox from "../components/TeamBox";
 import Puck from "../components/Puck";
 import {getTeams, getActiveRosters} from "../lib/queries";
+import SEO from "../components/SEO";
 
 export default function Home({teams}) {
   const router = useRouter();
@@ -68,6 +69,11 @@ export default function Home({teams}) {
   }
   return (
     <div className="">
+      <SEO
+        title="NHL Scores and Stats"
+        description="Browse current NHL team rosters, player statistics, and standings. Search by team or player name to find stats and profiles."
+        path="/"
+      />
       <div className="grid place-content-center m-4">
         <button
           className="bg-blue-200 dark:bg-blue-700 dark:text-white px-3 py-1 rounded hover:bg-blue-300 dark:hover:bg-blue-600"

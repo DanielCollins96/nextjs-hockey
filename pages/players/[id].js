@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import Head from 'next/head'
 import Link from 'next/link';
 import Image from 'next/image'
 import { useRouter } from 'next/router';
 import {getPlayer, getPlayerStats, getPlayerAwards} from '../../lib/queries'
 import ReactTable from '../../components/Table';
+import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 
 const Players = ({playerId, stats, person, awards}) => {
     const router = useRouter()
@@ -202,15 +202,25 @@ const Players = ({playerId, stats, person, awards}) => {
         </div>
     ) : null;
 
+    const playerName = person?.player_name || 'Player';
+    const headshotUrl = `https://assets.nhle.com/mugs/nhl/latest/${id}.png`;
+    const jsonLd = person ? generatePlayerJsonLd({
+        name: playerName,
+        image: headshotUrl,
+        birthDate: person.birthdate,
+        birthPlace: person.birthCountry,
+    }) : null;
+
     return (
         <div className="flex flex-col sm:flex-row mt-2">
-            <Head>
-                <title>
-                   {person?.player_name ? person.player_name : 'Player'} Hockey Stats and Profile | hockeydb.xyz
-                </title>
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-     crossOrigin="anonymous"></script>
-            </Head>
+            <SEO
+                title={`${playerName} Stats & Profile`}
+                description={`${playerName}'s NHL career statistics, draft info, and season-by-season stats. View games played, goals, assists, points, and more.`}
+                path={`/players/${id}`}
+                ogImage={headshotUrl}
+                ogType="profile"
+                jsonLd={jsonLd}
+            />
 
             {/* Sidebar: Photo, Bio, Draft, Awards (desktop only) */}
             <div className="flex flex-row sm:flex-col items-start sm:items-center p-2 ml-2 sm:w-60 shrink-0">

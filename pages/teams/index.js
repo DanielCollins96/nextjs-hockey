@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
-import TeamBox from '../../components/TeamBox'; 
-import Head from 'next/head'
+import TeamBox from '../../components/TeamBox';
 import { getTeams, getActiveRosters } from '../../lib/queries';
+import SEO from '../../components/SEO';
 
 
 export default function Teams({rosters}) {
@@ -72,13 +72,11 @@ export default function Teams({rosters}) {
 
     return (
         <div>
-            <Head>
-               <title>
-                NHL Rosters | hockeydb.xyz
-                </title> 
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-     crossOrigin="anonymous"></script>
-            </Head>
+            <SEO
+                title="NHL Teams & Rosters"
+                description="Browse all NHL team rosters and player statistics. Search by team name or player to find current roster information."
+                path="/teams"
+            />
             <div className="relative w-5/6 max-w-sm m-auto box-border">
                 <label className="absolute left-0 top-0 font-bold m-4 dark:text-white" htmlFor="filter">Search By Team or Player</label>
                 <input autoFocus onChange={inputChange} className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 dark:bg-gray-700 dark:text-white w-full" type="text" name="filter" id="filter" placeholder="e.g., Bruins, McDavid, 97..." />

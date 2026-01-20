@@ -12,9 +12,11 @@ class Document extends NextDocument {
         return (
             <Html lang="en">
                 <Head>
+                    <meta charSet="utf-8" />
                     <link rel="icon" sizes="96x96" href="/images/Hockey-Net.svg" />
-                    {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2056923001767627"
-     crossOrigin="anonymous"></script> */}
+                    {/* Preconnect to external domains for faster loading */}
+                    <link rel="preconnect" href="https://assets.nhle.com" />
+                    <link rel="dns-prefetch" href="https://assets.nhle.com" />
                 </Head>
                 <body className="bg-white dark:bg-gray-900 min-w-fit">
                     <Main />
