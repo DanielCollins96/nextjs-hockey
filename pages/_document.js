@@ -13,6 +13,7 @@ class Document extends NextDocument {
             <Html lang="en">
                 <Head>
                     <meta charSet="utf-8" />
+                    <meta name="google-site-verification" content="VUUqOnHAWuSsJzbTMxRJ1c8VvzljEFObxWmd0CWkdPA" />
                     <link rel="icon" sizes="96x96" href="/images/Hockey-Net.svg" />
                     {/* Preconnect to external domains for faster loading */}
                     <link rel="preconnect" href="https://assets.nhle.com" />
