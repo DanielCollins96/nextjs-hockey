@@ -48,7 +48,7 @@ function GameCard({ game }) {
   const homeTeamLink = game.homeTeam_dbId ? `/teams/${game.homeTeam_dbId}` : null;
 
   return (
-    <div className="flex-shrink-0 w-32 sm:w-40 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2">
+    <Link href={`/games/${game.id}`} className="flex-shrink-0 w-32 sm:w-40 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <div className={`text-[10px] sm:text-xs font-semibold mb-1 ${isLive ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`}>
         {status}
       </div>
@@ -96,7 +96,7 @@ function GameCard({ game }) {
           {!isScheduled ? game.homeTeam_score : ""}
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
 

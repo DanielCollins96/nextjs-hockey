@@ -53,6 +53,11 @@ const Header = () => {
               </Link>
             </li>
             <li className="my-auto px-3 py-1">
+              <Link href="/games" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+                Games
+              </Link>
+            </li>
+            <li className="my-auto px-3 py-1">
               <Link href="/seasons" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
                 Seasons
               </Link>
@@ -141,6 +146,15 @@ const Header = () => {
                 className="text-lg dark:text-white"
               >
                 Drafts
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/games"
+                onClick={() => setSidebarOpen(false)}
+                className="text-lg dark:text-white"
+              >
+                Games
               </Link>
             </li>
             {!user ? (
