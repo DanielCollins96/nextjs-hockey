@@ -1,7 +1,7 @@
 import Head from 'next/head';
 
 const SITE_URL = 'https://nextjs-hockey.vercel.app';
-const SITE_NAME = 'hockeydb.xyz';
+const SITE_NAME = 'NHL Hockey Stats';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/Hockey-Net.svg`;
 
 /**
