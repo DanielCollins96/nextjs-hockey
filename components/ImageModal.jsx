@@ -43,19 +43,19 @@ export default function ImageModal({ isOpen, onClose, src, alt = "" }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-6 sm:p-10 cursor-zoom-out"
       onClick={onClose}
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 text-white hover:text-gray-300 transition-colors z-50"
+        className="absolute top-4 right-4 p-3 text-white hover:text-gray-300 transition-colors z-50"
         aria-label="Close modal"
       >
-        <FaTimes size={24} />
+        <FaTimes size={28} />
       </button>
 
       <div
-        className="relative w-[80vw] h-[80vh] max-w-3xl max-h-3xl"
+        className="relative w-[72vw] h-[62vh] sm:w-[80vw] sm:h-[75vh] max-w-3xl max-h-3xl cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         <Image

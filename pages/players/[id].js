@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'
 import { useRouter } from 'next/router';
 import {getPlayer, getPlayerStats, getPlayerAwards} from '../../lib/queries'
 import ReactTable from '../../components/Table';
+import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 
 const Players = ({playerId, stats, person, awards}) => {
@@ -30,6 +30,25 @@ const Players = ({playerId, stats, person, awards}) => {
         }
         return seasonString;
     };
+
+    const currentTeam = useMemo(() => {
+        if (!Array.isArray(stats)) return null;
+
+        const nhlRows = stats.filter((row) => row?.['league.name'] === 'NHL' && row?.['team.name']);
+        if (nhlRows.length === 0) return null;
+
+        const sortedNhlRows = [...nhlRows].sort((a, b) => {
+            const seasonA = Number(a?.season) || 0;
+            const seasonB = Number(b?.season) || 0;
+            if (seasonB !== seasonA) return seasonB - seasonA;
+
+            const gamesA = Number(a?.['stat.games']) || 0;
+            const gamesB = Number(b?.['stat.games']) || 0;
+            return gamesB - gamesA;
+        });
+
+        return sortedNhlRows[0]?.['team.name'] || null;
+    }, [stats]);
 
         const positionalColumns = useMemo(() => position !== 'G' ? [
             {
@@ -221,7 +240,7 @@ const Players = ({playerId, stats, person, awards}) => {
     }) : null;
 
     return (
-        <div className="flex flex-col sm:flex-row mt-2">
+        <div className="mt-2">
             <SEO
                 title={`${playerName} Stats & Profile`}
                 description={`${playerName}'s NHL career statistics, draft info, and season-by-season stats. View games played, goals, assists, points, and more.`}
@@ -231,52 +250,57 @@ const Players = ({playerId, stats, person, awards}) => {
                 jsonLd={jsonLd}
             />
 
-            {/* Sidebar: Photo, Bio, Draft, Awards (desktop only) */}
-            <div className="flex flex-row sm:flex-col items-start sm:items-center p-2 ml-2 sm:w-60 shrink-0">
-                <Image src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`} alt="player headshot" width={200} height={0} className="shrink-0"/>
-                <div className="flex flex-col ml-2 sm:ml-0">
-                    <div className="w-full p-1 m-1">
-                        <p className="text-2xl font-bold">{person?.player_name}</p>
-                        <p>Birth Date: {person?.birthdate}</p>
-                        <p>Nationality: {person?.birthCountry}</p>
-                        <p>Position: {person?.position}</p>
-                        <p>Primary Number: {person?.sweaterNumber}</p>
-                        <p>Shoots/Catches: {person?.shootsCatches}</p>
-                    </div>
-                    <div className='border p-2 w-full'>
-                        <p className="text-sm">
-                            {hasDraftData(person?.draft_seasons) ? (
-                                <>
-                                    <span className="font-semibold">Draft:</span>{' '}
-                                    <Link
-                                        href={`/drafts/${person?.draft_seasons}`}
-                                        className="text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
-                                        {person?.draft_seasons}
-                                    </Link>
-                                    , {person?.displayAbbrev} {person?.ordinalPick ? `(${person?.ordinalPick} overall)` : ''}
-                                </>
-                            ) : (
-                                <span className="font-semibold">Undrafted</span>
-                            )}
-                        </p>
+            <div className="mx-2 border border-gray-300 dark:border-gray-700 p-3 sm:p-4">
+                <div className="flex flex-col items-center text-center">
+                    <ClickableImage
+                        src={`https://assets.nhle.com/mugs/nhl/latest/${id}.png`}
+                        alt={`${playerName} headshot`}
+                        containerClassName="relative w-28 h-28 sm:w-36 sm:h-36 overflow-hidden border border-gray-300 dark:border-gray-700 rounded-full"
+                        className="object-cover"
+                    />
+                    <p className="mt-3 text-3xl font-bold leading-tight">{person?.player_name}</p>
+                    <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm sm:text-base font-semibold">
+                        <span>{person?.position}</span>
+                        <span className="text-gray-500 dark:text-gray-400">•</span>
+                        <span>#{person?.sweaterNumber}</span>
+                        <span className="text-gray-500 dark:text-gray-400">•</span>
+                        <span>{person?.shootsCatches}</span>
                     </div>
                 </div>
-                {/* Awards - desktop only (hidden on mobile) */}
-                <div className="hidden sm:block mt-2 w-full">
-                    {awardsTable}
+
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm sm:text-base">
+                    <p><span className="font-semibold">Birth Date:</span> {person?.birthdate}</p>
+                    <p><span className="font-semibold">Nationality:</span> {person?.birthCountry}</p>
+                    <p className="col-span-2 sm:col-span-1"><span className="font-semibold">Team:</span> {currentTeam || '-'}</p>
+                </div>
+
+                <div className='border border-gray-300 dark:border-gray-700 p-2 w-full mt-3 text-sm sm:text-base'>
+                    <p className="leading-snug text-center sm:text-left">
+                        {hasDraftData(person?.draft_seasons) ? (
+                            <>
+                                <span className="font-semibold">Draft:</span>{' '}
+                                <Link
+                                    href={`/drafts/${person?.draft_seasons}`}
+                                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                    {person?.draft_seasons}
+                                </Link>
+                                , {person?.displayAbbrev} {person?.ordinalPick ? `(${person?.ordinalPick} overall)` : ''}
+                            </>
+                        ) : (
+                            <span className="font-semibold">Undrafted</span>
+                        )}
+                    </p>
                 </div>
             </div>
 
-            {/* Main content area */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 mt-2 px-2">
                 {/* Stats Table */}
                 {stats ? <ReactTable columns={columns} data={data} mobileFit={true} /> : <h3>Loading...</h3>}
+            </div>
 
-                {/* Awards - mobile only (hidden on desktop) */}
-                <div className="sm:hidden p-2 mt-2">
-                    {awardsTable}
-                </div>
+            <div className="p-2 mt-2">
+                {awardsTable}
             </div>
         </div>
     )
