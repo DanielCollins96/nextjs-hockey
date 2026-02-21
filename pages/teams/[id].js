@@ -8,14 +8,6 @@ import ReactTable from "../../components/Table";
 import { ClickableImage } from "../../components/ImageModal";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
 import {
-  getTeamIds,
-  getTeamSeasons,
-  getTeamSkaters,
-  getTeamGoalies,
-  getPlayoffYears,
-  getTeamInfo,
-} from "../../lib/queries";
-import {
   LineChart,
   Line,
   XAxis,
@@ -653,73 +645,83 @@ export default function TeamPage({
   );
 }
 
-export async function getStaticPaths() {
-  const teams = await getTeamIds();
-  let paths = teams?.map((team) => ({
-    params: {id: String(team.id)},
-  }));
-  return {
-    paths,
-    fallback: false,
-  };
-}
+export async function getServerSideProps({params, req}) {
+  const protocol = req.headers["x-forwarded-proto"] || "http";
+  const host = req.headers.host;
 
-export async function getStaticProps({params}) {
-  let abbreviation = null;
-  let fullName = null;
   try {
-    const teamInfo = await getTeamInfo(params.id);
-    if (teamInfo) {
-      abbreviation = teamInfo.abbreviation;
-      fullName = teamInfo.fullName;
+    const response = await fetch(`${protocol}://${host}/api/teams/${params.id}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return { notFound: true };
+      }
+      return {
+        props: {
+          seasons: {},
+          seasonIds: [],
+          abbreviation: null,
+          fullName: null,
+          teamRecords: [],
+        },
+      };
     }
+
+    const payload = await response.json();
+    const teamInfo = payload?.team || null;
+    const skaters = payload?.skaters || [];
+    const goalies = payload?.goalies || [];
+    const teamRecords = payload?.teamRecords || [];
+    const playoffSeasons = payload?.playoffSeasons || [];
+
+    const combinePlayersBySeason = (allSkaters, allGoalies) => {
+      const seasonMap = {};
+
+      allSkaters.forEach((skater) => {
+        const season = skater.season;
+        if (!seasonMap[season]) {
+          seasonMap[season] = {skaters: [], goalies: []};
+        }
+        seasonMap[season].skaters.push(skater);
+      });
+
+      allGoalies.forEach((goalie) => {
+        const season = goalie.season;
+        if (!seasonMap[season]) {
+          seasonMap[season] = {skaters: [], goalies: []};
+        }
+        seasonMap[season].goalies.push(goalie);
+      });
+
+      return seasonMap;
+    };
+
+    const seasonMap = combinePlayersBySeason(skaters, goalies);
+    const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
+
+    seasons.forEach((season) => {
+      seasonMap[season].madePlayoffs = playoffSeasons?.includes(season) || false;
+    });
+
+    return {
+      props: {
+        seasons: seasonMap,
+        seasonIds: seasons,
+        abbreviation: teamInfo?.abbreviation || null,
+        fullName: teamInfo?.fullName || null,
+        teamRecords,
+      },
+    };
   } catch (error) {
     console.log(error);
+    return {
+      props: {
+        seasons: {},
+        seasonIds: [],
+        abbreviation: null,
+        fullName: null,
+        teamRecords: [],
+      },
+    };
   }
-
-  let skaters = await getTeamSkaters(params.id);
-  let goalies = await getTeamGoalies(params.id);
-
-  const combinePlayersBySeason = (skaters, goalies) => {
-    const seasonMap = {};
-
-    skaters.forEach((skaters) => {
-      const season = skaters.season;
-      if (!seasonMap[season]) {
-        seasonMap[season] = {skaters: [], goalies: []};
-      }
-      seasonMap[season].skaters.push(skaters);
-    });
-
-    goalies.forEach((goalie) => {
-      const season = goalie.season;
-      if (!seasonMap[season]) {
-        seasonMap[season] = {skaters: [], goalies: []};
-      }
-      seasonMap[season].goalies.push(goalie);
-    });
-
-    return seasonMap;
-  };
-
-  const seasonMap = combinePlayersBySeason(skaters, goalies);
-  const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
-  const playoffSeasons = await getPlayoffYears(abbreviation);
-
-  seasons.forEach((season) => {
-    seasonMap[season].madePlayoffs = playoffSeasons?.includes(season) || false;
-  });
-  let teamRecords = await getTeamSeasons(params.id);
-
-  return {
-    props: {
-      seasons: seasonMap,
-      seasonIds: seasons,
-      abbreviation,
-      fullName,
-      teamRecords,
-    },
-    // Regenerate this page at most once every hour (3600 seconds)
-    revalidate: 7200,
-  };
 }
