@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { getGamesByDate } from '../../lib/queries';
 import SEO from '../../components/SEO';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
 import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload } from 'react-icons/fa';
@@ -420,9 +419,13 @@ export default function Games({ games: initialGames, selectedDate, dateRange }) 
   );
 }
 
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ query, req }) {
   const selectedDate = query.date || new Date().toISOString().split('T')[0];
-  const games = await getGamesByDate(selectedDate);
+  const protocol = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers.host;
+  const response = await fetch(`${protocol}://${host}/api/games?date=${selectedDate}`);
+  const payload = response.ok ? await response.json() : {};
+  const games = payload?.games || [];
 
   // Serialize Date objects to strings for JSON
   const serializedGames = games.map(game => ({

@@ -1,4 +1,4 @@
-import { getGamesByDate, getGamesByDateRange } from "../../lib/queries";
+import { getGamesByDate, getGamesByDateRange } from "../../../lib/queries";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -11,21 +11,23 @@ export default async function handler(req, res) {
     let games;
 
     if (startDate && endDate) {
-      // Date range query
       games = await getGamesByDateRange(startDate, endDate);
     } else if (date) {
-      // Single date query
       games = await getGamesByDate(date);
     } else {
       return res.status(400).json({ error: "Date parameter is required" });
     }
 
-    // Serialize Date objects
     const serializedGames = games.map(game => ({
       ...game,
       gameDate: game.gameDate instanceof Date ? game.gameDate.toISOString().split('T')[0] : game.gameDate,
       startTimeUTC: game.startTimeUTC instanceof Date ? game.startTimeUTC.toISOString() : game.startTimeUTC,
     }));
+
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=300, stale-while-revalidate=3600'
+    );
 
     res.status(200).json({ games: serializedGames });
   } catch (error) {

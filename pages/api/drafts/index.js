@@ -1,14 +1,15 @@
-//write a nextjs function that calls the lib getAllDraftYears
-//and returns a list of years
 import { getAllDraftYears } from "../../../lib/queries";
 
 export default async function handler(req, res) {
-try {
+    try {
     const years = await getAllDraftYears()
-    console.log(years);
-    res.status(200).json(years)
-    
-} catch (error) {
-    
-}
+        res.setHeader(
+            'Cache-Control',
+            'public, s-maxage=86400, stale-while-revalidate=172800'
+        )
+        res.status(200).json({ years })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error_message: 'Internal Server Error' })
+    }
 }

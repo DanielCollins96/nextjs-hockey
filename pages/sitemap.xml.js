@@ -1,5 +1,3 @@
-import { getAllPlayerIds, getAllDraftYears, getTeamIds } from '../lib/queries';
-
 const SITE_URL = 'https://nextjs-hockey.vercel.app';
 
 function generateSiteMap({ playerIds, draftYears, teamIds }) {
@@ -77,13 +75,23 @@ function generateSiteMap({ playerIds, draftYears, teamIds }) {
 </urlset>`;
 }
 
-export async function getServerSideProps({ res }) {
-  // Fetch all dynamic page IDs
-  const [playerIds, draftYears, teamIds] = await Promise.all([
-    getAllPlayerIds(),
-    getAllDraftYears(),
-    getTeamIds(),
+export async function getServerSideProps({ res, req }) {
+  const protocol = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers.host;
+
+  const [playersResponse, draftsResponse, teamsResponse] = await Promise.all([
+    fetch(`${protocol}://${host}/api/players/ids`),
+    fetch(`${protocol}://${host}/api/drafts`),
+    fetch(`${protocol}://${host}/api/teams/ids`),
   ]);
+
+  const playersPayload = playersResponse.ok ? await playersResponse.json() : {};
+  const draftsPayload = draftsResponse.ok ? await draftsResponse.json() : {};
+  const teamsPayload = teamsResponse.ok ? await teamsResponse.json() : {};
+
+  const playerIds = playersPayload?.playerIds || [];
+  const draftYears = draftsPayload?.years || [];
+  const teamIds = teamsPayload?.teamIds || [];
 
   const sitemap = generateSiteMap({
     playerIds: playerIds || [],

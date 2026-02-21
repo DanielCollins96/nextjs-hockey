@@ -1,5 +1,4 @@
 import {useState} from 'react'
-import { getAllDraftYears, getDraft } from '../../lib/queries'
 import ReactTable from '../../components/Table'
 import Link from 'next/link'
 import SEO from '../../components/SEO'
@@ -38,7 +37,7 @@ export default function Drafts({id,draft}) {
       accessorFn: d => d['overallPick']
     },
     {
-      header: 'Drafted By',
+      header: 'Team',
       accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
         href={`/teams/${row.original.draftedByTeamId}`}
@@ -111,37 +110,37 @@ export default function Drafts({id,draft}) {
   )
 }
 
-export async function getStaticPaths() {
-    let draftYears = await getAllDraftYears()
-    draftYears = draftYears.map(draft => {
-        return { params: { id: String(draft.draftYear) } }
-    })
-
-  return {
-    paths: draftYears,
-    fallback: false
-  }
-}
-
-export async function getStaticProps({params}) {
+export async function getServerSideProps({ params, req }) {
     const {id} = params
-    let draft = await getDraft(id)
+    const protocol = req.headers['x-forwarded-proto'] || 'http'
+    const host = req.headers.host
 
-    // Group players by round number
+    let draft = []
+    const response = await fetch(`${protocol}://${host}/api/drafts/${id}`)
+
+    if (response.status === 404) {
+      return { notFound: true }
+    }
+
+    if (response.ok) {
+      const payload = await response.json()
+      draft = payload?.draft || []
+    }
+
     if (draft) {
       draft = draft.reduce((acc, player) => {
-      if (!acc[player.round]) {
-        acc[player.round] = [];
-      }
-      acc[player.round].push(player);
-      return acc
+        if (!acc[player.round]) {
+          acc[player.round] = []
+        }
+        acc[player.round].push(player)
+        return acc
       },{})
     }
 
     return {
-        props: {
-            id: params.id,
-            draft
-        }
+      props: {
+        id: params.id,
+        draft
+      }
     }
 }

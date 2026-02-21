@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox';
-import { getTeams, getActiveRosters } from '../../lib/queries';
 import SEO from '../../components/SEO';
 
 
@@ -97,75 +96,14 @@ export default function Teams({rosters}) {
     )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps({ req }) {
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers.host;
+
     try {
-        const [teams, activeRosters] = await Promise.all([
-            getTeams(),
-            getActiveRosters()
-        ]);
-
-        if (!teams || !Array.isArray(teams)) {
-            throw new Error('Failed to fetch teams or invalid teams data');
-        }
-
-        // Group roster players by team abbreviation and position
-        const rostersByTeam = {};
-        
-        for (const player of activeRosters) {
-            const abbrev = player.teamAbbreviation;
-            if (!rostersByTeam[abbrev]) {
-                rostersByTeam[abbrev] = {
-                    forwards: [],
-                    defensemen: [],
-                    goalies: []
-                };
-            }
-
-            const playerData = {
-                position: player.positionGroup,
-                id: player.playerId,
-                sweaterNumber: player.sweaterNumber ?? null,
-                firstName: player.firstName,
-                lastName: player.lastName,
-            };
-
-            // Map positionGroup to the roster category
-            if (player.positionGroup === 'forwards') {
-                rostersByTeam[abbrev].forwards.push(playerData);
-            } else if (player.positionGroup === 'defensemen') {
-                rostersByTeam[abbrev].defensemen.push(playerData);
-            } else if (player.positionGroup === 'goalies') {
-                rostersByTeam[abbrev].goalies.push(playerData);
-            }
-        }
-
-        // Sort players alphabetically within each position group
-        for (const abbrev of Object.keys(rostersByTeam)) {
-            for (const position of ['forwards', 'defensemen', 'goalies']) {
-                rostersByTeam[abbrev][position].sort((a, b) => {
-                    const nameA = `${a.firstName || ''} ${a.lastName || ''}`;
-                    const nameB = `${b.firstName || ''} ${b.lastName || ''}`;
-                    return nameA.localeCompare(nameB);
-                });
-            }
-        }
-
-        // Combine teams with their rosters
-        const rosters = teams.map(team => ({
-            team,
-            roster: rostersByTeam[team.abbreviation] || {
-                forwards: [],
-                defensemen: [],
-                goalies: []
-            }
-        }));
-        
-        // Filter out completely empty rosters
-        const validRosters = rosters.filter(roster => 
-            roster.roster.forwards.length > 0 || 
-            roster.roster.defensemen.length > 0 || 
-            roster.roster.goalies.length > 0
-        );
+        const response = await fetch(`${protocol}://${host}/api/teams/rosters`);
+        const payload = response.ok ? await response.json() : {};
+        const validRosters = payload?.rosters || [];
 
         if (!validRosters.length) {
             throw new Error('No valid rosters were fetched successfully');
@@ -174,16 +112,14 @@ export async function getStaticProps() {
         return {
             props: {
                 rosters: validRosters
-            },
-            revalidate: 3600
+            }
         };
     } catch (error) {
         console.error('Error in getStaticProps:', error);
         return {
             props: {
                 rosters: []
-            },
-            revalidate: 60 // Retry sooner on error
+            }
         };
     }
 }

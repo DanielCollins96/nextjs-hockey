@@ -6,15 +6,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## TODOs
 
-- [ ] **Playoff Stats**
-- [ ] **Draft Info/Page**
-- [ ] Player search page (All players by name/team)
 - [ ] unit/integration tests (CI/CD Build)
 - [ ] user file uploads
-- [ ] add forum to team page and news stories
+- [ ] add forum to team page, news stories, and games
 - [ ] add tags to posts
-- [x] goalie stats
-- [ ] Add Dark Mode
 - [ ] Caphit scrape to add to page
 
 ## Getting Started
@@ -30,6 +25,57 @@ yarn dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+
+## API Testing Logic
+
+This project includes integration tests for API replacement and caching behavior.
+
+### Scripts
+
+- `npm run test:api-replacement`
+	- Starts a temporary Next.js dev server automatically (default port `3100`)
+	- Waits for the server to be ready
+	- Runs integration tests in `tests/api-replacement.test.mjs`
+	- Shuts the temporary server down automatically (no lingering port)
+- `npm run test:api-replacement:direct`
+	- Runs tests directly with no server lifecycle management
+	- Use this only if you already have a server running and set `TEST_BASE_URL`
+
+### Environment Variables for Tests
+
+- `TEST_PORT` (optional): port used by the auto-managed server (default: `3100`)
+- `TEST_BASE_URL` (optional): base URL tests call (default: `http://localhost:${TEST_PORT}`)
+
+### Notes
+
+- The games detail test is conditionally skipped if no games exist for the selected date.
+- Tests validate response shape and `Cache-Control` headers for the API routes.
+
+## API Routes (Cached)
+
+Public pages now load data through API routes instead of importing DB query functions directly.
+
+### 12-hour cache (`s-maxage=43200`)
+
+- `GET /api/players/:id` - Player profile, stats, awards
+- `GET /api/players?q=<term>&limit=<n>` - Player search
+- `GET /api/teams` - Team list
+- `GET /api/teams/:id` - Team details, roster stats, records, playoff seasons
+- `GET /api/teams/rosters` - Team + grouped active roster data
+- `GET /api/seasons?year=<seasonId>` - Skater/goalie leaders + available seasons
+
+### 24-hour cache (`s-maxage=86400`)
+
+- `GET /api/drafts` - Draft year list
+- `GET /api/drafts/:id` - Draft picks for a specific year
+- `GET /api/players/ids` - Player IDs (for sitemap)
+- `GET /api/teams/ids` - Team IDs (for sitemap)
+
+### Short cache for frequently changing data
+
+- `GET /api/games?date=<yyyy-mm-dd>` or `GET /api/games?startDate=<yyyy-mm-dd>&endDate=<yyyy-mm-dd>`
+- `GET /api/games/:id`
+- Cache policy: `s-maxage=300, stale-while-revalidate=3600`
 
 ## Amplify Stuff
 
