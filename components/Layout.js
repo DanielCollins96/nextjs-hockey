@@ -4,14 +4,14 @@ import GamesBanner from './GamesBanner';
 
 export default function Layout ({children, title = 'Hockey Stats'}) {
     return (
-        <div className="bg-white dark:bg-gray-900 transition-colors min-w-fit overflow-x-clip">
+        <div className="bg-white dark:bg-gray-900 transition-colors w-full overflow-x-hidden">
             <Head>
                 <link rel="icon" href="/images/ice-hockey-puck.svg" />
                 <title>{title}</title>
             </Head>
             <GamesBanner />
             <Header />
-            <main className="min-h-screen dark:text-white">
+            <main className="min-h-screen dark:text-white overflow-x-hidden">
             { children }
             </main>
             <footer className="p-4 text-center dark:text-white">

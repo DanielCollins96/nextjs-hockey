@@ -19,7 +19,7 @@ class Document extends NextDocument {
                     <link rel="preconnect" href="https://assets.nhle.com" />
                     <link rel="dns-prefetch" href="https://assets.nhle.com" />
                 </Head>
-                <body className="bg-white dark:bg-gray-900 min-w-fit">
+                <body className="bg-white dark:bg-gray-900 min-w-full overflow-x-hidden">
                     <Main />
                     <NextScript />
                 </body>

@@ -23,6 +23,14 @@ const Players = ({playerId, stats, person, awards}) => {
     // Helper to check NHL league as returned by SQL (leagueAbbrev)
     const isNHLRow = (row) => row?.original && row.original['league.name'] === 'NHL';
 
+    const formatSeason = (season) => {
+        const seasonString = String(season || '');
+        if (/^\d{8}$/.test(seasonString)) {
+            return `${seasonString.slice(0, 4)}/${seasonString.slice(6, 8)}`;
+        }
+        return seasonString;
+    };
+
         const positionalColumns = useMemo(() => position !== 'G' ? [
             {
                 header: 'G',
@@ -136,6 +144,7 @@ const Players = ({playerId, stats, person, awards}) => {
              {
                  header: 'Season',
                  accessorKey: 'season',
+                 cell: props => formatSeason(props.getValue()),
              },
              {
                  header: 'Team',
@@ -262,7 +271,7 @@ const Players = ({playerId, stats, person, awards}) => {
             {/* Main content area */}
             <div className="flex-1 min-w-0">
                 {/* Stats Table */}
-                {stats ? <ReactTable columns={columns} data={data} /> : <h3>Loading...</h3>}
+                {stats ? <ReactTable columns={columns} data={data} mobileFit={true} /> : <h3>Loading...</h3>}
 
                 {/* Awards - mobile only (hidden on desktop) */}
                 <div className="sm:hidden p-2 mt-2">

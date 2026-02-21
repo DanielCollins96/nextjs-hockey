@@ -2,11 +2,9 @@
 import {
   useReactTable,
   flexRender,
-  getRowModel,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import {useState} from "react";
@@ -68,10 +66,10 @@ export default function ReactTable({
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                        <span className="text-sm">
+                        <span className="text-xs align-middle opacity-70 ml-1">
                           {{
-                            asc: " 🔼",
-                            desc: " 🔽",
+                            asc: "▲",
+                            desc: "▼",
                           }[header.column.getIsSorted()] ?? null}
                         </span>
                       </div>
@@ -112,7 +110,7 @@ export default function ReactTable({
           })}
         </tbody>
         <tfoot>
-          {table.getFooterGroups().map((footerGroup, idx) => (
+          {table.getFooterGroups().map((footerGroup) => (
             <tr
               key={footerGroup.id}
               className="bg-slate-300 py-px text-center font-bold"

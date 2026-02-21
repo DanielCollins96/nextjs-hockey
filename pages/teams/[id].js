@@ -527,7 +527,7 @@ export default function TeamPage({
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {seasons && (
-          <div className="border border-black dark:border-white w-screen p-1 flex flex-col max-w-2xl">
+          <div className="border border-black dark:border-white w-full p-1 flex flex-col max-w-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div>

@@ -2,16 +2,12 @@
 import {
   useReactTable,
   flexRender,
-  getRowModel,
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
-  SortingState
-
 } from "@tanstack/react-table";
 import { useState } from "react";
 
-export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName}) {
+export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
@@ -34,15 +30,16 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
   );
 
   return (
-    <table
-      className="border border-black dark:border-gray-600 px-1 m-1"
-    >
-   <thead>
+    <div className="overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <table
+        className={`${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
+      >
+     <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
-                  <th className="px-1 whitespace-nowrap bg-white dark:bg-gray-800 dark:text-white border border-blue-600 dark:border-blue-500" key={header.id} colSpan={header.colSpan}>
+                  <th className={`${mobileFit ? "px-1 text-xs sm:text-sm whitespace-nowrap" : "px-1 whitespace-nowrap"} bg-white dark:bg-gray-800 dark:text-white border border-blue-600 dark:border-blue-500`} key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
                       <div
                         {...{
@@ -56,10 +53,10 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                        <span className="text-sm">
+                        <span className="text-xs align-middle opacity-70 ml-1">
                         {{
-                          asc: ' 🔼',
-                          desc: ' 🔽',
+                          asc: '▲',
+                          desc: '▼',
                         }[header.column.getIsSorted()] ?? null}
                         </span>
                       </div>
@@ -82,7 +79,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
               {row.getVisibleCells().map((cell) => {
                 return (
                   <td
-                    className="border-black dark:border-gray-600 border px-1 text-sm dark:text-gray-200"
+                    className={`${mobileFit ? "px-1 text-xs sm:text-sm" : "px-1 text-sm"} border-black dark:border-gray-600 border dark:text-gray-200 whitespace-nowrap`}
                     key={cell.id}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -94,7 +91,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
         })}
       </tbody>
       <tfoot>
-        {table.getFooterGroups().map((footerGroup, idx) => (
+        {table.getFooterGroups().map((footerGroup) => (
           <tr
             key={footerGroup.id}
             className="bg-slate-300 dark:bg-gray-700 py-px text-center font-bold dark:text-white"
@@ -116,6 +113,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
           </tr>
         ))}
       </tfoot>
-    </table>
+      </table>
+    </div>
   );
 }
