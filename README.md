@@ -40,6 +40,9 @@ This project includes integration tests for API replacement and caching behavior
 - `npm run test:api-replacement:direct`
 	- Runs tests directly with no server lifecycle management
 	- Use this only if you already have a server running and set `TEST_BASE_URL`
+- `npm run perf:compare`
+	- Benchmarks all API endpoints against two deployments and prints a comparison table
+	- See [Performance Comparison](#performance-comparison) below
 
 ### Environment Variables for Tests
 
@@ -50,6 +53,48 @@ This project includes integration tests for API replacement and caching behavior
 
 - The games detail test is conditionally skipped if no games exist for the selected date.
 - Tests validate response shape and `Cache-Control` headers for the API routes.
+
+## Performance Comparison
+
+Use `npm run perf:compare` to benchmark all API endpoints between two deployments (e.g. the `main` branch on Vercel vs the `api-endpoints` branch on Vercel) and compare their response times side-by-side.
+
+```sh
+MAIN_URL=https://hockeydb.xyz \
+BRANCH_URL=https://<branch-preview-url>.vercel.app \
+ITERATIONS=5 \
+npm run perf:compare
+```
+
+### Output
+
+```
+API Performance Comparison
+  Main   : https://hockeydb.xyz
+  Branch : https://<branch>.vercel.app
+  Runs   : 5 per endpoint
+
+──────────────────────────────────────────────────────────────────────────────────────
+Endpoint                      ── MAIN ──────────────   ── BRANCH ────────────   avg Δ (branch vs main)
+                              min     avg     p95      min     avg     p95
+──────────────────────────────────────────────────────────────────────────────────────
+GET /api/drafts                 45ms   52ms   58ms      38ms   41ms   47ms   -11ms (-21%)
+GET /api/teams/rosters         310ms  340ms  380ms     120ms  135ms  160ms   -205ms (-60%)
+...
+```
+
+- **Green** delta = branch is >50 ms faster than main
+- **Red** delta = branch is >50 ms slower than main
+- `[N err]` = N requests returned HTTP 5xx or failed to connect
+
+### Environment Variables
+
+| Variable     | Default                  | Description                                      |
+|--------------|--------------------------|--------------------------------------------------|
+| `MAIN_URL`   | `http://localhost:3000`  | Base URL for the first deployment (main)         |
+| `BRANCH_URL` | `http://localhost:3001`  | Base URL for the second deployment (branch)      |
+| `ITERATIONS` | `5`                      | Number of requests per endpoint (higher = more accurate) |
+| `PLAYER_ID`  | `8478402`                | Player ID used in `/api/players/:id` test        |
+| `TEAM_ID`    | `10`                     | Team ID used in `/api/teams/:id` test            |
 
 ## API Routes (Cached)
 
