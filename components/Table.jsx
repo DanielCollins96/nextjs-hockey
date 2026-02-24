@@ -94,13 +94,13 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
         {table.getFooterGroups().map((footerGroup) => (
           <tr
             key={footerGroup.id}
-            className={`${mobileFit ? "text-xs sm:text-sm font-semibold" : "font-bold"} bg-slate-300 dark:bg-gray-700 py-px text-center dark:text-white`}
+            className={`${mobileFit ? "text-[10px] sm:text-xs font-semibold" : "text-xs font-semibold"} bg-slate-300 dark:bg-gray-700 py-px dark:text-white`}
           >
             {footerGroup.headers.map((header) => (
               <td
                 key={header.id}
                 colSpan={header.colSpan}
-                className={`${mobileFit ? "px-1" : ""} border-black whitespace-nowrap`}
+                className={`px-1 border-black whitespace-nowrap`}
               >
                 {header.isPlaceholder
                   ? null
