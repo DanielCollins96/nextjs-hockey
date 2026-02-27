@@ -2,9 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { API, graphqlOperation } from 'aws-amplify';
 import SEO from '../../components/SEO';
+import { UseAuth } from '../../contexts/Auth';
+import * as queries from '../../src/graphql/queries';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
-import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload, FaRegCommentDots } from 'react-icons/fa';
 
 function formatDateShort(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -37,7 +40,7 @@ function getGameStatus(game) {
   return state;
 }
 
-function GameCard({ game }) {
+function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
   const status = getGameStatus(game);
   const isLive = game.gameState === 'LIVE' || game.gameState === 'CRIT';
   const isScheduled = game.gameState === 'FUT' || game.gameState === 'PRE';
@@ -45,8 +48,23 @@ function GameCard({ game }) {
   return (
     <Link href={`/games/${game.id}`}>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 cursor-pointer">
-        <div className={`text-sm font-semibold mb-3 text-center ${isLive ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
-          {status}
+        <div className={`text-sm font-semibold mb-3 ${showCommentMeta ? 'flex items-center justify-between' : 'text-center'} ${isLive ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+          <span>{status}</span>
+          {showCommentMeta && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+              title="Open game thread"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                window.location.href = `/games/${game.id}#thread`;
+              }}
+            >
+              <FaRegCommentDots className="w-3 h-3" />
+              {commentCount}
+            </button>
+          )}
         </div>
 
         {/* Away Team */}
@@ -256,6 +274,7 @@ function exportToCSV(games, filename) {
 }
 
 export default function Games({ games: initialGames, selectedDate, dateRange }) {
+  const { user } = UseAuth();
   const router = useRouter();
   const [viewMode, setViewMode] = useState('cards');
   const [showAllDates, setShowAllDates] = useState(!!dateRange);
@@ -263,11 +282,55 @@ export default function Games({ games: initialGames, selectedDate, dateRange }) 
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(dateRange?.start || selectedDate);
   const [endDate, setEndDate] = useState(dateRange?.end || selectedDate);
+  const [commentCounts, setCommentCounts] = useState({});
 
   // Sync games state when props change (on date navigation)
   useEffect(() => {
     setGames(initialGames);
   }, [initialGames]);
+
+  useEffect(() => {
+    async function fetchCommentCounts() {
+      if (!user?.username || !games.length) {
+        setCommentCounts({});
+        return;
+      }
+
+      try {
+        const response = await API.graphql(
+          graphqlOperation(queries.listPosts, {
+            limit: 1000,
+            filter: {
+              subject: {
+                beginsWith: 'THREAD#GAME#',
+              },
+            },
+          })
+        );
+
+        const posts = response?.data?.listPosts?.items || [];
+        const gameIds = new Set(games.map((game) => String(game.id)));
+        const counts = {};
+
+        posts.forEach((post) => {
+          if (post?._deleted) return;
+          const subject = String(post?.subject || '');
+          const parts = subject.split('#');
+          const gameId = parts[2];
+
+          if (!gameId || !gameIds.has(String(gameId))) return;
+          counts[gameId] = (counts[gameId] || 0) + 1;
+        });
+
+        setCommentCounts(counts);
+      } catch (error) {
+        console.error('Error fetching thread comment counts:', error);
+        setCommentCounts({});
+      }
+    }
+
+    fetchCommentCounts();
+  }, [games, user?.username]);
 
   const changeDate = (days) => {
     const date = new Date(selectedDate + 'T12:00:00');
@@ -409,7 +472,12 @@ export default function Games({ games: initialGames, selectedDate, dateRange }) 
       ) : viewMode === 'cards' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {games.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <GameCard
+              key={game.id}
+              game={game}
+              commentCount={commentCounts[String(game.id)] || 0}
+              showCommentMeta={!!user?.username}
+            />
           ))}
         </div>
       ) : (

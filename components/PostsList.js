@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { formatDistance, format } from 'date-fns'
+import { formatDistance } from 'date-fns'
 import { BiSearch } from 'react-icons/bi'
+import { FaTrashAlt } from 'react-icons/fa'
+import Link from 'next/link'
 
 export default function PostsList({posts, search, setSearch, error, deletePost, toggle}) {
 
@@ -52,9 +53,28 @@ const Post = ({post, deletePost}) => {
             <p className="font-bold text-gray-900 dark:text-gray-100">{post.name}</p>
             <div className="flex gap-2 items-center">
             <p className="text-gray-700 dark:text-gray-400">{formatDistance(new Date(post.updatedAt), new Date())} ago</p>
-            <button className="bg-red-500 py-1 px-3 rounded hover:bg-red-400 text-white" onClick={() => deletePost(post.id, post._version)}>X</button>
+                        <button
+                            type="button"
+                            aria-label="Delete post"
+                            title="Delete post"
+                            className="inline-flex items-center justify-center h-8 w-8 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                            onClick={() => deletePost(post.id, post._version)}
+                        >
+                            <FaTrashAlt className="h-3.5 w-3.5" />
+                        </button>
             </div>
             </div>
+            {post.threadLabel && (
+                <div className="mb-1 text-sm">
+                    {post.threadLink ? (
+                        <Link href={post.threadLink} className="text-blue-600 dark:text-blue-400 hover:underline">
+                            {post.threadLabel}
+                        </Link>
+                    ) : (
+                        <span className="text-gray-600 dark:text-gray-300">{post.threadLabel}</span>
+                    )}
+                </div>
+            )}
             <p className="text-gray-800 dark:text-gray-100">{post.subject}</p>
             <p className="text-gray-800 dark:text-gray-100">{post.content}</p>
         </div>

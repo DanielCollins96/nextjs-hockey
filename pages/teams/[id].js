@@ -6,6 +6,7 @@ import {MdOutlineChevronLeft, MdOutlineChevronRight} from "react-icons/md";
 
 import ReactTable from "../../components/Table";
 import { ClickableImage } from "../../components/ImageModal";
+import ThreadMessageBoard from "../../components/ThreadMessageBoard";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
 import {
   LineChart,
@@ -23,6 +24,7 @@ export default function TeamPage({
   abbreviation,
   fullName,
   teamRecords,
+  teamId,
 }) {
   const router = useRouter();
   const {id, season: querySeason} = router.query;
@@ -477,7 +479,7 @@ export default function TeamPage({
       </div>
       <div className="gap-1 p-1 flex flex-col lg:flex-row">
         {seasons && (
-          <div className="border border-black dark:border-white w-full p-1 flex flex-col max-w-2xl">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 w-full p-1 flex flex-col max-w-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div>
@@ -547,7 +549,7 @@ export default function TeamPage({
             )}
           </div>
         )}
-        <div className="border border-black dark:border-white p-1 flex flex-col">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-1 flex flex-col">
           <div className="p-2 mx-auto">
             {/* <input type="" /> */}
             <ResponsiveContainer width={450} height={300}>
@@ -599,6 +601,14 @@ export default function TeamPage({
           </div>
         </div>
       </div>
+      <div className="p-1 mt-2">
+        <ThreadMessageBoard
+          threadType="team"
+          threadId={teamId || id}
+          title={`${teamName} Message Board`}
+          emptyMessage={`No posts yet for ${teamName}.`}
+        />
+      </div>
     </div>
   );
 }
@@ -621,6 +631,7 @@ export async function getServerSideProps({params, req}) {
           abbreviation: null,
           fullName: null,
           teamRecords: [],
+          teamId: params.id,
         },
       };
     }
@@ -668,6 +679,7 @@ export async function getServerSideProps({params, req}) {
         abbreviation: teamInfo?.abbreviation || null,
         fullName: teamInfo?.fullName || null,
         teamRecords,
+        teamId: params.id,
       },
     };
   } catch (error) {
@@ -679,6 +691,7 @@ export async function getServerSideProps({params, req}) {
         abbreviation: null,
         fullName: null,
         teamRecords: [],
+        teamId: params.id,
       },
     };
   }

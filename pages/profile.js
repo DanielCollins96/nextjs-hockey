@@ -1,8 +1,7 @@
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import {UseAuth} from "../contexts/Auth";
-import {useRouter} from "next/router";
 import {useQuery} from "react-query";
-import Amplify, {API, graphqlOperation, Auth} from "aws-amplify";
+import {API, graphqlOperation} from "aws-amplify";
 import {Tab, Tabs, TabList, TabPanel} from "react-tabs";
 import toast from "react-hot-toast";
 import "react-tabs/style/react-tabs.css";
@@ -11,11 +10,49 @@ import * as queries from "../src/graphql/queries";
 import * as mutations from "../src/graphql/mutations";
 import PostEditor from "../components/PostEditor";
 import PostsList from "../components/PostsList";
+import ConfirmDialog from "../components/ConfirmDialog";
+
+const THREAD_SUBJECT_PREFIX_REGEX = /^THREAD#/i;
+
+function getNormalizedSubject(post) {
+  return String(post?.subject || "").trim();
+}
+
+function isThreadSubject(post) {
+  return THREAD_SUBJECT_PREFIX_REGEX.test(getNormalizedSubject(post));
+}
+
+function parseThreadPost(post) {
+  const subject = getNormalizedSubject(post);
+  if (!isThreadSubject(post)) {
+    return { isThreadPost: false };
+  }
+
+  const parts = subject.split("#");
+  const rawType = (parts[1] || "UNKNOWN").toUpperCase();
+  const threadId = parts[2] || "";
+  const rawThreadSubject = parts.slice(3).join("#");
+  const cleanSubject = rawThreadSubject?.trim() || "General";
+
+  let threadLink = null;
+  if (rawType === "TEAM" && threadId) {
+    threadLink = `/teams/${threadId}`;
+  } else if (rawType === "GAME" && threadId) {
+    threadLink = `/games/${threadId}`;
+  }
+
+  return {
+    isThreadPost: true,
+    threadType: rawType,
+    threadId,
+    cleanSubject,
+    threadLink,
+    threadLabel: threadId ? `${rawType} • ${threadId}` : rawType,
+  };
+}
 
 function Profile() {
-  const router = useRouter();
-  const {user, setUser} = UseAuth();
-  console.log(user);
+  const {user} = UseAuth();
 
   const [post, setPost] = useState({
     subject: "",
@@ -24,17 +61,16 @@ function Profile() {
   });
   const [search, setSearch] = useState("");
   const [postDateOrder, setPostDateOrder] = useState(false);
-  const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchPosts = async () => {
-    console.log("fetching");
     try {
       let result = await API.graphql(
         graphqlOperation(queries.listPosts, {
           filter: {userId: {eq: user.username}},
         })
       );
-      console.log({result});
       result = result.data.listPosts.items;
       result = result.filter((post) => {
         return post._deleted == null;
@@ -49,71 +85,102 @@ function Profile() {
 
   const {
     data: userPosts,
-    isLoading,
-    isFetching,
     status,
     refetch,
   } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
 
-  const filteredPosts = userPosts?.filter(
+  const sortedPosts = (posts = []) => {
+    const copy = [...posts];
+    return copy.sort((a, b) => {
+      const left = new Date(a.createdAt).getTime();
+      const right = new Date(b.createdAt).getTime();
+      return postDateOrder ? right - left : left - right;
+    });
+  };
+
+  const personalPosts = sortedPosts(
+    (userPosts || []).filter((post) => !isThreadSubject(post))
+  );
+
+  const boardPosts = sortedPosts(
+    (userPosts || [])
+      .map((post) => {
+        const parsed = parseThreadPost(post);
+        if (!parsed.isThreadPost) return null;
+
+        return {
+          ...post,
+          subject: parsed.cleanSubject,
+          threadLink: parsed.threadLink,
+          threadLabel: parsed.threadLabel,
+        };
+      })
+      .filter(Boolean)
+  );
+
+  const filteredPersonalPosts = personalPosts.filter(
     (post) =>
-      post.content.toUpperCase().includes(search.toUpperCase()) || search === ""
+      (post.content || "").toUpperCase().includes(search.toUpperCase()) ||
+      (post.subject || "").toUpperCase().includes(search.toUpperCase()) ||
+      search === ""
+  );
+
+  const filteredBoardPosts = boardPosts.filter(
+    (post) =>
+      (post.content || "").toUpperCase().includes(search.toUpperCase()) ||
+      (post.subject || "").toUpperCase().includes(search.toUpperCase()) ||
+      (post.threadLabel || "").toUpperCase().includes(search.toUpperCase()) ||
+      search === ""
   );
 
   const togglePostsDate = () => {
     setPostDateOrder(!postDateOrder);
-    userPosts.sort((a, b) => {
-      return postDateOrder
-        ? a.createdAt > b.createdAt
-          ? -1
-          : 1
-        : a.createdAt < b.createdAt
-        ? -1
-        : 1;
-    });
   };
 
-  const deletePost = async (id, _version) => {
-    alert("Are You Sure You Want To Delete This Post?");
+  const requestDeletePost = (id, _version) => {
+    setDeleteTarget({id, _version});
+  };
+
+  const deletePost = async () => {
+    if (!deleteTarget?.id || !deleteTarget?._version) return;
+
+    setDeleting(true);
     try {
-      const result = await API.graphql(
+      await API.graphql(
         graphqlOperation(mutations.deletePost, {
-          input: {id: id, _version: _version},
+          input: {id: deleteTarget.id, _version: deleteTarget._version},
         })
       );
-      console.log({result});
       toast.success("Post deleted");
+      setDeleteTarget(null);
+      refetch();
     } catch (err) {
       console.log({err});
       console.log(err.errors[0]?.message);
       toast.error(`Error deleting post: ${err.errors[0]?.message}`);
+    } finally {
+      setDeleting(false);
     }
   };
 
   const savePost = () => {
-    console.log(post);
-    console.log(user.username);
-    console.log("Save post");
-
     API.graphql(
       graphqlOperation(mutations.createPost, {
         input: {...post, userId: user.username},
       })
     )
       .then(() => {
-        console.log("Save Success");
         toast.success("Post saved");
         setPost({
           subject: "",
           content: "",
           name: "",
         });
-        setError("");
         refetch();
       })
       .catch((err) => {
-        console.log(err);
-        setError(err.message);
+        console.error(err);
+        toast.error("Error saving post");
       });
   };
 
@@ -142,6 +209,7 @@ function Profile() {
           <Tabs>
             <TabList className="flex gap-3 bg-gray-100 dark:bg-gray-900 p-2 rounded">
               <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Posts</Tab>
+              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Board Posts</Tab>
               <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Settings</Tab>
               <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Create Post</Tab>
             </TabList>
@@ -149,10 +217,20 @@ function Profile() {
               <TabPanel>
                 <PostsList
                   error={status === "error"}
-                  posts={filteredPosts}
+                  posts={filteredPersonalPosts}
                   search={search}
                   setSearch={setSearch}
-                  deletePost={deletePost}
+                  deletePost={requestDeletePost}
+                  toggle={togglePostsDate}
+                />
+              </TabPanel>
+              <TabPanel>
+                <PostsList
+                  error={status === "error"}
+                  posts={filteredBoardPosts}
+                  search={search}
+                  setSearch={setSearch}
+                  deletePost={requestDeletePost}
                   toggle={togglePostsDate}
                 />
               </TabPanel>
@@ -168,6 +246,15 @@ function Profile() {
           </Tabs>
         </div>
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This cannot be undone."
+        confirmText="Delete"
+        isLoading={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={deletePost}
+      />
     </div>
   );
 }

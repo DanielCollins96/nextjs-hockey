@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { API, graphqlOperation } from "aws-amplify";
+import { FaChevronLeft, FaChevronRight, FaRegCommentDots } from "react-icons/fa";
+import { UseAuth } from "../contexts/Auth";
+import * as queries from "../src/graphql/queries";
 
 function formatDate(dateString) {
   const date = new Date(dateString + "T12:00:00");
@@ -47,7 +50,7 @@ function getGameStatus(game) {
   return state;
 }
 
-function GameCard({ game }) {
+function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
   const status = getGameStatus(game);
   const isLive = game.gameState === "LIVE" || game.gameState === "CRIT";
   const isScheduled = game.gameState === "FUT" || game.gameState === "PRE";
@@ -57,8 +60,23 @@ function GameCard({ game }) {
 
   return (
     <Link href={`/games/${game.id}`} className="flex-shrink-0 w-32 sm:w-40 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-      <div className={`text-[10px] sm:text-xs font-semibold mb-1 ${isLive ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`}>
-        {status}
+      <div className={`text-[10px] sm:text-xs font-semibold mb-1 ${isLive ? "text-red-500" : "text-gray-500 dark:text-gray-400"} ${showCommentMeta ? "flex items-center justify-between" : ""}`}>
+        <span>{status}</span>
+        {showCommentMeta && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+            title="Open game thread"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              window.location.href = `/games/${game.id}#thread`;
+            }}
+          >
+            <FaRegCommentDots className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            {commentCount}
+          </button>
+        )}
       </div>
 
       {/* Away Team */}
@@ -109,9 +127,11 @@ function GameCard({ game }) {
 }
 
 export default function GamesBanner() {
+  const { user } = UseAuth();
   const [games, setGames] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [loading, setLoading] = useState(true);
+  const [commentCounts, setCommentCounts] = useState({});
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -129,6 +149,49 @@ export default function GamesBanner() {
     }
     fetchGames();
   }, [selectedDate]);
+
+  useEffect(() => {
+    async function fetchCommentCounts() {
+      if (!user?.username || !games.length) {
+        setCommentCounts({});
+        return;
+      }
+
+      try {
+        const response = await API.graphql(
+          graphqlOperation(queries.listPosts, {
+            limit: 1000,
+            filter: {
+              subject: {
+                beginsWith: "THREAD#GAME#",
+              },
+            },
+          })
+        );
+
+        const posts = response?.data?.listPosts?.items || [];
+        const gameIds = new Set(games.map((game) => String(game.id)));
+        const counts = {};
+
+        posts.forEach((post) => {
+          if (post?._deleted) return;
+          const subject = String(post?.subject || "");
+          const parts = subject.split("#");
+          const gameId = parts[2];
+
+          if (!gameId || !gameIds.has(String(gameId))) return;
+          counts[gameId] = (counts[gameId] || 0) + 1;
+        });
+
+        setCommentCounts(counts);
+      } catch (error) {
+        console.error("Error fetching thread comment counts:", error);
+        setCommentCounts({});
+      }
+    }
+
+    fetchCommentCounts();
+  }, [games, user?.username]);
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
@@ -200,7 +263,14 @@ export default function GamesBanner() {
                 <span className="text-gray-500 dark:text-gray-400">No games scheduled</span>
               </div>
             ) : (
-              games.map((game) => <GameCard key={game.id} game={game} />)
+              games.map((game) => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  showCommentMeta={!!user?.username}
+                  commentCount={commentCounts[String(game.id)] || 0}
+                />
+              ))
             )}
           </div>
 
