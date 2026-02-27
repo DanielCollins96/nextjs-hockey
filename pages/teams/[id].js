@@ -1,20 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import Link from "next/link";
 import {useRouter} from "next/router";
-import {useState, useMemo, useEffect} from "react";
+import {useState, useMemo, useEffect, useCallback} from "react";
 import {MdOutlineChevronLeft, MdOutlineChevronRight} from "react-icons/md";
 
 import ReactTable from "../../components/Table";
 import { ClickableImage } from "../../components/ImageModal";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
-import {
-  getTeamIds,
-  getTeamSeasons,
-  getTeamSkaters,
-  getTeamGoalies,
-  getPlayoffYears,
-  getTeamInfo,
-} from "../../lib/queries";
 import {
   LineChart,
   Line,
@@ -114,6 +106,32 @@ export default function TeamPage({
     }
   };
 
+  const sumFromRows = useCallback(
+    (rows, field) =>
+      (rows || []).reduce(
+        (total, row) => total + (Number(row?.original?.[field]) || 0),
+        0
+      ),
+    []
+  );
+
+  const weightedAverageFromRows = useCallback(
+    (rows, valueField, weightField = "gamesPlayed") => {
+      const safeRows = rows || [];
+      const totalWeight = sumFromRows(safeRows, weightField);
+      if (!totalWeight) return null;
+
+      const weightedTotal = safeRows.reduce((total, row) => {
+        const weight = Number(row?.original?.[weightField]) || 0;
+        const value = Number(row?.original?.[valueField]) || 0;
+        return total + weight * value;
+      }, 0);
+
+      return weightedTotal / totalWeight;
+    },
+    [sumFromRows]
+  );
+
   const roster_goalie_table_columns = useMemo(() => {
     const baseColumns = [
       {
@@ -146,13 +164,8 @@ export default function TeamPage({
             header: "G",
             accessorFn: (d) => d["goals"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("G"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "goals");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -160,13 +173,8 @@ export default function TeamPage({
             header: "A",
             accessorFn: (d) => d["assists"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("A"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "assists");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -174,13 +182,8 @@ export default function TeamPage({
             header: "W",
             accessorFn: (d) => d["wins"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("W"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "wins");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -188,13 +191,8 @@ export default function TeamPage({
             header: "L",
             accessorFn: (d) => d["losses"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("L"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "losses");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -207,26 +205,15 @@ export default function TeamPage({
               </p>
             ),
             footer: ({table}) => {
-              const nhlGames = table.getFilteredRowModel()?.rows;
-              if (!nhlGames || nhlGames.length === 0) return null;
-
-              let gp = nhlGames.reduce((total, row) => {
-                const gpValue = Number(row.getValue("GP"));
-                return total + (isNaN(gpValue) ? 0 : gpValue);
-              }, 0);
-
-              let totalGaa = nhlGames.reduce((total, row) => {
-                const gpValue = Number(row.getValue("GP"));
-                const gaaValue = Number(row.getValue("GAA"));
-                return (
-                  total +
-                  (isNaN(gpValue) || isNaN(gaaValue) ? 0 : gpValue * gaaValue)
-                );
-              }, 0);
-
-              if (gp === 0) return null;
-              let total = totalGaa / gp;
-              return total.toFixed(2) || null;
+              const total = weightedAverageFromRows(
+                table.getFilteredRowModel().rows,
+                "goalsAgainstAverage"
+              );
+              return (
+                <div className="text-right pr-1">
+                  {total != null ? total.toFixed(2) : "-"}
+                </div>
+              );
             },
           },
           {
@@ -238,41 +225,26 @@ export default function TeamPage({
               </p>
             ),
             footer: ({table}) => {
-              const nhlGames = table.getFilteredRowModel()?.rows;
-              if (!nhlGames || nhlGames.length === 0) return null;
-
-              let gp = nhlGames.reduce((total, row) => {
-                const gpValue = Number(row.getValue("GP"));
-                return total + (isNaN(gpValue) ? 0 : gpValue);
-              }, 0);
-
-              let totalSvPct = nhlGames.reduce((total, row) => {
-                const gpValue = Number(row.getValue("GP"));
-                const svPctValue = Number(row.getValue("SV%"));
-                return (
-                  total +
-                  (isNaN(gpValue) || isNaN(svPctValue)
-                    ? 0
-                    : gpValue * svPctValue)
-                );
-              }, 0);
-
-              if (gp === 0) return null;
-              let total = totalSvPct / gp;
-              return total.toFixed(3) || null;
+              const total = weightedAverageFromRows(
+                table.getFilteredRowModel().rows,
+                "savePercentage"
+              );
+              return (
+                <div className="text-right pr-1">
+                  {total != null ? total.toFixed(3) : "-"}
+                </div>
+              );
             },
           },
           {
             header: "PIM",
             accessorFn: (d) => d["penaltyMinutes"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("PIM"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(
+                table.getFilteredRowModel().rows,
+                "penaltyMinutes"
+              );
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -307,7 +279,7 @@ export default function TeamPage({
       },
     ];
     return showPlayoffStats ? [...baseColumns, ...playoffColumns] : baseColumns;
-  }, [showPlayoffStats]);
+  }, [showPlayoffStats, sumFromRows, weightedAverageFromRows]);
 
   const roster_player_table_columns = useMemo(() => {
     const baseColumns = [
@@ -343,13 +315,8 @@ export default function TeamPage({
             header: "G",
             accessorFn: (d) => d["goals"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("G"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "goals");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -357,13 +324,8 @@ export default function TeamPage({
             header: "A",
             accessorFn: (d) => d["assists"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("A"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "assists");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -371,13 +333,8 @@ export default function TeamPage({
             header: "P",
             accessorFn: (d) => d["points"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("P"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "points");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -385,13 +342,11 @@ export default function TeamPage({
             header: "PIM",
             accessorFn: (d) => d["penaltyMinutes"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("PIM"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(
+                table.getFilteredRowModel().rows,
+                "penaltyMinutes"
+              );
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -399,13 +354,8 @@ export default function TeamPage({
             header: "+/-",
             accessorFn: (d) => d["plusMinus"],
             footer: ({table}) => {
-              const total = table
-                .getFilteredRowModel()
-                .rows?.reduce((total, row) => {
-                  const value = Number(row.getValue("+/-"));
-                  return total + (isNaN(value) ? 0 : value);
-                }, 0);
-              return total;
+              const total = sumFromRows(table.getFilteredRowModel().rows, "plusMinus");
+              return <div className="text-right pr-1">{total}</div>;
             },
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -450,7 +400,7 @@ export default function TeamPage({
       },
     ];
     return showPlayoffStats ? [...baseColumns, ...playoffColumns] : baseColumns;
-  }, [showPlayoffStats]);
+  }, [showPlayoffStats, sumFromRows]);
 
   const team_table_data = useMemo(() => teamRecords, [teamRecords]);
 
@@ -653,73 +603,83 @@ export default function TeamPage({
   );
 }
 
-export async function getStaticPaths() {
-  const teams = await getTeamIds();
-  let paths = teams?.map((team) => ({
-    params: {id: String(team.id)},
-  }));
-  return {
-    paths,
-    fallback: false,
-  };
-}
+export async function getServerSideProps({params, req}) {
+  const protocol = req.headers["x-forwarded-proto"] || "http";
+  const host = req.headers.host;
 
-export async function getStaticProps({params}) {
-  let abbreviation = null;
-  let fullName = null;
   try {
-    const teamInfo = await getTeamInfo(params.id);
-    if (teamInfo) {
-      abbreviation = teamInfo.abbreviation;
-      fullName = teamInfo.fullName;
+    const response = await fetch(`${protocol}://${host}/api/teams/${params.id}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return { notFound: true };
+      }
+      return {
+        props: {
+          seasons: {},
+          seasonIds: [],
+          abbreviation: null,
+          fullName: null,
+          teamRecords: [],
+        },
+      };
     }
+
+    const payload = await response.json();
+    const teamInfo = payload?.team || null;
+    const skaters = payload?.skaters || [];
+    const goalies = payload?.goalies || [];
+    const teamRecords = payload?.teamRecords || [];
+    const playoffSeasons = payload?.playoffSeasons || [];
+
+    const combinePlayersBySeason = (allSkaters, allGoalies) => {
+      const seasonMap = {};
+
+      allSkaters.forEach((skater) => {
+        const season = skater.season;
+        if (!seasonMap[season]) {
+          seasonMap[season] = {skaters: [], goalies: []};
+        }
+        seasonMap[season].skaters.push(skater);
+      });
+
+      allGoalies.forEach((goalie) => {
+        const season = goalie.season;
+        if (!seasonMap[season]) {
+          seasonMap[season] = {skaters: [], goalies: []};
+        }
+        seasonMap[season].goalies.push(goalie);
+      });
+
+      return seasonMap;
+    };
+
+    const seasonMap = combinePlayersBySeason(skaters, goalies);
+    const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
+
+    seasons.forEach((season) => {
+      seasonMap[season].madePlayoffs = playoffSeasons?.includes(season) || false;
+    });
+
+    return {
+      props: {
+        seasons: seasonMap,
+        seasonIds: seasons,
+        abbreviation: teamInfo?.abbreviation || null,
+        fullName: teamInfo?.fullName || null,
+        teamRecords,
+      },
+    };
   } catch (error) {
     console.log(error);
+    return {
+      props: {
+        seasons: {},
+        seasonIds: [],
+        abbreviation: null,
+        fullName: null,
+        teamRecords: [],
+      },
+    };
   }
-
-  let skaters = await getTeamSkaters(params.id);
-  let goalies = await getTeamGoalies(params.id);
-
-  const combinePlayersBySeason = (skaters, goalies) => {
-    const seasonMap = {};
-
-    skaters.forEach((skaters) => {
-      const season = skaters.season;
-      if (!seasonMap[season]) {
-        seasonMap[season] = {skaters: [], goalies: []};
-      }
-      seasonMap[season].skaters.push(skaters);
-    });
-
-    goalies.forEach((goalie) => {
-      const season = goalie.season;
-      if (!seasonMap[season]) {
-        seasonMap[season] = {skaters: [], goalies: []};
-      }
-      seasonMap[season].goalies.push(goalie);
-    });
-
-    return seasonMap;
-  };
-
-  const seasonMap = combinePlayersBySeason(skaters, goalies);
-  const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
-  const playoffSeasons = await getPlayoffYears(abbreviation);
-
-  seasons.forEach((season) => {
-    seasonMap[season].madePlayoffs = playoffSeasons?.includes(season) || false;
-  });
-  let teamRecords = await getTeamSeasons(params.id);
-
-  return {
-    props: {
-      seasons: seasonMap,
-      seasonIds: seasons,
-      abbreviation,
-      fullName,
-      teamRecords,
-    },
-    // Regenerate this page at most once every hour (3600 seconds)
-    revalidate: 7200,
-  };
 }

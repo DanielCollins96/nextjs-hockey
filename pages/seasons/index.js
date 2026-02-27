@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
-import { getPointLeadersBySeason, getGoalieLeadersBySeason, getAvailableSeasons } from '../../lib/queries';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 
@@ -292,19 +291,18 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
 export async function getServerSideProps(context) {
     const { year } = context.query;
     const season = year ? parseInt(year) : 20252026;
+    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
+    const host = context.req.headers.host;
 
-    const [result, goalieResult, availableSeasons] = await Promise.all([
-        getPointLeadersBySeason(season),
-        getGoalieLeadersBySeason(season),
-        getAvailableSeasons()
-    ]);
+    const response = await fetch(`${protocol}://${host}/api/seasons?year=${season}`);
+    const payload = response.ok ? await response.json() : {};
 
     return {
         props: {
-            players: result,
-            goalies: goalieResult,
-            season: season,
-            availableSeasons: availableSeasons
+            players: payload?.players || [],
+            goalies: payload?.goalies || [],
+            season: payload?.season || season,
+            availableSeasons: payload?.availableSeasons || []
         }
     }
 }

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:api-replacement": "node scripts/run-api-replacement-tests.mjs",
+    "test:api-replacement:direct": "node --test tests/api-replacement.test.mjs"
   },
   "dependencies": {
     "@aws-amplify/notifications": "^1.1.4",

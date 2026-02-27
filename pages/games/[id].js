@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getGameById } from '../../lib/queries';
 import SEO from '../../components/SEO';
 
 function formatDate(dateString) {
@@ -171,8 +170,13 @@ export default function GamePage({ game }) {
   );
 }
 
-export async function getServerSideProps({ params }) {
-  const game = await getGameById(params.id);
+export async function getServerSideProps({ params, req }) {
+  const protocol = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers.host;
+
+  const response = await fetch(`${protocol}://${host}/api/games/${params.id}`);
+  const payload = response.ok ? await response.json() : {};
+  const game = payload?.game || null;
 
   // Serialize Date objects to strings for JSON
   if (game) {

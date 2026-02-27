@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { searchPlayers } from '../../lib/queries';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 
@@ -180,11 +179,17 @@ export default function PlayersIndex({ players, searchTerm }) {
 
 export async function getServerSideProps(context) {
     const { q } = context.query;
+    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
+    const host = context.req.headers.host;
     const searchTerm = q || '';
 
     let players = [];
     if (searchTerm) {
-        players = await searchPlayers(searchTerm, 100);
+        const response = await fetch(`${protocol}://${host}/api/players?q=${encodeURIComponent(searchTerm)}&limit=100`);
+        if (response.ok) {
+            const payload = await response.json();
+            players = payload?.players || [];
+        }
     }
 
     return {

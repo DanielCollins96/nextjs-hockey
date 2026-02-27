@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import {getPlayer, getPlayerStats, getPlayerAwards} from '../../lib/queries'
 import ReactTable from '../../components/Table';
 import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
@@ -306,19 +305,44 @@ const Players = ({playerId, stats, person, awards}) => {
     )
 };
 
-export async function getServerSideProps({params}) {
+export async function getServerSideProps({params, req}) {
     const { id } = params
-    let person = []
-    
+    const protocol = req.headers['x-forwarded-proto'] || 'http'
+    const host = req.headers.host
+
     try {
-        person = await getPlayer(id)
-        if (!person || person.length === 0) {
+        const response = await fetch(`${protocol}://${host}/api/players/${id}`)
+
+        if (!response.ok) {
             return {
                 props: {
                     playerId: params.id,
                     stats: null,
                     person: null,
                 }
+            }
+        }
+
+        const payload = await response.json()
+        const person = payload?.player?.[0] || null
+
+        if (!person) {
+            return {
+                props: {
+                    playerId: params.id,
+                    stats: null,
+                    person: null,
+                    awards: [],
+                }
+            }
+        }
+
+        return {
+            props: {
+                playerId: params.id,
+                stats: payload?.playerStats || [],
+                person,
+                awards: payload?.awards || [],
             }
         }
     } catch (error) {
@@ -328,22 +352,8 @@ export async function getServerSideProps({params}) {
                 playerId: params.id,
                 stats: null,
                 person: null,
+                awards: [],
             }
-        }
-    }
-    console.log(person[0]);
-
-    const [stats, awards] = await Promise.all([
-        getPlayerStats(id, person[0]["position"]),
-        getPlayerAwards(id)
-    ]);
-
-    return {
-        props: {
-            playerId: params.id,
-            stats,
-            person: person ? person[0] : null,
-            awards,
         }
     }
 }

@@ -1,7 +1,6 @@
 import React from 'react'
 import { useQuery } from 'react-query'
 import DraftList from '../../components/DraftList'
-import { getAllDraftYears } from '../../lib/queries'
 import SEO from '../../components/SEO'
 
 
@@ -21,16 +20,20 @@ export default function Drafts({draftYears}) {
   )
 }
 
-export async function getStaticProps() {
-;
-  const draftYears = await getAllDraftYears()
-  // const draftYears = await res.json();
+export async function getServerSideProps({ req }) {
+  const protocol = req.headers['x-forwarded-proto'] || 'http'
+  const host = req.headers.host
+
+  let draftYears = []
+  const response = await fetch(`${protocol}://${host}/api/drafts`)
+  if (response.ok) {
+    const payload = await response.json()
+    draftYears = payload?.years || []
+  }
 
   return {
     props: {
       draftYears,
-    },
-    // Revalidate every 6 months (you can adjust the time as needed)
-    revalidate: 60 * 60 * 24 * 180, // 180 days
-  };
+    }
+  }
 }
