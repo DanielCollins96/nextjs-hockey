@@ -13,6 +13,13 @@ function formatDateForDisplay(dateString) {
   return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
+function getLocalDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getGameStatus(game) {
   const state = game.gameState;
 
@@ -32,7 +39,8 @@ function getGameStatus(game) {
     return startTime.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true
+      hour12: true,
+      timeZoneName: "short"
     });
   }
 
@@ -102,7 +110,7 @@ function GameCard({ game }) {
 
 export default function GamesBanner() {
   const [games, setGames] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [loading, setLoading] = useState(true);
   const scrollContainerRef = useRef(null);
 
@@ -135,7 +143,7 @@ export default function GamesBanner() {
   const changeDate = (days) => {
     const date = new Date(selectedDate + "T12:00:00");
     date.setDate(date.getDate() + days);
-    setSelectedDate(date.toISOString().split("T")[0]);
+    setSelectedDate(getLocalDateString(date));
   };
 
   return (
