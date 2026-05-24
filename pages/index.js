@@ -1,4 +1,4 @@
-import {motion} from "framer-motion";
+import {motion, useMotionValue} from "framer-motion";
 import {useRouter} from "next/router";
 import {useEffect, useState, useRef} from "react";
 import TeamBox from "../components/TeamBox";
@@ -10,8 +10,12 @@ export default function Home({teams}) {
 
   const [searchedTeams, setSearchedTeams] = useState(teams);
   const [puckKey, setPuckKey] = useState(0);
+  const [isGoalScored, setIsGoalScored] = useState(false);
 
   const inputRef = useRef();
+  const netRef = useRef();
+  const puckX = useMotionValue(0);
+  const puckY = useMotionValue(0);
 
   const inputChange = (e) => {
     let searchTerm = e.target.value.trim();
@@ -59,12 +63,40 @@ export default function Home({teams}) {
     setSearchedTeams(newList);
   };
 
-  function onUpdate(latest) {
-    console.log(latest.x, latest.y);
+  function isPuckFullyInNet() {
+    const puck = inputRef.current;
+    const net = netRef.current;
+
+    if (!puck || !net) {
+      return false;
+    }
+
+    const puckRect = puck.getBoundingClientRect();
+    const netRect = net.getBoundingClientRect();
+
+    return (
+      puckRect.left >= netRect.left &&
+      puckRect.right <= netRect.right &&
+      puckRect.top >= netRect.top &&
+      puckRect.bottom <= netRect.bottom
+    );
+  }
+
+  function onPuckMove() {
+    if (!isGoalScored && isPuckFullyInNet()) {
+      puckX.stop();
+      puckY.stop();
+      setIsGoalScored(true);
+    }
   }
 
   function onPress() {
+    puckX.stop();
+    puckY.stop();
+    puckX.set(0);
+    puckY.set(0);
     setPuckKey(prev => prev + 1);
+    setIsGoalScored(false);
   }
   return (
     <div className="">
@@ -83,26 +115,50 @@ export default function Home({teams}) {
       </div>
       <div className="mt-4 p-2">
         <div className="flex justify-around">
-          <motion.img
-            src="/Hockey-Net.svg"
-            alt="Puck"
-            width="200"
-            height="200"
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            transition={{delay: 0.1}}
-            whileTap={{scale: 0.9}}
-            // drag={true}
-          />
+          <div className="relative h-[200px] w-[200px]">
+            {isGoalScored && (
+              <>
+                <motion.div
+                  className="pointer-events-none absolute -inset-4 rounded-full bg-red-600/40"
+                  animate={{opacity: [0.2, 0.9, 0.2], scale: [1, 1.08, 1]}}
+                  transition={{duration: 0.45, repeat: Infinity}}
+                />
+                <motion.div
+                  className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded bg-red-600 px-3 py-1 text-sm font-bold text-white shadow"
+                  animate={{opacity: [1, 0.25, 1]}}
+                  transition={{duration: 0.35, repeat: Infinity}}
+                >
+                  GOAL
+                </motion.div>
+              </>
+            )}
+            <motion.img
+              ref={netRef}
+              className="relative z-10"
+              src="/Hockey-Net.svg"
+              alt="Hockey net"
+              width="200"
+              height="200"
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              transition={{delay: 0.1}}
+              whileTap={{scale: 0.9}}
+              // drag={true}
+            />
+          </div>
           <div className="grid inset-0 relative h-24 w-24 place-content-end touch-none">
             {/* Inline motion SVG Puck -- color controlled via text color to avoid CSS filter repaints */}
             <Puck
               key={puckKey}
               ref={inputRef}
               className="absolute bottom-0 text-black dark:text-gray-400 transition-colors duration-150"
+              style={{x: puckX, y: puckY}}
               width={100}
               height={100}
-              onUpdate={onUpdate}
+              drag={!isGoalScored}
+              dragMomentum={!isGoalScored}
+              onDrag={onPuckMove}
+              onUpdate={onPuckMove}
             />
           </div>
         </div>
