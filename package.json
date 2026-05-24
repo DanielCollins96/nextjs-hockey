@@ -50,5 +50,13 @@
     "postcss": "^8.4.16",
     "tailwindcss": "^3.1.8",
     "yaml-loader": "^0.8.1"
+  },
+  "overrides": {
+    "fast-xml-parser": "5.7.0",
+    "form-data": "4.0.4"
+  },
+  "resolutions": {
+    "fast-xml-parser": "5.7.0",
+    "form-data": "4.0.4"
   }
 }
