@@ -94,7 +94,7 @@ export default function Home({teams}) {
             whileTap={{scale: 0.9}}
             // drag={true}
           />
-          <div className="grid inset-0 relative w-24 place-content-end">
+          <div className="grid inset-0 relative h-24 w-24 place-content-end touch-none">
             {/* Inline motion SVG Puck -- color controlled via text color to avoid CSS filter repaints */}
             <Puck
               key={puckKey}

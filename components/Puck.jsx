@@ -4,11 +4,15 @@ import { motion } from 'framer-motion';
 // Inline puck as a motion.svg so we can control its fill via `currentColor`.
 // This avoids using CSS filters (invert) which can trigger expensive repaints
 // during transforms. Use className to set `text-black` / `dark:text-white`.
-const Puck = forwardRef(function Puck({ className = '', width = 100, height = 100, onUpdate }, ref) {
+const Puck = forwardRef(function Puck(
+  { className = '', width = 100, height = 100, onUpdate, style, ...props },
+  ref
+) {
   return (
     <motion.svg
       ref={ref}
       className={className}
+      style={{ touchAction: 'none', ...style }}
       width={width}
       height={height}
       viewBox="0 0 32.96 32.96"
@@ -19,6 +23,7 @@ const Puck = forwardRef(function Puck({ className = '', width = 100, height = 10
       whileTap={{ scale: 0.9 }}
       drag={true}
       onUpdate={onUpdate}
+      {...props}
     >
       <g>
         <g>
