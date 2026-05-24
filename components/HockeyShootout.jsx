@@ -47,17 +47,26 @@ function Scoreboard({ score, onReset }) {
 }
 
 function GoalFlash({ side }) {
-  const colorClass = side === "red" ? "bg-red-600" : "bg-blue-600";
+  const colorClasses =
+    side === "red"
+      ? {
+          halo: "bg-red-600/40",
+          label: "bg-red-600",
+        }
+      : {
+          halo: "bg-blue-600/40",
+          label: "bg-blue-600",
+        };
 
   return (
     <>
       <motion.div
-        className={`pointer-events-none absolute -inset-4 rounded-full ${colorClass}/40`}
+        className={`pointer-events-none absolute -inset-4 rounded-full ${colorClasses.halo}`}
         animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.08, 1] }}
         transition={{ duration: 0.45, repeat: Infinity }}
       />
       <motion.div
-        className={`pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded ${colorClass} px-3 py-1 text-sm font-bold text-white shadow`}
+        className={`pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded ${colorClasses.label} px-3 py-1 text-sm font-bold text-white shadow`}
         animate={{ opacity: [1, 0.25, 1] }}
         transition={{ duration: 0.35, repeat: Infinity }}
       >
