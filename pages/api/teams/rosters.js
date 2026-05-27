@@ -1,7 +1,21 @@
-import { getTeams, getActiveRosters } from '../../../lib/queries'
+import { fetchReadModel, readModelPaths, unwrapReadModel } from '../../../lib/read-models'
 
 export default async function handler(req, res) {
   try {
+    const readModel = await fetchReadModel(readModelPaths.teamRosters())
+
+    if (readModel) {
+      const rosters = unwrapReadModel(readModel, 'rosters') || []
+
+      res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=43200, stale-while-revalidate=86400'
+      )
+
+      return res.status(200).json({ rosters })
+    }
+
+    const { getTeams, getActiveRosters } = await import('../../../lib/queries')
     const [teams, activeRosters] = await Promise.all([
       getTeams(),
       getActiveRosters()

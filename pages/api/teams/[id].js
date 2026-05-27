@@ -1,8 +1,30 @@
-import { getTeamInfo, getTeamSeasons, getTeamSkaters, getTeamGoalies, getPlayoffYears } from '../../../lib/queries'
+import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
 
 export default async function handler(req, res) {
   try {
     const { id } = req.query
+    const readModel = await fetchReadModel(readModelPaths.team(id))
+
+    if (readModel) {
+      if (!readModel.team) {
+        return res.status(404).json({error_message: "Team not found"})
+      }
+
+      res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=43200, stale-while-revalidate=86400'
+      )
+
+      return res.status(200).json({
+        team: readModel.team,
+        teamRecords: readModel.teamRecords || [],
+        skaters: readModel.skaters || [],
+        goalies: readModel.goalies || [],
+        playoffSeasons: readModel.playoffSeasons || []
+      })
+    }
+
+    const { getTeamInfo, getTeamSeasons, getTeamSkaters, getTeamGoalies, getPlayoffYears } = await import('../../../lib/queries')
     
     const teamInfo = await getTeamInfo(id)
     if (!teamInfo) return res.status(404).json({error_message: "Team not found"})

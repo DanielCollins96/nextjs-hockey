@@ -40,7 +40,7 @@ export default function Drafts({id,draft}) {
       header: 'Team',
       accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
-        href={`/teams/${row.original.draftedByTeamId}`}
+        href={`/teams/${row.original.draftedByTeamId || row.original.teamId}`}
         passHref
         className=" hover:text-blue-700 visited:text-purple-800">{row.original.teamAbbrev}</Link>)
     },

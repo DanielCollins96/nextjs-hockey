@@ -1,10 +1,31 @@
-import { getPointLeadersBySeason, getGoalieLeadersBySeason, getAvailableSeasons } from '../../lib/queries'
+import { fetchReadModel, readModelPaths } from '../../lib/read-models'
 
 export default async function handler(req, res) {
   try {
     const { year } = req.query
     const season = year ? Number.parseInt(year, 10) : 20252026
 
+    if (Number.isNaN(season)) {
+      return res.status(400).json({ error_message: 'Invalid season year' })
+    }
+
+    const readModel = await fetchReadModel(readModelPaths.season(season))
+
+    if (readModel) {
+      res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=43200, stale-while-revalidate=86400'
+      )
+
+      return res.status(200).json({
+        players: readModel.players || [],
+        goalies: readModel.goalies || [],
+        availableSeasons: readModel.availableSeasons || [],
+        season: readModel.season || season
+      })
+    }
+
+    const { getPointLeadersBySeason, getGoalieLeadersBySeason, getAvailableSeasons } = await import('../../lib/queries')
     const [players, goalies, availableSeasons] = await Promise.all([
       getPointLeadersBySeason(season),
       getGoalieLeadersBySeason(season),
