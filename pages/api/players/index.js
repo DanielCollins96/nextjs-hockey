@@ -20,6 +20,7 @@ export default async function handler(req, res) {
             : null
 
         if (!normalizedSearchTerm || normalizedSearchTerm.length < 2) {
+            res.setHeader('X-Data-Source', 'none')
             res.setHeader(
                 'Cache-Control',
                 'public, s-maxage=43200, stale-while-revalidate=86400'
@@ -45,6 +46,7 @@ export default async function handler(req, res) {
                     .slice(0, safeLimit)
                 : []
 
+            res.setHeader('X-Data-Source', 's3-read-model')
             res.setHeader(
                 'Cache-Control',
                 'public, s-maxage=43200, stale-while-revalidate=86400'
@@ -56,6 +58,7 @@ export default async function handler(req, res) {
         const { searchPlayers } = await import('../../../lib/queries')
         const players = q ? await searchPlayers(String(q), safeLimit) : []
 
+        res.setHeader('X-Data-Source', 'postgres')
         res.setHeader(
             'Cache-Control',
             'public, s-maxage=43200, stale-while-revalidate=86400'

@@ -19,6 +19,7 @@ export default async function handler(req, res) {
         birthdate: playerRow.birthdate || playerRow.birthDate || null
       }))
 
+      res.setHeader('X-Data-Source', 's3-read-model')
       res.setHeader(
         'Cache-Control',
         'public, s-maxage=43200, stale-while-revalidate=86400'
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
     let result = await getPlayerStats(id, player[0]?.position)
     let awards = await getPlayerAwards(id)
     
+    res.setHeader('X-Data-Source', 'postgres')
     // Cache for 12 hours (43200 seconds) at the CDN level
     // stale-while-revalidate serves stale data while fetching fresh data in the background
     res.setHeader(

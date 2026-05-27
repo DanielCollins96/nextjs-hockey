@@ -7,6 +7,7 @@ export default async function handler(req, res) {
         if (readModel) {
             const years = unwrapReadModel(readModel, 'years') || []
 
+            res.setHeader('X-Data-Source', 's3-read-model')
             res.setHeader(
                 'Cache-Control',
                 'public, s-maxage=86400, stale-while-revalidate=172800'
@@ -17,6 +18,7 @@ export default async function handler(req, res) {
 
         const { getAllDraftYears } = await import("../../../lib/queries")
         const years = await getAllDraftYears()
+        res.setHeader('X-Data-Source', 'postgres')
         res.setHeader(
             'Cache-Control',
             'public, s-maxage=86400, stale-while-revalidate=172800'

@@ -1,0 +1,16 @@
+aws_region  = "us-west-2"
+project_name = "nextjs-hockey"
+environment  = "prod"
+
+# Must be globally unique. Leave unset to derive:
+# nextjs-hockey-prod-read-models-<account_id>
+# bucket_name = "psql-hockey-read-models-bucket"
+
+read_model_prefix = "hockey-read-models"
+
+# Keep false if you will attach publisher_policy_arn to an existing IAM role/user.
+create_publisher_user = false
+
+# Optional custom CloudFront domain.
+# cloudfront_aliases  = ["hockey-read-models.example.com"]
+# acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."

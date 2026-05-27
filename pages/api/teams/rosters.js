@@ -7,6 +7,7 @@ export default async function handler(req, res) {
     if (readModel) {
       const rosters = unwrapReadModel(readModel, 'rosters') || []
 
+      res.setHeader('X-Data-Source', 's3-read-model')
       res.setHeader(
         'Cache-Control',
         'public, s-maxage=43200, stale-while-revalidate=86400'
@@ -75,6 +76,7 @@ export default async function handler(req, res) {
       roster.roster.goalies.length > 0
     )
 
+    res.setHeader('X-Data-Source', 'postgres')
     res.setHeader(
       'Cache-Control',
       'public, s-maxage=43200, stale-while-revalidate=86400'

@@ -12,6 +12,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ error_message: 'Draft not found' })
       }
 
+      res.setHeader('X-Data-Source', 's3-read-model')
       res.setHeader(
         'Cache-Control',
         'public, s-maxage=86400, stale-while-revalidate=172800'
@@ -27,6 +28,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ error_message: 'Draft not found' })
     }
 
+    res.setHeader('X-Data-Source', 'postgres')
     res.setHeader(
       'Cache-Control',
       'public, s-maxage=86400, stale-while-revalidate=172800'

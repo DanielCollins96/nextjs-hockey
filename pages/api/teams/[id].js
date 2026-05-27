@@ -10,6 +10,7 @@ export default async function handler(req, res) {
         return res.status(404).json({error_message: "Team not found"})
       }
 
+      res.setHeader('X-Data-Source', 's3-read-model')
       res.setHeader(
         'Cache-Control',
         'public, s-maxage=43200, stale-while-revalidate=86400'
@@ -37,6 +38,7 @@ export default async function handler(req, res) {
 
     const playoffSeasons = await getPlayoffYears(teamInfo.abbreviation)
     
+    res.setHeader('X-Data-Source', 'postgres')
     // Cache for 12 hours (43200 seconds) at the CDN level
     // stale-while-revalidate serves stale data while fetching fresh data in the background
     res.setHeader(
