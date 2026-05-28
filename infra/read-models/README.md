@@ -32,7 +32,7 @@ terraform output -raw read_model_base_url
 Use it as:
 
 ```bash
-READ_MODEL_BASE_URL=https://<cloudfront-domain>/hockey-read-models
+READ_MODEL_BASE_URL=https://<cloudfront-domain>/<read-model-prefix>
 ```
 
 ## ETL Publisher Env
@@ -49,13 +49,17 @@ terraform output -raw publisher_policy_arn
 Publisher env:
 
 ```bash
-READ_MODEL_S3_BUCKET=<s3_bucket_name>
-READ_MODEL_S3_PREFIX=<s3_prefix>
-CLOUDFRONT_DISTRIBUTION_ID=<cloudfront_distribution_id>
+READ_MODEL_S3_BUCKET=<read-model-bucket>
+READ_MODEL_S3_PREFIX=<read-model-prefix>
+CLOUDFRONT_DISTRIBUTION_ID=<cloudfront-distribution-id>
 CLOUDFRONT_INVALIDATION_MODE=wildcard
 ```
 
-Attach `publisher_policy_arn` to the IAM principal that runs the ETL.
+Attach this policy to the IAM principal that runs the ETL:
+
+```bash
+<publisher-policy-arn>
+```
 
 If you set `create_publisher_user = true`, create an access key for that user outside Terraform:
 

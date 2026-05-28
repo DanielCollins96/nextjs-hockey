@@ -3,8 +3,8 @@ project_name = "nextjs-hockey"
 environment  = "prod"
 
 # Must be globally unique. Leave unset to derive:
-# nextjs-hockey-prod-read-models-<account_id>
-# bucket_name = "psql-hockey-read-models-bucket"
+# <project>-<env>-read-models-<account_id>
+# bucket_name = "my-read-models-bucket"
 
 read_model_prefix = "hockey-read-models"
 

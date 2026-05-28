@@ -1,4 +1,4 @@
-import { getGameById } from '../../../lib/queries'
+import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -7,7 +7,17 @@ export default async function handler(req, res) {
 
   try {
     const { id } = req.query
-    const game = await getGameById(id)
+    const readModel = await fetchReadModel(readModelPaths.game(id))
+    let game
+
+    if (readModel) {
+      game = readModel.game
+      res.setHeader('X-Data-Source', 's3-read-model')
+    } else {
+      const { getGameById } = await import('../../../lib/queries')
+      game = await getGameById(id)
+      res.setHeader('X-Data-Source', 'postgres')
+    }
 
     if (!game) {
       return res.status(404).json({ error_message: 'Game not found' })

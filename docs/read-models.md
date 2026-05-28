@@ -1,355 +1,172 @@
 # S3/CloudFront Read Models
 
-Set `READ_MODEL_BASE_URL` to a CloudFront or S3 static website base URL. API routes will try these JSON files first and fall back to Postgres when a file is missing or the env var is not set.
+This app can serve most API reads from static JSON in S3 through CloudFront. Each API route tries its read-model file first and falls back to Postgres when `READ_MODEL_BASE_URL` is unset, the file is missing, or the fetch fails.
 
-Example:
+## App Env
+
+Set this in local `.env.local` and in Vercel:
 
 ```bash
-READ_MODEL_BASE_URL=https://cdn.example.com/hockey-read-models
+READ_MODEL_BASE_URL=https://<cloudfront-domain>/<read-model-prefix>
 ```
 
-## First Payloads To Publish
+For local debugging:
 
-These are the highest-value read models because they replace expensive joins and aggregations in `lib/queries.js`.
-
-### `players/{playerId}.json`
-
-Used by `GET /api/players/:id`.
-
-```json
-{
-  "player": [],
-  "playerStats": [],
-  "awards": []
-}
+```bash
+READ_MODEL_DEBUG=true
 ```
 
-`player` comes from `getPlayer()`:
+Check a route with:
 
-- `playerId`
-- `player_name`
-- `birthdate`
-- `birthCountry`
-- `position`
-- `sweaterNumber`
-- `shootsCatches`
-- `displayAbbrev`
-- `ordinalPick`
-- `draft_seasons`
-- `draft_position`
-
-`playerStats` comes from `getPlayerStats()`:
-
-- `season`
-- `league.name`
-- `team.id`
-- `team.name`
-- `stat.games`
-- skaters: `stat.goals`, `stat.pim`, `stat.plusMinus`, `stat.points`, `stat.assists`
-- goalies: `stat.wins`, `stat.losses`, `stat.goals`, `stat.savePercentage`, `stat.goalAgainstAverage`, `stat.shutouts`, `stat.pim`, `stat.otl`, `stat.assists`
-
-`awards` comes from `getPlayerAwards()`:
-
-- `playerId`
-- `trophy_default`
-- `seasonId`
-- `gamesPlayed`
-- `goals`
-- `assists`
-- `points`
-- `plusMinus`
-- `pim`
-
-### `teams/{teamId}.json`
-
-Used by `GET /api/teams/:id`.
-
-```json
-{
-  "team": {},
-  "teamRecords": [],
-  "skaters": [],
-  "goalies": [],
-  "playoffSeasons": []
-}
+```bash
+curl -I "http://localhost:3000/api/teams"
 ```
 
-`team` comes from `getTeamInfo()`:
-
-- `abbreviation`
-- `fullName`
-
-`teamRecords` comes from `getTeamSeasons()`:
-
-- `seasonId`
-- `wins`
-- `losses`
-- `points`
-- `goalsAgainstPerGame`
-- `goalsForPerGame`
-- `row`
-- `pointPct`
-- `winsInShootout`
-- `otLosses`
-
-`skaters` comes from `getTeamSkaters()`:
-
-- `id`
-- `playerId`
-- `season`
-- `triCode`
-- `fullName`
-- `gamesPlayed`
-- `playoffGamesPlayed`
-- `goals`
-- `playoffGoals`
-- `assists`
-- `playoffAssists`
-- `points`
-- `playoffPoints`
-- `penaltyMinutes`
-- `playoffPenaltyMinutes`
-- `plusMinus`
-- `playoffPlusMinus`
-- `positionCode`
-
-`goalies` comes from `getTeamGoalies()`:
-
-- `id`
-- `playerId`
-- `season`
-- `team`
-- `fullName`
-- `gamesPlayed`
-- `playoffGamesPlayed`
-- `goals`
-- `playoffGoals`
-- `assists`
-- `playoffAssists`
-- `points`
-- `playoffPoints`
-- `wins`
-- `playoffWins`
-- `losses`
-- `playoffLosses`
-- `goalsAgainstAverage`
-- `playoffGoalsAgainstAverage`
-- `savePercentage`
-- `playoffSavePercentage`
-- `penaltyMinutes`
-- `playoffPenaltyMinutes`
-
-`playoffSeasons` is an array of season values from `getPlayoffYears()`.
-
-### `seasons/{seasonId}.json`
-
-Used by `GET /api/seasons?year=`.
-
-```json
-{
-  "season": 20252026,
-  "players": [],
-  "goalies": [],
-  "availableSeasons": []
-}
-```
-
-`players` comes from `getPointLeadersBySeason()`:
-
-- `row_number`
-- `player_name`
-- `playerId`
-- `position`
-- `season`
-- `team.name`
-- `team.id`
-- `stat.goals`
-- `stat.games`
-- `stat.assists`
-- `stat.points`
-
-`goalies` comes from `getGoalieLeadersBySeason()`:
-
-- `row_number`
-- `player_name`
-- `playerId`
-- `season`
-- `team.name`
-- `team.id`
-- `stat.games`
-- `stat.wins`
-- `stat.losses`
-- `stat.otl`
-- `stat.gaa`
-- `stat.savePct`
-- `stat.shutouts`
-
-`availableSeasons` is an array of season IDs from `getAvailableSeasons()`.
-
-### `drafts/{draftYear}.json`
-
-Used by `GET /api/drafts/:id`.
-
-```json
-{
-  "draft": []
-}
-```
-
-`draft` comes from `getDraft()`:
-
-- `playerId`
-- `overallPick`
-- `pickInRound`
-- `round`
-- `playerName`
-- `positionCode`
-- `amateurLeague`
-- `amateurClubName`
-- `teamAbbrev`
-- `teamId`
-- `draftedByTeamId`
-- `games`
-- `goals`
-- `assists`
-- `points`
-- `pim`
-- `last_season`
-
-## Index Payloads
-
-### `indexes/teams.json`
-
-Used by `GET /api/teams`.
-
-```json
-{
-  "teams": [
-    {
-      "abbreviation": "EDM",
-      "name": "Edmonton Oilers",
-      "id": 22
-    }
-  ]
-}
-```
-
-Fields come from `getTeams()`: `abbreviation`, `name`, `id`.
-
-### `indexes/team-rosters.json`
-
-Used by `GET /api/teams/rosters`.
-
-```json
-{
-  "rosters": [
-    {
-      "team": {},
-      "roster": {
-        "forwards": [],
-        "defensemen": [],
-        "goalies": []
-      }
-    }
-  ]
-}
-```
-
-Each roster player should include:
-
-- `position`
-- `id`
-- `sweaterNumber`
-- `firstName`
-- `lastName`
-
-### `indexes/draft-years.json`
-
-Used by `GET /api/drafts`.
-
-```json
-{
-  "years": [
-    {
-      "draftYear": 2024
-    }
-  ]
-}
-```
-
-### `indexes/player-ids.json`
-
-Used by `GET /api/players/ids`.
-
-```json
-{
-  "playerIds": [
-    {
-      "playerId": 8478402
-    }
-  ]
-}
-```
-
-### `indexes/team-ids.json`
-
-Used by `GET /api/teams/ids`.
-
-```json
-{
-  "teamIds": [
-    {
-      "id": 22
-    }
-  ]
-}
-```
-
-### `indexes/player-search/{bucket}.json`
-
-Used by `GET /api/players?q=`.
-
-Use one-character normalized search buckets, for example:
-
-- `indexes/player-search/m.json`
-- `indexes/player-search/c.json`
-
-```json
-{
-  "players": []
-}
-```
-
-Fields come from `searchPlayers()`:
-
-- `playerId`
-- `player_name`
-- `position`
-- `birthCountry`
-- `team_abbrev`
-- `team_id`
-- `team_name`
-- `games`
-- `goals`
-- `assists`
-- `points`
-- `wins`
-- `losses`
-- `last_season`
-- `searchText`
-
-The API requires at least two normalized query characters, loads the matching one-character bucket, filters by `searchText` or `player_name`, and applies the requested `limit`.
-
-Recommended `searchText` value:
+Expected header when S3 is used:
 
 ```text
-connor mcdavid mcdavid connor edm edmonton oilers 8478402
+X-Data-Source: s3-read-model
 ```
 
-To preserve useful matches without one huge file, duplicate a player into each bucket that should find them. For Connor McDavid, useful buckets would include at least:
+Fallback values are `postgres` or `none`.
 
-- `c` from first name
-- `m` from last name
-- `e` from team/city if you want team-aware search
+## Build The Views
 
-Queries shorter than two normalized characters return an empty result set instead of loading a broad index. Numeric-leading searches, including player ID searches, skip S3 search buckets and fall through to Postgres. This keeps the S3 object count to `a-z` buckets while avoiding a single all-player JSON file.
+Run these after the ETL database sync has completed:
+
+```bash
+psql "$DATABASE_URL" -f sql/readmodel_views.sql
+psql "$DATABASE_URL" -f sql/readmodel_s3_export_views.sql
+```
+
+`readmodel_views.sql` creates the row-level views used by `lib/queries.js`.
+`readmodel_s3_export_views.sql` creates endpoint-shaped JSON payloads in `readmodel.s3_objects`.
+
+The publisher uploads:
+
+```sql
+SELECT s3_key, payload
+FROM readmodel.s3_objects
+ORDER BY s3_key;
+```
+
+## Publish To S3
+
+Install the publisher dependencies in the ETL environment:
+
+```bash
+pip install boto3 sqlalchemy psycopg2-binary
+```
+
+Dry run:
+
+```bash
+DB_CONNECTION="$DB_CONNECTION" \
+READ_MODEL_S3_BUCKET="<read-model-bucket>" \
+READ_MODEL_S3_PREFIX="<read-model-prefix>" \
+READ_MODEL_DRY_RUN=true \
+python scripts/publish_read_models_to_s3.py
+```
+
+Publish:
+
+```bash
+DB_CONNECTION="$DB_CONNECTION" \
+READ_MODEL_S3_BUCKET="<read-model-bucket>" \
+READ_MODEL_S3_PREFIX="<read-model-prefix>" \
+READ_MODEL_UPLOAD_WORKERS=16 \
+python scripts/publish_read_models_to_s3.py
+```
+
+Optional CloudFront invalidation:
+
+```bash
+CLOUDFRONT_DISTRIBUTION_ID="<cloudfront-distribution-id>" \
+CLOUDFRONT_INVALIDATION_MODE=wildcard
+```
+
+Use `wildcard` after a broad publish. Use `none` for normal short-cache updates unless you need immediate edge refresh.
+
+## Incremental Publishes
+
+Future ETL runs do not have to republish every object. Pass comma-separated S3 key prefixes or exact keys:
+
+```bash
+DB_CONNECTION="$DB_CONNECTION" \
+READ_MODEL_S3_BUCKET="<read-model-bucket>" \
+READ_MODEL_S3_PREFIX="<read-model-prefix>" \
+READ_MODEL_INCLUDE_PREFIXES="games/,indexes/player-search/" \
+python scripts/publish_read_models_to_s3.py
+```
+
+Useful examples:
+
+- `READ_MODEL_INCLUDE_PREFIXES="games/"` publishes game detail and game date files.
+- `READ_MODEL_INCLUDE_PREFIXES="players/8478402.json,teams/22.json"` publishes specific changed objects.
+- `READ_MODEL_INCLUDE_PREFIXES="indexes/player-search/,indexes/player-ids.json"` refreshes search and player ID indexes.
+- `READ_MODEL_EXCLUDE_PREFIXES="players/"` skips a group during a broader publish.
+
+In the ETL script, call the publisher only after all database sync procedures succeed:
+
+```python
+from publish_read_models_to_s3 import publish_read_models_to_s3
+
+publish_read_models_to_s3(engine, db_name)
+```
+
+For the smallest future publishes, have the ETL track changed player IDs, team IDs, game IDs, and affected dates, then build `READ_MODEL_INCLUDE_PREFIXES` from those keys.
+
+## Object Keys
+
+These keys are generated by `sql/readmodel_s3_export_views.sql` and consumed by `lib/read-models.js`.
+
+| S3 key | API route |
+| --- | --- |
+| `players/{playerId}.json` | `GET /api/players/:id` |
+| `teams/{teamId}.json` | `GET /api/teams/:id` |
+| `seasons/{seasonId}.json` | `GET /api/seasons?year=` |
+| `drafts/{draftYear}.json` | `GET /api/drafts/:id` |
+| `games/{gameId}.json` | `GET /api/games/:id` |
+| `games/dates/{YYYY-MM-DD}.json` | `GET /api/games?date=` and date ranges |
+| `indexes/teams.json` | `GET /api/teams` |
+| `indexes/team-ids.json` | `GET /api/teams/ids` |
+| `indexes/team-rosters.json` | `GET /api/teams/rosters` |
+| `indexes/player-ids.json` | `GET /api/players/ids` |
+| `indexes/draft-years.json` | `GET /api/drafts` |
+| `indexes/player-search/{bucket}.json` | `GET /api/players?q=` |
+
+## Player Search
+
+Player search is sharded by one normalized leading character:
+
+```text
+indexes/player-search/c.json
+indexes/player-search/m.json
+```
+
+The API requires at least two normalized query characters. It loads the matching bucket, filters by `searchText` or `player_name`, and applies the requested limit.
+
+Numeric-leading searches skip the S3 bucket and fall back to Postgres. This avoids a large all-player search file while keeping the common name-search path static.
+
+## Infrastructure
+
+Terraform lives in `infra/read-models`.
+
+```bash
+cd infra/read-models
+terraform init
+terraform plan
+terraform apply
+```
+
+Important outputs:
+
+```bash
+terraform output -raw read_model_base_url
+terraform output -raw s3_bucket_name
+terraform output -raw s3_prefix
+terraform output -raw cloudfront_distribution_id
+terraform output -raw publisher_policy_arn
+```
+
+Attach `publisher_policy_arn` to the IAM principal that runs the ETL publisher.
