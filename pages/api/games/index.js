@@ -41,6 +41,31 @@ function fetchGameDateReadModel(date) {
   });
 }
 
+async function getGameDateBounds() {
+  try {
+    const readModel = await fetchReadModel(readModelPaths.gameDateRange(), {
+      missStatuses: [403, 404],
+    });
+
+    if (readModel?.minDate && readModel?.maxDate) {
+      return {
+        minDate: readModel.minDate,
+        maxDate: readModel.maxDate,
+      };
+    }
+
+    if (readModelsEnabled()) {
+      return null;
+    }
+
+    const { getGameDateRange } = await import("../../../lib/queries");
+    return getGameDateRange();
+  } catch (error) {
+    console.warn("Failed to fetch game date bounds:", error.message);
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -95,14 +120,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Date parameter is required" });
     }
 
-    const serializedGames = games.map(serializeGame);
+    const [serializedGames, dateBounds] = await Promise.all([
+      Promise.resolve(games.map(serializeGame)),
+      getGameDateBounds(),
+    ]);
 
     res.setHeader(
       'Cache-Control',
       'public, s-maxage=300, stale-while-revalidate=3600'
     );
 
-    res.status(200).json({ games: serializedGames });
+    res.status(200).json({ games: serializedGames, dateBounds });
   } catch (error) {
     console.error("Error fetching games:", error);
     res.status(500).json({ error: "Failed to fetch games" });

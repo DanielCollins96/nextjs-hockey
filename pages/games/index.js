@@ -14,6 +14,13 @@ function formatDateShort(dateString) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function clampDate(date, bounds) {
+  if (!date || !bounds?.minDate || !bounds?.maxDate) return date;
+  if (date < bounds.minDate) return bounds.minDate;
+  if (date > bounds.maxDate) return bounds.maxDate;
+  return date;
+}
+
 function getGameStatus(game) {
   const state = game.gameState;
 
@@ -273,16 +280,22 @@ function exportToCSV(games, filename) {
   link.click();
 }
 
-export default function Games({ games: initialGames, selectedDate, dateRange }) {
+export default function Games({ games: initialGames, selectedDate, dateRange, dateBounds }) {
   const { user } = UseAuth();
   const router = useRouter();
   const [viewMode, setViewMode] = useState('cards');
   const [showAllDates, setShowAllDates] = useState(!!dateRange);
   const [games, setGames] = useState(initialGames);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState(dateRange?.start || selectedDate);
-  const [endDate, setEndDate] = useState(dateRange?.end || selectedDate);
+  const [startDate, setStartDate] = useState(clampDate(dateRange?.start || selectedDate, dateBounds));
+  const [endDate, setEndDate] = useState(clampDate(dateRange?.end || selectedDate, dateBounds));
   const [commentCounts, setCommentCounts] = useState({});
+  const dateInputBounds = dateBounds?.minDate && dateBounds?.maxDate
+    ? {
+        min: dateBounds.minDate,
+        max: dateBounds.maxDate,
+      }
+    : {};
 
   // Sync games state when props change (on date navigation)
   useEffect(() => {
@@ -335,8 +348,26 @@ export default function Games({ games: initialGames, selectedDate, dateRange }) 
   const changeDate = (days) => {
     const date = new Date(selectedDate + 'T12:00:00');
     date.setDate(date.getDate() + days);
-    const newDate = date.toISOString().split('T')[0];
+    const newDate = clampDate(date.toISOString().split('T')[0], dateBounds);
     router.push(`/games?date=${newDate}`);
+  };
+
+  const handleStartDateChange = (value) => {
+    const nextStartDate = clampDate(value, dateBounds);
+    setStartDate(nextStartDate);
+
+    if (endDate && nextStartDate > endDate) {
+      setEndDate(nextStartDate);
+    }
+  };
+
+  const handleEndDateChange = (value) => {
+    const nextEndDate = clampDate(value, dateBounds);
+    setEndDate(nextEndDate);
+
+    if (startDate && nextEndDate < startDate) {
+      setStartDate(nextEndDate);
+    }
   };
 
   const toggleAllDates = async () => {
@@ -384,7 +415,8 @@ export default function Games({ games: initialGames, selectedDate, dateRange }) 
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => router.push(`/games?date=${e.target.value}`)}
+              {...dateInputBounds}
+              onChange={(e) => router.push(`/games?date=${clampDate(e.target.value, dateBounds)}`)}
               className="text-lg sm:text-xl font-bold dark:text-white text-center bg-transparent border-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 py-1 dark:[color-scheme:dark]"
             />
             <button
@@ -403,14 +435,18 @@ export default function Games({ games: initialGames, selectedDate, dateRange }) 
             <input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              max={endDate || dateBounds?.maxDate}
+              min={dateBounds?.minDate}
+              onChange={(e) => handleStartDateChange(e.target.value)}
               className="px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm w-32"
             />
             <span className="dark:text-white text-sm">–</span>
             <input
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              min={startDate || dateBounds?.minDate}
+              max={dateBounds?.maxDate}
+              onChange={(e) => handleEndDateChange(e.target.value)}
               className="px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm w-32"
             />
             <button
@@ -494,6 +530,7 @@ export async function getServerSideProps({ query, req }) {
   const response = await fetch(`${protocol}://${host}/api/games?date=${selectedDate}`);
   const payload = response.ok ? await response.json() : {};
   const games = payload?.games || [];
+  const dateBounds = payload?.dateBounds || null;
 
   // Serialize Date objects to strings for JSON
   const serializedGames = games.map(game => ({
@@ -506,6 +543,7 @@ export async function getServerSideProps({ query, req }) {
     props: {
       games: serializedGames,
       selectedDate,
+      dateBounds,
     },
   };
 }
