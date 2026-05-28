@@ -47,10 +47,38 @@ function getGameStatus(game) {
   return state;
 }
 
+function getWinnerSide(game) {
+  if (game.gameState !== 'FINAL' && game.gameState !== 'OFF') {
+    return null;
+  }
+
+  const awayScore = Number(game.awayTeam_score);
+  const homeScore = Number(game.homeTeam_score);
+
+  if (!Number.isFinite(awayScore) || !Number.isFinite(homeScore) || awayScore === homeScore) {
+    return null;
+  }
+
+  return awayScore > homeScore ? 'away' : 'home';
+}
+
+function WinnerBadge() {
+  return (
+    <span
+      className="inline-flex h-5 min-w-5 items-center justify-center rounded bg-emerald-500 px-1.5 text-xs font-bold leading-none text-white"
+      title="Winner"
+      aria-label="Winner"
+    >
+      W
+    </span>
+  );
+}
+
 function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
   const status = getGameStatus(game);
   const isLive = game.gameState === 'LIVE' || game.gameState === 'CRIT';
   const isScheduled = game.gameState === 'FUT' || game.gameState === 'PRE';
+  const winnerSide = getWinnerSide(game);
 
   return (
     <Link href={`/games/${game.id}`}>
@@ -87,6 +115,7 @@ function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
               />
             </div>
             <span className="text-lg font-medium dark:text-white">{game.awayTeam_abbrev}</span>
+            {winnerSide === 'away' && <WinnerBadge />}
           </div>
           <span className={`font-bold text-xl ${!isScheduled ? 'dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
             {!isScheduled ? game.awayTeam_score : '-'}
@@ -106,6 +135,7 @@ function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
               />
             </div>
             <span className="text-lg font-medium dark:text-white">{game.homeTeam_abbrev}</span>
+            {winnerSide === 'home' && <WinnerBadge />}
           </div>
           <span className={`font-bold text-xl ${!isScheduled ? 'dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
             {!isScheduled ? game.homeTeam_score : '-'}
@@ -146,6 +176,7 @@ function GamesTable({ games, showDate = false }) {
               />
             </div>
             <span className="font-medium">{row.original.awayTeam_abbrev}</span>
+            {getWinnerSide(row.original) === 'away' && <WinnerBadge />}
           </div>
         ),
       },
@@ -172,6 +203,7 @@ function GamesTable({ games, showDate = false }) {
               />
             </div>
             <span className="font-medium">{row.original.homeTeam_abbrev}</span>
+            {getWinnerSide(row.original) === 'home' && <WinnerBadge />}
           </div>
         ),
       },
@@ -286,6 +318,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   const [viewMode, setViewMode] = useState('cards');
   const [showAllDates, setShowAllDates] = useState(!!dateRange);
   const [games, setGames] = useState(initialGames);
+  const [selectedTeam, setSelectedTeam] = useState('');
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(clampDate(dateRange?.start || selectedDate, dateBounds));
   const [endDate, setEndDate] = useState(clampDate(dateRange?.end || selectedDate, dateBounds));
@@ -302,9 +335,36 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
     setGames(initialGames);
   }, [initialGames]);
 
+  const teamOptions = useMemo(() => {
+    const teams = new Set();
+
+    games.forEach((game) => {
+      if (game.awayTeam_abbrev) teams.add(game.awayTeam_abbrev);
+      if (game.homeTeam_abbrev) teams.add(game.homeTeam_abbrev);
+    });
+
+    return Array.from(teams).sort();
+  }, [games]);
+
+  useEffect(() => {
+    if (selectedTeam && !teamOptions.includes(selectedTeam)) {
+      setSelectedTeam('');
+    }
+  }, [selectedTeam, teamOptions]);
+
+  const filteredGames = useMemo(() => {
+    if (!selectedTeam) return games;
+
+    return games.filter(
+      (game) =>
+        game.awayTeam_abbrev === selectedTeam ||
+        game.homeTeam_abbrev === selectedTeam
+    );
+  }, [games, selectedTeam]);
+
   useEffect(() => {
     async function fetchCommentCounts() {
-      if (!user?.username || !games.length) {
+      if (!user?.username || !filteredGames.length) {
         setCommentCounts({});
         return;
       }
@@ -322,7 +382,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
         );
 
         const posts = response?.data?.listPosts?.items || [];
-        const gameIds = new Set(games.map((game) => String(game.id)));
+        const gameIds = new Set(filteredGames.map((game) => String(game.id)));
         const counts = {};
 
         posts.forEach((post) => {
@@ -343,7 +403,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
     }
 
     fetchCommentCounts();
-  }, [games, user?.username]);
+  }, [filteredGames, user?.username]);
 
   const changeDate = (days) => {
     const date = new Date(selectedDate + 'T12:00:00');
@@ -461,6 +521,21 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
 
         {/* View Controls */}
         <div className="flex items-center justify-center sm:justify-end gap-2">
+          <select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            disabled={!teamOptions.length}
+            className="px-3 py-2 rounded border border-gray-300 bg-white text-sm font-medium text-gray-800 disabled:opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            aria-label="Filter by team"
+          >
+            <option value="">All teams</option>
+            {teamOptions.map((team) => (
+              <option key={team} value={team}>
+                {team}
+              </option>
+            ))}
+          </select>
+
           <button
             onClick={toggleAllDates}
             className={`px-3 py-2 rounded text-sm font-medium whitespace-nowrap ${
@@ -490,7 +565,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
           </div>
 
           <button
-            onClick={() => exportToCSV(games, `nhl-games-${showAllDates ? `${startDate}-to-${endDate}` : selectedDate}.csv`)}
+            onClick={() => exportToCSV(filteredGames, `nhl-games-${selectedTeam ? `${selectedTeam}-` : ''}${showAllDates ? `${startDate}-to-${endDate}` : selectedDate}.csv`)}
             className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
             aria-label="Export to CSV"
             title="Export to CSV"
@@ -501,13 +576,15 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
       </div>
 
       {/* Games Display */}
-      {games.length === 0 ? (
+      {filteredGames.length === 0 ? (
         <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-          No games scheduled {showAllDates ? 'for this date range' : 'for this date'}
+          {selectedTeam
+            ? `No ${selectedTeam} games scheduled ${showAllDates ? 'for this date range' : 'for this date'}`
+            : `No games scheduled ${showAllDates ? 'for this date range' : 'for this date'}`}
         </div>
       ) : viewMode === 'cards' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {games.map((game) => (
+          {filteredGames.map((game) => (
             <GameCard
               key={game.id}
               game={game}
@@ -517,7 +594,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
           ))}
         </div>
       ) : (
-        <GamesTable games={games} showDate={showAllDates} />
+        <GamesTable games={filteredGames} showDate={showAllDates} />
       )}
     </div>
   );
