@@ -35,6 +35,12 @@ function buildDateRange(startDate, endDate) {
   return dates
 }
 
+function fetchGameDateReadModel(date) {
+  return fetchReadModel(readModelPaths.gameDate(date), {
+    missStatuses: [403, 404],
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -58,7 +64,7 @@ export default async function handler(req, res) {
 
       if (readModelsEnabled()) {
         const readModels = await Promise.all(
-          dates.map((dateValue) => fetchReadModel(readModelPaths.gameDate(dateValue)))
+          dates.map(fetchGameDateReadModel)
         );
 
         games = readModels.flatMap((readModel) => readModel?.games || []);
@@ -75,7 +81,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid date" });
       }
 
-      const readModel = await fetchReadModel(readModelPaths.gameDate(formattedDate));
+      const readModel = await fetchGameDateReadModel(formattedDate);
 
       if (readModel) {
         games = readModel.games || [];
