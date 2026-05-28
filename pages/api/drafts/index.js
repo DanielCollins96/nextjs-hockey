@@ -1,8 +1,24 @@
-import { getAllDraftYears } from "../../../lib/queries";
+import { fetchReadModel, readModelPaths, unwrapReadModel } from "../../../lib/read-models";
 
 export default async function handler(req, res) {
     try {
-    const years = await getAllDraftYears()
+        const readModel = await fetchReadModel(readModelPaths.draftYears())
+
+        if (readModel) {
+            const years = unwrapReadModel(readModel, 'years') || []
+
+            res.setHeader('X-Data-Source', 's3-read-model')
+            res.setHeader(
+                'Cache-Control',
+                'public, s-maxage=86400, stale-while-revalidate=172800'
+            )
+
+            return res.status(200).json({ years })
+        }
+
+        const { getAllDraftYears } = await import("../../../lib/queries")
+        const years = await getAllDraftYears()
+        res.setHeader('X-Data-Source', 'postgres')
         res.setHeader(
             'Cache-Control',
             'public, s-maxage=86400, stale-while-revalidate=172800'

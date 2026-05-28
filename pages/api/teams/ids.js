@@ -1,9 +1,25 @@
-import { getTeamIds } from '../../../lib/queries'
+import { fetchReadModel, readModelPaths, unwrapReadModel } from '../../../lib/read-models'
 
 export default async function handler(req, res) {
   try {
+    const readModel = await fetchReadModel(readModelPaths.teamIds())
+
+    if (readModel) {
+      const teamIds = unwrapReadModel(readModel, 'teamIds') || []
+
+      res.setHeader('X-Data-Source', 's3-read-model')
+      res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=86400, stale-while-revalidate=172800'
+      )
+
+      return res.status(200).json({ teamIds })
+    }
+
+    const { getTeamIds } = await import('../../../lib/queries')
     const teamIds = await getTeamIds()
 
+    res.setHeader('X-Data-Source', 'postgres')
     res.setHeader(
       'Cache-Control',
       'public, s-maxage=86400, stale-while-revalidate=172800'
