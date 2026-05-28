@@ -1,4 +1,4 @@
-import { fetchReadModel, readModelPaths } from "../../../lib/read-models";
+import { fetchReadModel, readModelPaths, readModelsEnabled } from "../../../lib/read-models";
 
 function serializeGame(game) {
   return {
@@ -46,22 +46,26 @@ export default async function handler(req, res) {
     let games;
 
     if (startDate && endDate) {
-      const dates = buildDateRange(startDate, endDate);
+      const formattedStartDate = formatDate(startDate);
+      const formattedEndDate = formatDate(endDate);
+      const dates = formattedStartDate && formattedEndDate
+        ? buildDateRange(formattedStartDate, formattedEndDate)
+        : null;
 
       if (!dates) {
         return res.status(400).json({ error: "Invalid date range" });
       }
 
-      const readModels = await Promise.all(
-        dates.map((dateValue) => fetchReadModel(readModelPaths.gameDate(dateValue)))
-      );
+      if (readModelsEnabled()) {
+        const readModels = await Promise.all(
+          dates.map((dateValue) => fetchReadModel(readModelPaths.gameDate(dateValue)))
+        );
 
-      if (readModels.every(Boolean)) {
-        games = readModels.flatMap((readModel) => readModel.games || []);
+        games = readModels.flatMap((readModel) => readModel?.games || []);
         res.setHeader('X-Data-Source', 's3-read-model');
       } else {
         const { getGamesByDateRange } = await import("../../../lib/queries");
-        games = await getGamesByDateRange(startDate, endDate);
+        games = await getGamesByDateRange(formattedStartDate, formattedEndDate);
         res.setHeader('X-Data-Source', 'postgres');
       }
     } else if (date) {
