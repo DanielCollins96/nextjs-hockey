@@ -9,6 +9,12 @@ function normalizeSearchTerm(value) {
         .replace(/[^a-z0-9]/g, '')
 }
 
+function comparePlayerSearchResults(left, right) {
+    return (Number(right.games) || 0) - (Number(left.games) || 0)
+        || (Number(right.points) || 0) - (Number(left.points) || 0)
+        || (Number(right.goals) || 0) - (Number(left.goals) || 0)
+}
+
 export default async function handler(req, res) {
     try {
         const { q = '', limit = '100' } = req.query
@@ -43,6 +49,7 @@ export default async function handler(req, res) {
                         )
                         return searchText.includes(normalizedSearchTerm)
                     })
+                    .sort(comparePlayerSearchResults)
                     .slice(0, safeLimit)
                 : []
 

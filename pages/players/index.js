@@ -162,6 +162,11 @@ export default function PlayersIndex({ players, searchTerm }) {
                         columns={columns}
                         data={players}
                         pageSize={25}
+                        initialSorting={[
+                            { id: 'games', desc: true },
+                            { id: 'points', desc: true },
+                            { id: 'goals', desc: true },
+                        ]}
                     />
                 ) : searchTerm ? (
                     <p className="text-gray-500 dark:text-gray-400">

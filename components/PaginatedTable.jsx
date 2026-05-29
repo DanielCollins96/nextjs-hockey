@@ -14,15 +14,18 @@ export default function ReactTable({
   columns,
   data,
   sortKey = "season",
+  initialSorting,
   filterCol = ["fullName"],
   pageSize = 25,
 }) {
-  const [sorting, setSorting] = useState([
-    {
-      id: sortKey,
-      desc: true,
-    },
-  ]);
+  const [sorting, setSorting] = useState(
+    initialSorting || [
+      {
+        id: sortKey,
+        desc: true,
+      },
+    ]
+  );
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
