@@ -10,7 +10,30 @@ export default async function handler(req, res) {
         return res.status(404).json({error_message: "Team not found"})
       }
 
-      res.setHeader('X-Data-Source', 's3-read-model')
+      let skaters = readModel.skaters || []
+      let goalies = readModel.goalies || []
+      let dataSource = 's3-read-model'
+
+      if (!skaters.length && !goalies.length) {
+        try {
+          const { getTeamSkaters, getTeamGoalies } = await import('../../../lib/queries')
+          const [dbSkaters, dbGoalies] = await Promise.all([
+            getTeamSkaters(id),
+            getTeamGoalies(id)
+          ])
+
+          skaters = dbSkaters || skaters
+          goalies = dbGoalies || goalies
+
+          if (skaters.length || goalies.length) {
+            dataSource = 's3-read-model+postgres-team-players'
+          }
+        } catch (error) {
+          console.warn(`Team ${id} player fallback failed:`, error.message)
+        }
+      }
+
+      res.setHeader('X-Data-Source', dataSource)
       res.setHeader(
         'Cache-Control',
         'public, s-maxage=43200, stale-while-revalidate=86400'
@@ -19,8 +42,8 @@ export default async function handler(req, res) {
       return res.status(200).json({
         team: readModel.team,
         teamRecords: readModel.teamRecords || [],
-        skaters: readModel.skaters || [],
-        goalies: readModel.goalies || [],
+        skaters,
+        goalies,
         playoffSeasons: readModel.playoffSeasons || []
       })
     }

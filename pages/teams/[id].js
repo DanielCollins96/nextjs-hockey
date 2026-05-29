@@ -28,8 +28,16 @@ export default function TeamPage({
 }) {
   const router = useRouter();
   const {id, season: querySeason} = router.query;
+  const defaultSeasonId = seasonIds[0] || "";
+  const getValidSeasonId = useCallback(
+    (season) => {
+      const seasonValue = Array.isArray(season) ? season[0] : season;
+      return seasonIds.includes(seasonValue) ? seasonValue : defaultSeasonId;
+    },
+    [defaultSeasonId, seasonIds]
+  );
 
-  const [seasonId, setSeasonId] = useState(querySeason || "20252026");
+  const [seasonId, setSeasonId] = useState(() => getValidSeasonId(querySeason));
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId));
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
 
@@ -50,44 +58,47 @@ export default function TeamPage({
   }, []); // Empty dependency array ensures this runs only on mount
 
   useEffect(() => {
-    if (seasons[seasonId]) {
+    if (seasonId && seasons[seasonId]) {
       setSeasonData(seasons[seasonId]);
       setCurrentIndex(seasonIds.indexOf(seasonId));
       if (!seasons[seasonId].madePlayoffs) {
         setShowPlayoffStats(false);
       }
+    } else {
+      setSeasonData(null);
+      setCurrentIndex(-1);
     }
   }, [seasons, seasonId, seasonIds]);
 
-  //
   useEffect(() => {
-    console.log("URL change detected:", querySeason);
+    if (!router.isReady) return;
 
-    // if (querySeason && querySeason !== seasonId) {
-    //   const newIndex = seasons.findIndex(season => season.season === querySeason);
-    //   if (newIndex !== -1) {  // Ensure the season exists
-    //     setCurrentIndex(newIndex);
-    //     setSeasonId(querySeason);  // This will also update the displayed data via other useEffects
-    //   } else {
-    //     console.log('Season not found for:', querySeason);
-    //   }
-    // }
-  }, [querySeason]);
-
-  useEffect(() => {
-    console.log("useEffect router");
-
-    if (router.query.season !== seasonId) {
-      router.push(
-        {
-          pathname: router.pathname, // Current path
-          query: {...router.query, season: seasonId}, // Updated query parameter
-        },
-        undefined,
-        {shallow: false}
+    const nextSeasonId = getValidSeasonId(querySeason);
+    if (nextSeasonId) {
+      setSeasonId((currentSeasonId) =>
+        currentSeasonId === nextSeasonId ? currentSeasonId : nextSeasonId
       );
     }
-  }, [seasonId]);
+  }, [getValidSeasonId, querySeason, router.isReady]);
+
+  useEffect(() => {
+    if (!router.isReady || !seasonId) return;
+
+    const querySeasonValue = Array.isArray(querySeason)
+      ? querySeason[0]
+      : querySeason;
+
+    if (querySeasonValue !== seasonId) {
+      router.replace(
+        {
+          pathname: router.pathname,
+          query: {...router.query, season: seasonId},
+        },
+        undefined,
+        {shallow: true}
+      );
+    }
+  }, [id, querySeason, router, seasonId]);
 
   const handleDecrementSeason = () => {
     console.log("Next season");
@@ -138,8 +149,7 @@ export default function TeamPage({
     const baseColumns = [
       {
         header: "Name",
-        accessorFn: (d) =>
-          d["firstName"]["default"] + " " + d["lastName"]["default"],
+        accessorFn: (d) => d["fullName"],
         cell: (props) =>
           props.row.original?.playerId ? (
             <Link
