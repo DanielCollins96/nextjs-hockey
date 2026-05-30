@@ -1,7 +1,7 @@
 # CLAUDE.md - Hockey Stats Application
 
 ## Project Overview
-**hockeydb.xyz** - NHL statistics and roster management application featuring player/team data, draft history, and seasonal statistics.
+**hocke.ca** - NHL statistics and roster management application featuring player/team data, draft history, and seasonal statistics.
 
 **Tech Stack:** Next.js 13 | React 18 | PostgreSQL (Supabase) | Tailwind CSS | AWS Amplify (Auth) | TanStack Table | Recharts
 
