@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
+import { FaDownload } from 'react-icons/fa';
 
 export default function PlayersIndex({ players, searchTerm }) {
     const router = useRouter();
@@ -20,6 +21,44 @@ export default function PlayersIndex({ players, searchTerm }) {
         }
     };
 
+    const escapeCsvCell = (value) => {
+        const stringValue = value == null ? '' : String(value);
+        return /[",\n\r]/.test(stringValue) ? `"${stringValue.replace(/"/g, '""')}"` : stringValue;
+    };
+
+    const downloadCsv = () => {
+        const headers = ['Name', 'Pos', 'Team', 'GP', 'G', 'A', 'P', 'W', 'L', 'Country'];
+        const rows = players.map((player) => {
+            const displayTeam = player.team_name || (player.last_season ? `${String(player.last_season).slice(0, 4)}-${String(player.last_season).slice(6, 8)}` : '-');
+
+            return [
+                player.player_name,
+                player.position,
+                displayTeam,
+                player.games || '',
+                player.position === 'G' ? '' : (player.goals || 0),
+                player.position === 'G' ? '' : (player.assists || 0),
+                player.position === 'G' ? '' : (player.points || 0),
+                player.position === 'G' ? (player.wins || 0) : '',
+                player.position === 'G' ? (player.losses || 0) : '',
+                player.birthCountry,
+            ];
+        });
+        const csv = [headers, ...rows]
+            .map((row) => row.map(escapeCsvCell).join(','))
+            .join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = `nhl-players-${searchTerm || 'search'}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    };
+
     const columns = useMemo(() => [
         {
             header: 'Name',
@@ -31,11 +70,13 @@ export default function PlayersIndex({ players, searchTerm }) {
                 >
                     {row.original.player_name}
                 </Link>
-            )
+            ),
+            size: 170,
         },
         {
             header: 'Pos',
             accessorKey: 'position',
+            size: 48,
         },
         {
             header: 'Team',
@@ -57,12 +98,18 @@ export default function PlayersIndex({ players, searchTerm }) {
                     return <span className="text-gray-500 dark:text-gray-400 italic">{formatted}</span>;
                 }
                 return <span className="text-gray-500 dark:text-gray-400 italic">-</span>;
-            }
+            },
+            size: 130,
         },
         {
             header: 'GP',
             accessorKey: 'games',
             cell: props => <p className="text-right">{props.getValue() || '-'}</p>,
+            size: 58,
+            meta: {
+                headerClassName: 'text-right',
+                cellClassName: 'text-right tabular-nums',
+            },
         },
         {
             header: 'G',
@@ -72,6 +119,11 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? '-' : (row.original.goals || 0)}
                 </p>
             ),
+            size: 48,
+            meta: {
+                headerClassName: 'text-right',
+                cellClassName: 'text-right tabular-nums',
+            },
         },
         {
             header: 'A',
@@ -81,6 +133,11 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? '-' : (row.original.assists || 0)}
                 </p>
             ),
+            size: 48,
+            meta: {
+                headerClassName: 'text-right',
+                cellClassName: 'text-right tabular-nums',
+            },
         },
         {
             header: 'P',
@@ -90,6 +147,11 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? '-' : (row.original.points || 0)}
                 </p>
             ),
+            size: 52,
+            meta: {
+                headerClassName: 'text-right',
+                cellClassName: 'text-right tabular-nums font-semibold',
+            },
         },
         {
             header: 'W',
@@ -99,6 +161,11 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? (row.original.wins || 0) : '-'}
                 </p>
             ),
+            size: 48,
+            meta: {
+                headerClassName: 'text-right',
+                cellClassName: 'text-right tabular-nums',
+            },
         },
         {
             header: 'L',
@@ -108,10 +175,16 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? (row.original.losses || 0) : '-'}
                 </p>
             ),
+            size: 48,
+            meta: {
+                headerClassName: 'text-right',
+                cellClassName: 'text-right tabular-nums',
+            },
         },
         {
             header: 'Country',
             accessorKey: 'birthCountry',
+            size: 86,
         },
     ], []);
 
@@ -153,9 +226,22 @@ export default function PlayersIndex({ players, searchTerm }) {
 
             <div className="max-w-6xl mx-auto px-2 py-4">
                 {searchTerm && (
-                    <p className="mb-4 text-gray-600 dark:text-gray-400">
-                        {players.length} result{players.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;
-                    </p>
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {players.length} result{players.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;
+                        </p>
+                        {players.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={downloadCsv}
+                                className="inline-flex h-9 w-10 items-center justify-center rounded-md bg-emerald-500 text-white shadow-sm transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                                aria-label="Download CSV"
+                                title="Download CSV"
+                            >
+                                <FaDownload className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
                 )}
                 {players && players.length > 0 ? (
                     <ReactTable
@@ -167,6 +253,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                             { id: 'points', desc: true },
                             { id: 'goals', desc: true },
                         ]}
+                        modern
                     />
                 ) : searchTerm ? (
                     <p className="text-gray-500 dark:text-gray-400">
