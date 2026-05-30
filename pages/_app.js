@@ -53,15 +53,15 @@ function MyApp({Component, pageProps}) {
       <Hydrate state={pageProps.dehydratedState}>
         <AuthProvider>
           <Head>
-            <title>NHL Scores and Stats | hockeydb.xyz</title>
-            <meta title="NHL Scores and Stats | hockeydb.xyz" />
+            <title>NHL Scores and Stats | hocke.ca</title>
+            <meta title="NHL Scores and Stats | hocke.ca" />
             <meta
               name="viewport"
               content="width=device-width, initial-scale=1"
             />
             <meta
               name="description"
-              content="hockeydb.xyz provides statistics for National Hockey League Teams and Players"
+              content="hocke.ca provides statistics for National Hockey League Teams and Players"
             />
             <meta name="theme-color" content="#319795"></meta>
           </Head>
@@ -78,6 +78,12 @@ function MyApp({Component, pageProps}) {
                 gtag('config', 'G-LP1YV83204');
               `}
           </Script>
+          <Script
+            id="cloudflare-web-analytics"
+            strategy="afterInteractive"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "2adf5cc082ec43689d9c4954c0a97029"}'
+          />
           <LoadingBar isLoading={isLoading} />
           <Layout>
             <Component {...pageProps} />
