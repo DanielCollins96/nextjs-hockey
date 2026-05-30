@@ -1,15 +1,12 @@
 import React from 'react'
-import { useQuery } from 'react-query'
 import DraftList from '../../components/DraftList'
 import SEO from '../../components/SEO'
 
 
 
 export default function Drafts({draftYears}) {
-
-  console.log(draftYears)
   return (
-    <div className="grid place-content-center">
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <SEO
         title="NHL Draft History"
         description="Browse historical NHL draft results by year. View draft picks, player career stats, and draft class analysis."
