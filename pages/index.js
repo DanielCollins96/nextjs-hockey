@@ -1,7 +1,9 @@
 import {useState} from "react";
+import Head from "next/head";
 import HockeyShootout from "../components/HockeyShootout";
 import TeamBox from "../components/TeamBox";
 import SEO from "../components/SEO";
+import { getTeamRosters } from "../lib/team-rosters";
 
 export default function Home({teams}) {
   const [searchedTeams, setSearchedTeams] = useState(teams);
@@ -54,6 +56,14 @@ export default function Home({teams}) {
 
   return (
     <div className="">
+      <Head>
+        <link
+          rel="preload"
+          as="image"
+          href="/Hockey-Net.svg"
+          type="image/svg+xml"
+        />
+      </Head>
       <SEO
         title="NHL Scores and Stats"
         description="Browse current NHL team rosters, player statistics, and standings. Search by team or player name to find stats and profiles."
@@ -94,16 +104,11 @@ export default function Home({teams}) {
   );
 }
 
-export async function getServerSideProps({ req }) {
-  const protocol = req.headers['x-forwarded-proto'] || 'http'
-  const host = req.headers.host
-
+export async function getServerSideProps() {
   try {
-    const response = await fetch(`${protocol}://${host}/api/teams/rosters`)
-    const payload = response.ok ? await response.json() : {}
-    const validRosters = payload?.rosters || []
+    const { rosters } = await getTeamRosters()
 
-    if (!validRosters.length) {
+    if (!rosters.length) {
       console.error('No valid rosters were fetched successfully');
       return {
         props: {
@@ -115,7 +120,7 @@ export async function getServerSideProps({ req }) {
 
     return {
       props: {
-        teams: validRosters,
+        teams: rosters,
         error: null
       }
     };

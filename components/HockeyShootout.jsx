@@ -98,9 +98,9 @@ function HockeyNet({ side, isScoredOn, netRef }) {
         alt={`${isBlue ? "Blue" : "Red"} hockey net`}
         width="200"
         height="200"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
         whileTap={{ scale: 0.9 }}
       />
     </div>

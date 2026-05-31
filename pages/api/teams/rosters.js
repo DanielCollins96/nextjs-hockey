@@ -1,88 +1,16 @@
-import { fetchReadModel, readModelPaths, unwrapReadModel } from '../../../lib/read-models'
+import { getTeamRosters } from '../../../lib/team-rosters'
 
 export default async function handler(req, res) {
   try {
-    const readModel = await fetchReadModel(readModelPaths.teamRosters())
+    const { rosters, source } = await getTeamRosters()
 
-    if (readModel) {
-      const rosters = unwrapReadModel(readModel, 'rosters') || []
-
-      res.setHeader('X-Data-Source', 's3-read-model')
-      res.setHeader(
-        'Cache-Control',
-        'public, s-maxage=43200, stale-while-revalidate=86400'
-      )
-
-      return res.status(200).json({ rosters })
-    }
-
-    const { getTeams, getActiveRosters } = await import('../../../lib/queries')
-    const [teams, activeRosters] = await Promise.all([
-      getTeams(),
-      getActiveRosters()
-    ])
-
-    const rostersByTeam = {}
-
-    for (const player of activeRosters) {
-      const abbrev = player.teamAbbreviation
-      if (!rostersByTeam[abbrev]) {
-        rostersByTeam[abbrev] = {
-          forwards: [],
-          defensemen: [],
-          goalies: []
-        }
-      }
-
-      const playerData = {
-        position: player.positionGroup,
-        id: player.playerId,
-        sweaterNumber: player.sweaterNumber ?? null,
-        firstName: player.firstName,
-        lastName: player.lastName,
-      }
-
-      if (player.positionGroup === 'forwards') {
-        rostersByTeam[abbrev].forwards.push(playerData)
-      } else if (player.positionGroup === 'defensemen') {
-        rostersByTeam[abbrev].defensemen.push(playerData)
-      } else if (player.positionGroup === 'goalies') {
-        rostersByTeam[abbrev].goalies.push(playerData)
-      }
-    }
-
-    for (const abbrev of Object.keys(rostersByTeam)) {
-      for (const position of ['forwards', 'defensemen', 'goalies']) {
-        rostersByTeam[abbrev][position].sort((a, b) => {
-          const nameA = `${a.firstName || ''} ${a.lastName || ''}`
-          const nameB = `${b.firstName || ''} ${b.lastName || ''}`
-          return nameA.localeCompare(nameB)
-        })
-      }
-    }
-
-    const rosters = teams.map(team => ({
-      team,
-      roster: rostersByTeam[team.abbreviation] || {
-        forwards: [],
-        defensemen: [],
-        goalies: []
-      }
-    }))
-
-    const validRosters = rosters.filter(roster =>
-      roster.roster.forwards.length > 0 ||
-      roster.roster.defensemen.length > 0 ||
-      roster.roster.goalies.length > 0
-    )
-
-    res.setHeader('X-Data-Source', 'postgres')
+    res.setHeader('X-Data-Source', source)
     res.setHeader(
       'Cache-Control',
       'public, s-maxage=43200, stale-while-revalidate=86400'
     )
 
-    res.status(200).json({ rosters: validRosters })
+    res.status(200).json({ rosters })
   } catch (error) {
     console.log(error)
     res.status(500).json({ error_message: 'Internal Server Error' })
