@@ -186,12 +186,12 @@ export default function HockeyShootout() {
             isScoredOn={scoredSide === "red"}
             netRef={redNetRef}
           />
-          <div className="grid justify-items-center">
-            <div className="grid inset-0 relative h-12 w-12 place-content-end touch-none sm:h-16 sm:w-16 md:h-20 md:w-20">
+          <div className="relative z-20 grid justify-items-center">
+            <div className="relative inset-0 z-20 grid h-12 w-12 place-content-end touch-none sm:h-16 sm:w-16 md:h-20 md:w-20">
               <Puck
                 key={puckKey}
                 ref={puckRef}
-                className="absolute bottom-0 h-12 w-12 text-black transition-colors duration-150 dark:text-gray-400 sm:h-16 sm:w-16 md:h-20 md:w-20"
+                className="absolute bottom-0 z-20 h-12 w-12 text-black transition-colors duration-150 dark:text-gray-400 sm:h-16 sm:w-16 md:h-20 md:w-20"
                 style={{ x: puckX, y: puckY }}
                 width={80}
                 height={80}
