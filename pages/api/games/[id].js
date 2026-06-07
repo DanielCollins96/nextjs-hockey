@@ -9,9 +9,15 @@ export default async function handler(req, res) {
     const { id } = req.query
     const readModel = await fetchReadModel(readModelPaths.game(id))
     let game
+    let goals = []
+    let penalties = []
+    let threeStars = []
 
     if (readModel) {
       game = readModel.game
+      goals = readModel.goals || []
+      penalties = readModel.penalties || []
+      threeStars = readModel.threeStars || []
       res.setHeader('X-Data-Source', 's3-read-model')
     } else {
       const { getGameById } = await import('../../../lib/queries')
@@ -34,7 +40,12 @@ export default async function handler(req, res) {
       'public, s-maxage=300, stale-while-revalidate=3600'
     )
 
-    res.status(200).json({ game: serializedGame })
+    res.status(200).json({
+      game: serializedGame,
+      goals,
+      penalties,
+      threeStars,
+    })
   } catch (error) {
     console.log(error)
     res.status(500).json({ error_message: 'Internal Server Error' })
