@@ -652,12 +652,14 @@ export async function getServerSideProps({params, req}) {
     const goalies = payload?.goalies || [];
     const teamRecords = payload?.teamRecords || [];
     const playoffSeasons = payload?.playoffSeasons || [];
+    const normalizeSeasonId = (season) =>
+      season === null || season === undefined ? "" : String(season);
 
     const combinePlayersBySeason = (allSkaters, allGoalies) => {
       const seasonMap = {};
 
       allSkaters.forEach((skater) => {
-        const season = skater.season;
+        const season = normalizeSeasonId(skater.season);
         if (!seasonMap[season]) {
           seasonMap[season] = {skaters: [], goalies: []};
         }
@@ -665,7 +667,7 @@ export async function getServerSideProps({params, req}) {
       });
 
       allGoalies.forEach((goalie) => {
-        const season = goalie.season;
+        const season = normalizeSeasonId(goalie.season);
         if (!seasonMap[season]) {
           seasonMap[season] = {skaters: [], goalies: []};
         }
@@ -677,9 +679,10 @@ export async function getServerSideProps({params, req}) {
 
     const seasonMap = combinePlayersBySeason(skaters, goalies);
     const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
+    const playoffSeasonIds = new Set(playoffSeasons.map(normalizeSeasonId));
 
     seasons.forEach((season) => {
-      seasonMap[season].madePlayoffs = playoffSeasons?.includes(season) || false;
+      seasonMap[season].madePlayoffs = playoffSeasonIds.has(season);
     });
 
     return {
