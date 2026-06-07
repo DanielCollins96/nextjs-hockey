@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 
-export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, modern = false}) {
+export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, modern = false, compact = false}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
@@ -54,9 +54,15 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
 
   return (
     <div>
-    <div className={`relative overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? "rounded-lg border border-slate-200 dark:border-slate-700" : ""}`}>
+    <div
+      className={`relative overflow-x-auto max-w-full ${
+        mobileFit || compact
+          ? "pb-1"
+          : "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      } ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}
+    >
       <table
-        className={modern ? "min-w-[58rem] w-full table-fixed border-collapse text-sm" : `${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
+        className={modern ? `${compact ? "w-max text-sm" : "min-w-[58rem] w-full text-sm"} table-fixed border-collapse` : `${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
       >
         {modern && (
           <colgroup>
@@ -71,12 +77,13 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
               {headerGroup.headers.map((header) => {
                 const headerClassName = header.column.columnDef.meta?.headerClassName || ""
                 const canExpand = header.column.columnDef.meta?.expandOnDoubleClick
+                const isRightAligned = headerClassName.includes("text-right")
 
                 return (
                   <th
                     className={
                       modern
-                        ? `border-b border-slate-200 bg-slate-50 px-2 py-2 text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
+                        ? `border-b border-slate-200 bg-slate-50 ${compact ? "px-1.5 py-1" : "px-2 py-2"} text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
                         : `${mobileFit ? "px-1 text-xs sm:text-sm whitespace-nowrap" : "px-1 whitespace-nowrap"} bg-white dark:bg-gray-800 dark:text-white border border-blue-600 dark:border-blue-500`
                     }
                     key={header.id}
@@ -84,7 +91,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                     onDoubleClick={() => toggleExpandedColumn(header.column)}
                     title={canExpand ? "Double-click to toggle column width" : undefined}
                   >
-                    <div className="flex items-center justify-between gap-1">
+                    <div className={`flex items-center gap-1 ${isRightAligned ? "justify-end" : "justify-between"}`}>
                       {header.isPlaceholder ? null : (
                         <div
                           {...{
@@ -131,7 +138,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                   <td
                     className={
                       modern
-                        ? `border-b border-slate-200 px-2 py-1.5 text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
+                        ? `border-b border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
                         : `${mobileFit ? "px-1 text-xs sm:text-sm" : "px-1 text-sm"} border-black dark:border-gray-600 border dark:text-gray-200 whitespace-nowrap`
                     }
                     key={cell.id}
@@ -160,7 +167,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
               <td
                 key={header.id}
                 colSpan={header.colSpan}
-                className={modern ? "px-2 py-2 whitespace-nowrap" : `px-1 border-black whitespace-nowrap`}
+                className={modern ? `${compact ? "px-1.5 py-1" : "px-2 py-2"} whitespace-nowrap` : `px-1 border-black whitespace-nowrap`}
               >
                 {header.isPlaceholder
                   ? null

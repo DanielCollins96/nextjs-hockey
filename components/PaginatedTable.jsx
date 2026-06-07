@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import Filter from "./Filter";
 
 export default function ReactTable({
@@ -17,7 +17,10 @@ export default function ReactTable({
   initialSorting,
   filterCol = ["fullName"],
   pageSize = 25,
+  onPageRowsChange,
   modern = false,
+  compact = false,
+  fillLastPage = false,
 }) {
   const [sorting, setSorting] = useState(
     initialSorting || [
@@ -48,6 +51,27 @@ export default function ReactTable({
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  const lastPageRowsSignature = useRef("");
+  const currentPageRows = table.getRowModel().rows;
+  const displayRows =
+    fillLastPage && currentPageRows.length > 0 && currentPageRows.length < pagination.pageSize
+      ? table.getPrePaginationRowModel().rows.slice(-pagination.pageSize)
+      : currentPageRows;
+
+  useEffect(() => {
+    if (!onPageRowsChange) return;
+
+    const pageRows = displayRows.map((row) => row.original);
+    const pageRowsSignature = displayRows
+      .map((row) => `${row.id}:${JSON.stringify(row.original)}`)
+      .join("|");
+
+    if (pageRowsSignature === lastPageRowsSignature.current) return;
+
+    lastPageRowsSignature.current = pageRowsSignature;
+    onPageRowsChange(pageRows);
+  }, [data, displayRows, onPageRowsChange, pagination, sorting, table]);
+
   const getColumnWidth = (column) => {
     const width = column.columnDef.size;
 
@@ -55,13 +79,13 @@ export default function ReactTable({
   };
 
   const paginationButtonClass = modern
-    ? "inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-slate-200 bg-white px-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-slate-700 dark:disabled:hover:border-slate-700 dark:disabled:hover:bg-slate-800 dark:disabled:hover:text-slate-100"
+    ? `${compact ? "inline-flex h-7 min-w-7 px-1 text-xs" : "inline-flex h-9 min-w-9 px-2 text-sm"} items-center justify-center rounded-md border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-slate-700 dark:disabled:hover:border-slate-700 dark:disabled:hover:bg-slate-800 dark:disabled:hover:text-slate-100`
     : "px-3 py-1 rounded border transition text-black bg-gray-100 border-gray-300 hover:bg-gray-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-slate-900 dark:disabled:text-slate-600";
 
   return (
     <div>
-      <div className={`relative overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? "rounded-lg border border-slate-200 dark:border-slate-700" : ""}`}>
-        <table className={modern ? "w-max table-fixed border-collapse text-sm" : "border border-black p-2 m-1"}>
+      <div className={`relative overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}>
+        <table className={modern ? "text-sm w-max table-fixed border-collapse" : "border border-black p-2 m-1"}>
         {modern && (
           <colgroup>
             {table.getAllLeafColumns().map((column) => (
@@ -80,7 +104,7 @@ export default function ReactTable({
                   <th
                     className={
                       modern
-                        ? `border-b border-slate-200 bg-slate-50 px-2 py-2 text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
+                        ? `border-b border-slate-200 bg-slate-50 ${compact ? "px-1.5 py-1" : "px-2 py-2"} text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
                         : ""
                     }
                     key={header.id}
@@ -121,7 +145,7 @@ export default function ReactTable({
           ))}
         </thead>
         <tbody className="">
-          {table.getRowModel().rows?.map((row, i) => {
+          {displayRows?.map((row, i) => {
             const isNHL =
               row?.original["league.name"] == "National Hockey League" ||
               row?.original["league.name"] == "NHL";
@@ -141,7 +165,7 @@ export default function ReactTable({
                     <td
                       className={
                         modern
-                          ? `border-b border-slate-200 px-2 py-1.5 text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap overflow-hidden text-ellipsis ${cellClassName}`
+                          ? `border-b border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap overflow-hidden text-ellipsis ${cellClassName}`
                           : "border-black border px-1 text-sm whitespace-nowrap"
                       }
                       key={cell.id}
@@ -172,7 +196,7 @@ export default function ReactTable({
                 <td
                   key={header.id}
                   colSpan={header.colSpan}
-                  className={modern ? "px-2 py-2 whitespace-nowrap" : "border-black px-1"}
+                  className={modern ? `${compact ? "px-1.5 py-1" : "px-2 py-2"} whitespace-nowrap` : "border-black px-1"}
                 >
                   {header.isPlaceholder
                     ? null
@@ -186,7 +210,7 @@ export default function ReactTable({
           ))}
         </tfoot>
         </table>
-        <div className={modern ? "flex flex-wrap items-center gap-2 border-t border-slate-200 bg-slate-50 px-2 py-2 dark:border-slate-700 dark:bg-slate-900" : "flex items-center gap-2 mt-2"}>
+        <div className={modern ? `flex flex-wrap items-center ${compact ? "gap-1 px-1.5 py-1" : "gap-2 px-2 py-2"} border-t border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900` : "flex items-center gap-2 mt-2"}>
         <button
           className={paginationButtonClass}
           onClick={() => table.setPageIndex(0)}
@@ -215,7 +239,7 @@ export default function ReactTable({
         >
           {">>"}
         </button>
-        <span className={modern ? "ml-auto flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300" : "flex items-center gap-1"}>
+        <span className={modern ? `ml-auto flex items-center gap-1 ${compact ? "text-xs" : "text-sm"} text-slate-600 dark:text-slate-300` : "flex items-center gap-1"}>
           <span>Page</span>
           <strong>
             {table.getState().pagination.pageIndex + 1} of{" "}

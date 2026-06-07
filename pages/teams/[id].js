@@ -5,10 +5,12 @@ import {useState, useMemo, useEffect, useCallback} from "react";
 import {MdOutlineChevronLeft, MdOutlineChevronRight} from "react-icons/md";
 
 import ReactTable from "../../components/Table";
+import PaginatedTable from "../../components/PaginatedTable";
 import { ClickableImage } from "../../components/ImageModal";
 import ThreadMessageBoard from "../../components/ThreadMessageBoard";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
 import {
+  CartesianGrid,
   LineChart,
   Line,
   XAxis,
@@ -17,6 +19,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+
+const numericColumnMeta = {
+  headerClassName: "text-right",
+  cellClassName: "text-right",
+};
 
 export default function TeamPage({
   seasons = [],
@@ -41,29 +48,10 @@ export default function TeamPage({
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId));
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
 
-  const initialShowPlayoffStats =
-    seasonData && seasonData.madePlayoffs ? true : false;
-  const [showPlayoffStats, setShowPlayoffStats] = useState(
-    initialShowPlayoffStats
-  );
-
-  const togglePlayoffStats = () => {
-    setShowPlayoffStats((prev) => !prev);
-  };
-
-  useEffect(() => {
-    if (window.innerWidth < 600) {
-      setShowPlayoffStats(false);
-    }
-  }, []); // Empty dependency array ensures this runs only on mount
-
   useEffect(() => {
     if (seasonId && seasons[seasonId]) {
       setSeasonData(seasons[seasonId]);
       setCurrentIndex(seasonIds.indexOf(seasonId));
-      if (!seasons[seasonId].madePlayoffs) {
-        setShowPlayoffStats(false);
-      }
     } else {
       setSeasonData(null);
       setCurrentIndex(-1);
@@ -81,31 +69,38 @@ export default function TeamPage({
     }
   }, [getValidSeasonId, querySeason, router.isReady]);
 
-  useEffect(() => {
-    if (!router.isReady || !seasonId) return;
+  const selectSeason = useCallback(
+    (nextSeasonId) => {
+      if (!nextSeasonId) return;
 
-    const querySeasonValue = Array.isArray(querySeason)
-      ? querySeason[0]
-      : querySeason;
+      setSeasonId(nextSeasonId);
+      setCurrentIndex(seasonIds.indexOf(nextSeasonId));
 
-    if (querySeasonValue !== seasonId) {
+      if (!router.isReady) return;
+
+      const querySeasonValue = Array.isArray(router.query.season)
+        ? router.query.season[0]
+        : router.query.season;
+
+      if (querySeasonValue === nextSeasonId) return;
+
       router.replace(
         {
           pathname: router.pathname,
-          query: {...router.query, season: seasonId},
+          query: {...router.query, season: nextSeasonId},
         },
         undefined,
         {shallow: true}
       );
-    }
-  }, [id, querySeason, router, seasonId]);
+    },
+    [router, seasonIds]
+  );
 
   const handleDecrementSeason = () => {
     console.log("Next season");
     if (currentIndex < seasonIds.length - 1) {
       const newIndex = currentIndex + 1;
-      setCurrentIndex(newIndex);
-      setSeasonId(seasonIds[newIndex]);
+      selectSeason(seasonIds[newIndex]);
     }
   };
 
@@ -114,8 +109,7 @@ export default function TeamPage({
     console.log(currentIndex);
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
-      setCurrentIndex(newIndex);
-      setSeasonId(seasonIds[newIndex]);
+      selectSeason(seasonIds[newIndex]);
     }
   };
 
@@ -145,11 +139,51 @@ export default function TeamPage({
     [sumFromRows]
   );
 
+  const hasPlayoffStats = Boolean(seasonData?.madePlayoffs);
+  const formatPlayoffValue = useCallback(
+    (value) => {
+      if (!hasPlayoffStats) return "--";
+      return value === null || value === undefined || value === ""
+        ? "--"
+        : value;
+    },
+    [hasPlayoffStats]
+  );
+
+  const calculateSeasonAge = useCallback((player) => {
+    if (player?.age !== null && player?.age !== undefined) {
+      return player.age;
+    }
+
+    const birthDateValue = player?.birthdate;
+    if (!birthDateValue) return "-";
+
+    const birthDate = new Date(birthDateValue);
+    if (Number.isNaN(birthDate.getTime())) return "-";
+
+    const season = String(player?.season || "");
+    const seasonStartYear = /^\d{8}$/.test(season)
+      ? Number(season.slice(0, 4))
+      : new Date().getFullYear();
+    const seasonDate = new Date(seasonStartYear, 9, 1);
+
+    let age = seasonDate.getFullYear() - birthDate.getFullYear();
+    const hasHadBirthday =
+      seasonDate.getMonth() > birthDate.getMonth() ||
+      (seasonDate.getMonth() === birthDate.getMonth() &&
+        seasonDate.getDate() >= birthDate.getDate());
+
+    if (!hasHadBirthday) age -= 1;
+
+    return age;
+  }, []);
+
   const roster_goalie_table_columns = useMemo(() => {
     const baseColumns = [
       {
         header: "Name",
         accessorFn: (d) => d["fullName"],
+        size: 150,
         cell: (props) =>
           props.row.original?.playerId ? (
             <Link
@@ -169,12 +203,16 @@ export default function TeamPage({
           {
             header: "GP",
             accessorFn: (d) => d["gamesPlayed"],
+            size: 38,
+            meta: numericColumnMeta,
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
             // footer: ({ table }) => table.getFilteredRowModel().rows?.reduce((total, row) => total + row.getValue('GP'), 0),
           },
           {
             header: "G",
             accessorFn: (d) => d["goals"],
+            size: 34,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "goals");
               return <div className="text-right pr-1">{total}</div>;
@@ -184,6 +222,8 @@ export default function TeamPage({
           {
             header: "A",
             accessorFn: (d) => d["assists"],
+            size: 34,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "assists");
               return <div className="text-right pr-1">{total}</div>;
@@ -193,6 +233,8 @@ export default function TeamPage({
           {
             header: "W",
             accessorFn: (d) => d["wins"],
+            size: 34,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "wins");
               return <div className="text-right pr-1">{total}</div>;
@@ -202,6 +244,8 @@ export default function TeamPage({
           {
             header: "L",
             accessorFn: (d) => d["losses"],
+            size: 34,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "losses");
               return <div className="text-right pr-1">{total}</div>;
@@ -211,6 +255,8 @@ export default function TeamPage({
           {
             header: "GAA",
             accessorFn: (d) => d["goalsAgainstAverage"],
+            size: 48,
+            meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
                 {props.getValue()?.toFixed(2) || null}
@@ -231,6 +277,8 @@ export default function TeamPage({
           {
             header: "SV%",
             accessorFn: (d) => d["savePercentage"],
+            size: 48,
+            meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
                 {props.getValue()?.toFixed(3) || null}
@@ -251,6 +299,8 @@ export default function TeamPage({
           {
             header: "PIM",
             accessorFn: (d) => d["penaltyMinutes"],
+            size: 42,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(
                 table.getFilteredRowModel().rows,
@@ -270,34 +320,83 @@ export default function TeamPage({
           {
             header: "PO GP",
             accessorFn: (d) => d["playoffGamesPlayed"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 44,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "PO P",
             accessorFn: (d) => d["playoffPoints"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 42,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "PO W",
             accessorFn: (d) => d["playoffWins"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 42,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "PO L",
             accessorFn: (d) => d["playoffLosses"],
+            size: 42,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
+          },
+        ],
+      },
+    ];
+    const vitalsColumns = [
+      {
+        header: "Vitals",
+        columns: [
+          {
+            header: "Nat.",
+            accessorFn: (d) => d?.birthCountry || "-",
+            size: 42,
+          },
+          {
+            header: "Age",
+            accessorFn: (d) => calculateSeasonAge(d),
+            size: 38,
+            meta: numericColumnMeta,
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
         ],
       },
     ];
-    return showPlayoffStats ? [...baseColumns, ...playoffColumns] : baseColumns;
-  }, [showPlayoffStats, sumFromRows, weightedAverageFromRows]);
+    return [...baseColumns, ...playoffColumns, ...vitalsColumns];
+  }, [
+    calculateSeasonAge,
+    formatPlayoffValue,
+    sumFromRows,
+    weightedAverageFromRows,
+  ]);
 
   const roster_player_table_columns = useMemo(() => {
     const baseColumns = [
       {
         header: "Name",
         accessorFn: (d) => d["fullName"],
+        size: 150,
         cell: (props) =>
           props.row.original?.playerId ? (
             <Link
@@ -317,15 +416,20 @@ export default function TeamPage({
           {
             header: "Pos.",
             accessorFn: (d) => d["positionCode"],
+            size: 42,
           },
           {
             header: "GP",
             accessorFn: (d) => d["gamesPlayed"],
+            size: 38,
+            meta: numericColumnMeta,
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
           {
             header: "G",
             accessorFn: (d) => d["goals"],
+            size: 34,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "goals");
               return <div className="text-right pr-1">{total}</div>;
@@ -335,6 +439,8 @@ export default function TeamPage({
           {
             header: "A",
             accessorFn: (d) => d["assists"],
+            size: 34,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "assists");
               return <div className="text-right pr-1">{total}</div>;
@@ -344,6 +450,8 @@ export default function TeamPage({
           {
             header: "P",
             accessorFn: (d) => d["points"],
+            size: 36,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "points");
               return <div className="text-right pr-1">{total}</div>;
@@ -353,6 +461,8 @@ export default function TeamPage({
           {
             header: "PIM",
             accessorFn: (d) => d["penaltyMinutes"],
+            size: 42,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(
                 table.getFilteredRowModel().rows,
@@ -365,6 +475,8 @@ export default function TeamPage({
           {
             header: "+/-",
             accessorFn: (d) => d["plusMinus"],
+            size: 38,
+            meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "plusMinus");
               return <div className="text-right pr-1">{total}</div>;
@@ -382,53 +494,173 @@ export default function TeamPage({
             header: "GP",
             id: "PO GP",
             accessorFn: (d) => d["playoffGamesPlayed"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 38,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "G",
             id: "PO G",
             accessorFn: (d) => d["playoffGoals"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 34,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "A",
             id: "PO A",
             accessorFn: (d) => d["playoffAssists"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 34,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "P",
             id: "PO P",
             accessorFn: (d) => d["playoffPoints"],
-            cell: (props) => <p className="text-right">{props.getValue()}</p>,
+            size: 34,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
           },
           {
             header: "PIM",
             id: "PO PIM",
             accessorFn: (d) => d["playoffPenaltyMinutes"],
+            size: 42,
+            meta: numericColumnMeta,
+            cell: (props) => (
+              <p className="text-right">
+                {formatPlayoffValue(props.getValue())}
+              </p>
+            ),
+          },
+        ],
+      },
+    ];
+    const vitalsColumns = [
+      {
+        header: "Vitals",
+        columns: [
+          {
+            header: "Nat.",
+            accessorFn: (d) => d?.birthCountry || "-",
+            size: 42,
+          },
+          {
+            header: "Age",
+            accessorFn: (d) => calculateSeasonAge(d),
+            size: 38,
+            meta: numericColumnMeta,
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
         ],
       },
     ];
-    return showPlayoffStats ? [...baseColumns, ...playoffColumns] : baseColumns;
-  }, [showPlayoffStats, sumFromRows]);
+    return [...baseColumns, ...playoffColumns, ...vitalsColumns];
+  }, [calculateSeasonAge, formatPlayoffValue, sumFromRows]);
 
-  const team_table_data = useMemo(() => teamRecords, [teamRecords]);
+  const team_table_data = useMemo(() => teamRecords || [], [teamRecords]);
+  const [visibleTeamTableRows, setVisibleTeamTableRows] = useState([]);
+  const handleTeamTablePageRowsChange = useCallback((rows) => {
+    setVisibleTeamTableRows(rows);
+  }, []);
+
+  useEffect(() => {
+    setVisibleTeamTableRows([]);
+  }, [team_table_data]);
+
+  const team_chart_data = useMemo(
+    () =>
+      (visibleTeamTableRows.length
+        ? visibleTeamTableRows
+        : team_table_data.slice(0, 8)
+      )
+        .slice()
+        .reverse()
+        .map((row) => ({
+          ...row,
+          pointPctPercent:
+            row?.pointPct == null ? null : Number(row.pointPct) * 100,
+        })),
+    [team_table_data, visibleTeamTableRows]
+  );
+  const normalizeTeamSeasonId = useCallback(
+    (season) => (season === null || season === undefined ? "" : String(season)),
+    []
+  );
+  const selectedTeamRecord = useMemo(
+    () =>
+      (teamRecords || []).find(
+        (record) => normalizeTeamSeasonId(record?.seasonId) === seasonId
+      ),
+    [normalizeTeamSeasonId, teamRecords, seasonId]
+  );
+  const formatStat = (value, digits = 0) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "-";
+    return number.toFixed(digits);
+  };
+  const formatPointPct = (value) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "-";
+    return `${(number * 100).toFixed(1)}%`;
+  };
+  const formatSeasonStartYear = (season) => {
+    const seasonValue = String(season || "");
+    return /^\d{8}$/.test(seasonValue) ? seasonValue.slice(0, 4) : seasonValue;
+  };
+  const currentTeamId = Array.isArray(id) ? id[0] : id;
+  const teamPageId = teamId || currentTeamId;
 
   const team_table_columns = useMemo(
     () => [
       {
         header: "Year",
         accessorKey: "seasonId",
+        size: 78,
+        cell: (props) => {
+          const season = props.getValue();
+          if (!teamPageId || !season) return season;
+
+          return (
+            <Link
+              href={`/teams/${encodeURIComponent(
+                teamPageId
+              )}?season=${encodeURIComponent(season)}`}
+              className="font-medium text-slate-800 hover:text-blue-700 dark:text-slate-100 dark:hover:text-blue-300"
+            >
+              {season}
+            </Link>
+          );
+        },
       },
       {
         header: "W",
         accessorKey: "wins",
+        size: 36,
+        meta: { headerClassName: "text-right", cellClassName: "text-right" },
       },
       {
         header: "L",
         accessorKey: "losses",
+        size: 36,
+        meta: { headerClassName: "text-right", cellClassName: "text-right" },
       },
       // {
       //   header: "ROW",
@@ -441,25 +673,56 @@ export default function TeamPage({
       {
         header: "OTL",
         accessorKey: "otLosses",
+        size: 42,
+        meta: { headerClassName: "text-right", cellClassName: "text-right" },
       },
       {
         header: "Pts",
         accessorKey: "points",
+        size: 44,
+        meta: { headerClassName: "text-right", cellClassName: "text-right" },
+      },
+      {
+        header: "P%",
+        accessorKey: "pointPct",
+        size: 52,
+        cell: (props) => (
+          <p className="text-right">
+            {props.getValue() != null
+              ? `${(Number(props.getValue()) * 100).toFixed(1)}`
+              : "-"}
+          </p>
+        ),
+        meta: { headerClassName: "text-right" },
       },
       {
         header: "GFPG",
         accessorKey: "goalsForPerGame",
+        size: 56,
+        cell: (props) => (
+          <p className="text-right">
+            {props.getValue() != null ? Number(props.getValue()).toFixed(2) : "-"}
+          </p>
+        ),
+        meta: { headerClassName: "text-right" },
       },
       {
         header: "GAPG",
         accessorKey: "goalsAgainstPerGame",
+        size: 56,
+        cell: (props) => (
+          <p className="text-right">
+            {props.getValue() != null ? Number(props.getValue()).toFixed(2) : "-"}
+          </p>
+        ),
+        meta: { headerClassName: "text-right" },
       },
       // {
       //   header: "Place",
       //   accessorKey: "place",
       // },
     ],
-    []
+    [teamPageId]
   );
 
   const teamName = fullName || abbreviation;
@@ -470,7 +733,7 @@ export default function TeamPage({
   });
 
   return (
-    <div>
+    <div className="w-full max-w-full overflow-x-hidden">
       <SEO
         title={`${teamName} Roster & Stats`}
         description={`${teamName} current roster, player statistics, and team history. View skaters, goalies, and historical team records.`}
@@ -478,32 +741,51 @@ export default function TeamPage({
         ogImage={logoUrl}
         jsonLd={jsonLd}
       />
-      <div className="p-1 flex items-center gap-3">
+      <div className="p-0.5 flex items-center gap-2">
         <ClickableImage
           src={`https://assets.nhle.com/logos/nhl/svg/${abbreviation}_dark.svg`}
           alt={fullName}
           containerClassName="w-12 h-12 relative flex-shrink-0"
           className="object-contain"
         />
-        <p className="text-2xl font-bold">{fullName}</p>
+        <div className="min-w-0 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+          <p className="text-2xl font-bold">{fullName}</p>
+          {selectedTeamRecord && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+              <span className="font-medium text-gray-800 dark:text-gray-100">
+                {normalizeTeamSeasonId(selectedTeamRecord.seasonId)}
+              </span>
+              <span>
+                {formatStat(selectedTeamRecord.wins)}-
+                {formatStat(selectedTeamRecord.losses)}-
+                {formatStat(selectedTeamRecord.otLosses)}
+              </span>
+              <span>{formatStat(selectedTeamRecord.points)} Pts</span>
+              <span>P% {formatPointPct(selectedTeamRecord.pointPct)}</span>
+              <span>
+                GF/G {formatStat(selectedTeamRecord.goalsForPerGame, 2)}
+              </span>
+              <span>
+                GA/G {formatStat(selectedTeamRecord.goalsAgainstPerGame, 2)}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="gap-1 p-1 flex flex-col lg:flex-row">
+      <div className="team-content-grid">
         {seasons && (
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 w-full p-1 flex flex-col max-w-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+          <div className="roster-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-0.5 flex flex-col items-start">
+            <div className="flex items-center justify-between pb-0.5">
+              <div className="flex items-center gap-1">
                 <div>
-                  <label className="px-1 dark:text-white font-medium" htmlFor="season">
+                  <label className="pr-1 dark:text-white font-medium" htmlFor="season">
                     Season:
                   </label>
                   <select
-                    className="w-40 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-36 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={seasonId}
                     onChange={(event) => {
-                      const newSeasonId = event.target.value;
-                      const newIndex = seasonIds.indexOf(newSeasonId);
-                      setSeasonId(newSeasonId);
-                      setCurrentIndex(newIndex);
+                      selectSeason(event.target.value);
                     }}
                   >
                     {seasonIds &&
@@ -518,29 +800,20 @@ export default function TeamPage({
                   </select>
                 </div>
                 <button
-                  className="btn-blue m-1 btn-disabled"
+                  className="btn-blue m-0 btn-disabled"
                   onClick={handleDecrementSeason}
                   disabled={currentIndex >= seasonIds.length - 1}
                 >
                   <MdOutlineChevronLeft size={28} />
                 </button>
                 <button
-                  className="btn-blue m-1 btn-disabled"
+                  className="btn-blue m-0 btn-disabled"
                   onClick={handleIncrementSeason}
                   disabled={currentIndex <= 0}
                 >
                   <MdOutlineChevronRight size={28} />
                 </button>
               </div>
-
-              {seasonData && seasonData.madePlayoffs && (
-                <button
-                  onClick={togglePlayoffStats}
-                  className=" bg-red-500 text-white p-2 rounded"
-                >
-                  {showPlayoffStats ? "Hide PO Stats" : "Show PO Stats"}
-                </button>
-              )}
             </div>
 
             {seasonData && seasonData?.skaters && (
@@ -548,6 +821,8 @@ export default function TeamPage({
                 data={seasonData.skaters}
                 columns={roster_player_table_columns}
                 sortKey="P"
+                modern
+                compact
               />
             )}
             {seasonData && seasonData?.goalies && (
@@ -555,59 +830,138 @@ export default function TeamPage({
                 data={seasonData.goalies}
                 columns={roster_goalie_table_columns}
                 sortKey="P"
+                modern
+                compact
               />
             )}
           </div>
         )}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-1 flex flex-col">
-          <div className="p-2 mx-auto">
-            {/* <input type="" /> */}
-            <ResponsiveContainer width={450} height={300}>
-              <LineChart data={team_table_data}>
-                <YAxis />
-                <XAxis dataKey="year" />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  name="Points"
-                  dataKey="points"
-                  strokeWidth={2}
-                  stroke="#000"
+        <div className="history-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-1">
+          <div className="grid min-w-0 grid-cols-1 gap-2 2xl:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="h-64 min-w-0 xl:h-72">
+              {/* <input type="" /> */}
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={team_chart_data}
+                  margin={{ top: 6, right: 28, left: 8, bottom: 18 }}
+                >
+                  <CartesianGrid stroke="#e5e7eb" strokeOpacity={0.8} />
+                  <YAxis
+                    yAxisId="record"
+                    width={44}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    label={{
+                      value: "Points / Wins / Losses",
+                      angle: -90,
+                      position: "insideLeft",
+                      offset: 0,
+                      style: { fontSize: 11, fill: "#334155" },
+                    }}
+                  />
+                  <YAxis
+                    yAxisId="pct"
+                    orientation="right"
+                    domain={[0, 100]}
+                    width={44}
+                    tick={{ fontSize: 11, fill: "#7c3aed" }}
+                    tickFormatter={(value) => `${value}%`}
+                    label={{
+                      value: "P%",
+                      angle: 90,
+                      position: "insideRight",
+                      offset: 0,
+                      style: { fontSize: 11, fill: "#7c3aed" },
+                    }}
+                  />
+                  <XAxis
+                    dataKey="seasonId"
+                    tickFormatter={formatSeasonStartYear}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tickMargin={8}
+                    label={{
+                      value: "Season start year",
+                      position: "insideBottom",
+                      offset: -12,
+                      style: { fontSize: 11, fill: "#334155" },
+                    }}
+                  />
+                  <Tooltip
+                    labelFormatter={(label) => formatSeasonStartYear(label)}
+                    formatter={(value, name) => [
+                      name === "P%" && Number.isFinite(Number(value))
+                        ? `${Number(value).toFixed(1)}%`
+                        : value,
+                      name,
+                    ]}
+                  />
+                  <Legend
+                    align="left"
+                    verticalAlign="top"
+                    height={28}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12 }}
+                  />
+                  <Line
+                    type="linear"
+                    name="Points"
+                    dataKey="points"
+                    yAxisId="record"
+                    strokeWidth={2}
+                    stroke="#2563eb"
+                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    type="linear"
+                    name="Wins"
+                    dataKey="wins"
+                    yAxisId="record"
+                    strokeWidth={2}
+                    stroke="#009966"
+                    strokeDasharray="4 3"
+                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    type="linear"
+                    name="P%"
+                    dataKey="pointPctPercent"
+                    yAxisId="pct"
+                    strokeWidth={2}
+                    stroke="#7c3aed"
+                    strokeDasharray="6 2 2 2"
+                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    type="linear"
+                    name="Losses (reg)"
+                    dataKey="losses"
+                    yAxisId="record"
+                    strokeWidth={2}
+                    stroke="#FF0000"
+                    strokeDasharray="1 4"
+                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="min-w-0 overflow-x-auto">
+              {team_table_data && (
+                <PaginatedTable
+                  // columns={newColumns}
+                  columns={team_table_columns}
+                  data={team_table_data}
+                  sortKey="seasonId"
+                  pageSize={10}
+                  onPageRowsChange={handleTeamTablePageRowsChange}
+                  fillLastPage
+                  modern
+                  compact
                 />
-                <Line
-                  type="monotone"
-                  name="Wins"
-                  dataKey="wins"
-                  strokeWidth={2}
-                  stroke="#009966"
-                />
-                <Line
-                  type="monotone"
-                  name="S/O Wins"
-                  dataKey="winsInShootout"
-                  strokeWidth={2}
-                  stroke="#11F"
-                />
-                <Line
-                  type="monotone"
-                  name="Losses"
-                  dataKey="losses"
-                  strokeWidth={2}
-                  stroke="#FF0000"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="p-2 mx-auto">
-            {team_table_data && (
-              <ReactTable
-                // columns={newColumns}
-                columns={team_table_columns}
-                data={team_table_data}
-                sortKey="year"
-              />
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -619,6 +973,33 @@ export default function TeamPage({
           emptyMessage={`No posts yet for ${teamName}.`}
         />
       </div>
+      <style jsx>{`
+        .team-content-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 0.25rem;
+          max-width: 100%;
+          padding: 0.125rem;
+          width: 100%;
+        }
+
+        .roster-card,
+        .history-card {
+          width: 100%;
+        }
+
+        @media (min-width: 1280px) {
+          .team-content-grid {
+            align-items: start;
+            grid-template-columns: max-content minmax(0, 1fr);
+          }
+
+          .roster-card {
+            max-width: 100%;
+            width: max-content;
+          }
+        }
+      `}</style>
     </div>
   );
 }

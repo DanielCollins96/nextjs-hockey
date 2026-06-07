@@ -1,5 +1,35 @@
 import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
 
+const normalizeSeasonId = (season) =>
+  season === null || season === undefined ? '' : String(season)
+
+const appendDataSource = (dataSource, suffix) =>
+  dataSource.includes(suffix) ? dataSource : `${dataSource}+${suffix}`
+
+function hasMissingRosterSeasonRecord(skaters, goalies, teamRecords) {
+  const rosterSeasonIds = new Set(
+    [...skaters, ...goalies]
+      .map((player) => normalizeSeasonId(player?.season))
+      .filter(Boolean)
+  )
+
+  if (!rosterSeasonIds.size) return false
+
+  const teamRecordSeasonIds = new Set(
+    teamRecords
+      .map((record) => normalizeSeasonId(record?.seasonId))
+      .filter(Boolean)
+  )
+
+  return [...rosterSeasonIds].some((season) => !teamRecordSeasonIds.has(season))
+}
+
+function hasMissingRosterVitals(skaters, goalies) {
+  const rosterRows = [...skaters, ...goalies]
+
+  return rosterRows.length > 0 && rosterRows.some((player) => !player?.birthdate)
+}
+
 export default async function handler(req, res) {
   try {
     const { id } = req.query
@@ -12,9 +42,10 @@ export default async function handler(req, res) {
 
       let skaters = readModel.skaters || []
       let goalies = readModel.goalies || []
+      let teamRecords = readModel.teamRecords || []
       let dataSource = 's3-read-model'
 
-      if (!skaters.length && !goalies.length) {
+      if ((!skaters.length && !goalies.length) || hasMissingRosterVitals(skaters, goalies)) {
         try {
           const { getTeamSkaters, getTeamGoalies } = await import('../../../lib/queries')
           const [dbSkaters, dbGoalies] = await Promise.all([
@@ -22,14 +53,27 @@ export default async function handler(req, res) {
             getTeamGoalies(id)
           ])
 
-          skaters = dbSkaters || skaters
-          goalies = dbGoalies || goalies
-
-          if (skaters.length || goalies.length) {
-            dataSource = 's3-read-model+postgres-team-players'
+          if (dbSkaters?.length || dbGoalies?.length) {
+            skaters = dbSkaters || skaters
+            goalies = dbGoalies || goalies
+            dataSource = appendDataSource(dataSource, 'postgres-team-players')
           }
         } catch (error) {
           console.warn(`Team ${id} player fallback failed:`, error.message)
+        }
+      }
+
+      if (hasMissingRosterSeasonRecord(skaters, goalies, teamRecords)) {
+        try {
+          const { getTeamSeasons } = await import('../../../lib/queries')
+          const dbTeamRecords = await getTeamSeasons(id)
+
+          if (dbTeamRecords?.length) {
+            teamRecords = dbTeamRecords
+            dataSource = appendDataSource(dataSource, 'postgres-team-records')
+          }
+        } catch (error) {
+          console.warn(`Team ${id} team records fallback failed:`, error.message)
         }
       }
 
@@ -41,7 +85,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         team: readModel.team,
-        teamRecords: readModel.teamRecords || [],
+        teamRecords,
         skaters,
         goalies,
         playoffSeasons: readModel.playoffSeasons || []
