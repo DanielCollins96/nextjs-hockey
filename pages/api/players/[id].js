@@ -1,9 +1,10 @@
 import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
+import { extractEntityId } from '../../../lib/routes'
 
 
 export default async function handler(req, res) {
   try {
-    const { id } = req.query
+    const id = extractEntityId(req.query.id)
     const readModel = await fetchReadModel(readModelPaths.player(id))
 
     if (readModel) {

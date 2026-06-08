@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import ReactTable from '../../components/Table';
 import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
+import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
 
-const Players = ({playerId, stats, person, awards}) => {
-    const router = useRouter()
-    const { id } = router.query
+const Players = ({playerId, stats, person, awards, canonicalPath}) => {
+    const id = playerId
 
     const position = person && person['position'] ? person['position'] : 'Center';
 
@@ -168,7 +167,7 @@ const Players = ({playerId, stats, person, awards}) => {
                  header: 'Team',
                  accessorFn: (d) => d['team.name'],
                  cell: ({row}) => row.original['league.name'] === 'NHL' ? (<Link
-                     href={`/teams/${row.original['team.id']}?season=${row.original.season}`}
+                     href={`${teamUrl(row.original['team.name'], row.original['team.id'])}?season=${encodeURIComponent(row.original.season)}`}
                      passHref
                      className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300">{row.original['team.name']}</Link>) : (row.original['team.name'])
              },
@@ -243,7 +242,7 @@ const Players = ({playerId, stats, person, awards}) => {
             <SEO
                 title={`${playerName} Stats & Profile`}
                 description={`${playerName}'s NHL career statistics, draft info, and season-by-season stats. View games played, goals, assists, points, and more.`}
-                path={`/players/${id}`}
+                path={canonicalPath}
                 ogImage={headshotUrl}
                 ogType="profile"
                 jsonLd={jsonLd}
@@ -306,7 +305,7 @@ const Players = ({playerId, stats, person, awards}) => {
 };
 
 export async function getServerSideProps({params, req}) {
-    const { id } = params
+    const id = extractEntityId(params.id)
     const protocol = req.headers['x-forwarded-proto'] || 'http'
     const host = req.headers.host
 
@@ -316,9 +315,10 @@ export async function getServerSideProps({params, req}) {
         if (!response.ok) {
             return {
                 props: {
-                    playerId: params.id,
+                    playerId: id,
                     stats: null,
                     person: null,
+                    canonicalPath: playerUrl(null, id),
                 }
             }
         }
@@ -329,30 +329,43 @@ export async function getServerSideProps({params, req}) {
         if (!person) {
             return {
                 props: {
-                    playerId: params.id,
+                    playerId: id,
                     stats: null,
                     person: null,
                     awards: [],
+                    canonicalPath: playerUrl(null, id),
                 }
+            }
+        }
+
+        const canonicalPath = playerUrl(person.player_name, id)
+        if (params.id !== canonicalPath.split('/').pop()) {
+            return {
+                redirect: {
+                    destination: canonicalPath,
+                    permanent: false,
+                },
             }
         }
 
         return {
             props: {
-                playerId: params.id,
+                playerId: id,
                 stats: payload?.playerStats || [],
                 person,
                 awards: payload?.awards || [],
+                canonicalPath,
             }
         }
     } catch (error) {
         console.log(error);
         return {
             props: {
-                playerId: params.id,
+                playerId: id,
                 stats: null,
                 person: null,
                 awards: [],
+                canonicalPath: playerUrl(null, id),
             }
         }
     }

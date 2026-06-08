@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 import { FaDownload } from 'react-icons/fa';
+import { playerUrl, teamUrl } from '../../lib/routes';
 
 export default function PlayersIndex({ players, searchTerm }) {
     const router = useRouter();
@@ -65,7 +66,7 @@ export default function PlayersIndex({ players, searchTerm }) {
             accessorKey: 'player_name',
             cell: ({ row }) => (
                 <Link
-                    href={`/players/${row.original.playerId}`}
+                    href={playerUrl(row.original.player_name, row.original.playerId)}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     {row.original.player_name}
@@ -85,7 +86,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                 if (row.original.team_id) {
                     return (
                         <Link
-                            href={`/teams/${row.original.team_id}`}
+                            href={teamUrl(row.original.team_name, row.original.team_id)}
                             className="text-blue-600 dark:text-blue-400 hover:underline"
                         >
                             {row.original.team_name}

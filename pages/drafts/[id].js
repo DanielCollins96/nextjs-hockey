@@ -5,6 +5,7 @@ import SEO from '../../components/SEO'
 import DraftList from '../../components/DraftList'
 import { useRouter } from 'next/router'
 import { FaDownload } from 'react-icons/fa'
+import { playerUrl, teamUrl } from '../../lib/routes'
 
 
 export default function Drafts({id,draft,draftYears}) {
@@ -101,7 +102,7 @@ export default function Drafts({id,draft,draftYears}) {
       header: 'Team',
       accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
-        href={`/teams/${row.original.draftedByTeamId || row.original.teamId}`}
+        href={teamUrl(row.original.teamAbbrev, row.original.draftedByTeamId || row.original.teamId)}
         passHref
         className=" hover:text-blue-700 visited:text-purple-800">{row.original.teamAbbrev}</Link>),
       size: 72,
@@ -109,7 +110,7 @@ export default function Drafts({id,draft,draftYears}) {
     {
       header: 'Player',
       accessorFn: d => d['playerName'],
-      cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={`/players/${props.row.original.playerId}`} passHref >{props.row.original.playerName}</Link>) : (props.row.original.playerName),
+      cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={playerUrl(props.row.original.playerName, props.row.original.playerId)} passHref >{props.row.original.playerName}</Link>) : (props.row.original.playerName),
       size: 210,
     },
     {

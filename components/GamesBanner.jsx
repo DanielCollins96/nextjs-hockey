@@ -5,6 +5,7 @@ import { API, graphqlOperation } from "aws-amplify";
 import { FaChevronLeft, FaChevronRight, FaRegCommentDots } from "react-icons/fa";
 import { UseAuth } from "../contexts/Auth";
 import * as queries from "../src/graphql/queries";
+import { teamUrl } from "../lib/routes";
 
 function formatDate(dateString) {
   const date = new Date(dateString + "T12:00:00");
@@ -55,8 +56,8 @@ function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
   const isLive = game.gameState === "LIVE" || game.gameState === "CRIT";
   const isScheduled = game.gameState === "FUT" || game.gameState === "PRE";
 
-  const awayTeamLink = game.awayTeam_dbId ? `/teams/${game.awayTeam_dbId}` : null;
-  const homeTeamLink = game.homeTeam_dbId ? `/teams/${game.homeTeam_dbId}` : null;
+  const awayTeamLink = game.awayTeam_dbId ? teamUrl(game.awayTeam_abbrev, game.awayTeam_dbId) : null;
+  const homeTeamLink = game.homeTeam_dbId ? teamUrl(game.homeTeam_abbrev, game.homeTeam_dbId) : null;
 
   return (
     <Link href={`/games/${game.id}`} className="flex-shrink-0 w-32 sm:w-40 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">

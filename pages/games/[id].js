@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SEO from '../../components/SEO';
 import ThreadMessageBoard from '../../components/ThreadMessageBoard';
+import { playerUrl, teamUrl } from '../../lib/routes';
 
 function formatDate(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -88,7 +89,7 @@ function TeamDisplay({ team, score, shots, dbId, logo, isHome, isScheduled }) {
   return (
     <div className="flex flex-col items-center">
       {dbId ? (
-        <Link href={`/teams/${dbId}`} className="hover:opacity-80 transition-opacity">
+        <Link href={teamUrl(team, dbId)} className="hover:opacity-80 transition-opacity">
           {teamContent}
         </Link>
       ) : (
@@ -241,7 +242,7 @@ function ThreeStars({ threeStars }) {
         {threeStars.map((player) => (
           <Link
             key={`${player.star}-${player.player_id}`}
-            href={`/players/${player.player_id}`}
+            href={playerUrl(player.player_name, player.player_id)}
             className="rounded-md border border-gray-200 dark:border-gray-700 px-2 py-2 text-center lg:text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">

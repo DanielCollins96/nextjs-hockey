@@ -11,6 +11,7 @@ import * as mutations from "../src/graphql/mutations";
 import PostEditor from "../components/PostEditor";
 import PostsList from "../components/PostsList";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { teamUrl } from "../lib/routes";
 
 const THREAD_SUBJECT_PREFIX_REGEX = /^THREAD#/i;
 
@@ -36,7 +37,7 @@ function parseThreadPost(post) {
 
   let threadLink = null;
   if (rawType === "TEAM" && threadId) {
-    threadLink = `/teams/${threadId}`;
+    threadLink = teamUrl(cleanSubject, threadId);
   } else if (rawType === "GAME" && threadId) {
     threadLink = `/games/${threadId}`;
   }

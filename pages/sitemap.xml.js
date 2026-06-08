@@ -1,3 +1,5 @@
+import { playerUrl, teamUrl } from '../lib/routes';
+
 const SITE_URL = 'https://nextjs-hockey.vercel.app';
 
 function generateSiteMap({ playerIds, draftYears, teamIds }) {
@@ -40,24 +42,39 @@ function generateSiteMap({ playerIds, draftYears, teamIds }) {
   <!-- Player pages -->
   ${playerIds
     .map(
-      ({ playerId }) => `
+      (player) => {
+        const playerId =
+          player?.playerId ||
+          player?.id ||
+          (typeof player === 'string' || typeof player === 'number' ? player : null);
+        const playerName = player?.player_name || player?.name || player?.fullName;
+
+        return `
   <url>
-    <loc>${SITE_URL}/players/${playerId}</loc>
+    <loc>${SITE_URL}${playerUrl(playerName, playerId)}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-  </url>`
+  </url>`;
+      }
     )
     .join('')}
 
   <!-- Team pages -->
   ${teamIds
     .map(
-      ({ id }) => `
+      (team) => {
+        const id =
+          team?.id ||
+          (typeof team === 'string' || typeof team === 'number' ? team : null);
+        const name = team?.name || team?.fullName || team?.abbreviation;
+
+        return `
   <url>
-    <loc>${SITE_URL}/teams/${id}</loc>
+    <loc>${SITE_URL}${teamUrl(name, id)}</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-  </url>`
+  </url>`;
+      }
     )
     .join('')}
 

@@ -9,6 +9,7 @@ import PaginatedTable from "../../components/PaginatedTable";
 import { ClickableImage } from "../../components/ImageModal";
 import ThreadMessageBoard from "../../components/ThreadMessageBoard";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
+import { extractEntityId, playerUrl, teamUrl } from "../../lib/routes";
 import {
   CartesianGrid,
   LineChart,
@@ -32,9 +33,10 @@ export default function TeamPage({
   fullName,
   teamRecords,
   teamId,
+  canonicalPath,
 }) {
   const router = useRouter();
-  const {id, season: querySeason} = router.query;
+  const {season: querySeason} = router.query;
   const defaultSeasonId = seasonIds[0] || "";
   const getValidSeasonId = useCallback(
     (season) => {
@@ -187,7 +189,7 @@ export default function TeamPage({
         cell: (props) =>
           props.row.original?.playerId ? (
             <Link
-              href={`/players/${props.row.original.playerId}`}
+              href={playerUrl(props.row.original.fullName, props.row.original.playerId)}
               passHref
               className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300"
             >
@@ -400,7 +402,7 @@ export default function TeamPage({
         cell: (props) =>
           props.row.original?.playerId ? (
             <Link
-              href={`/players/${props.row.original.playerId}`}
+              href={playerUrl(props.row.original.fullName, props.row.original.playerId)}
               passHref
               className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300"
             >
@@ -625,8 +627,8 @@ export default function TeamPage({
     const seasonValue = String(season || "");
     return /^\d{8}$/.test(seasonValue) ? seasonValue.slice(0, 4) : seasonValue;
   };
-  const currentTeamId = Array.isArray(id) ? id[0] : id;
-  const teamPageId = teamId || currentTeamId;
+  const teamPageId = teamId;
+  const teamName = fullName || abbreviation;
 
   const team_table_columns = useMemo(
     () => [
@@ -640,9 +642,7 @@ export default function TeamPage({
 
           return (
             <Link
-              href={`/teams/${encodeURIComponent(
-                teamPageId
-              )}?season=${encodeURIComponent(season)}`}
+              href={`${teamUrl(teamName, teamPageId)}?season=${encodeURIComponent(season)}`}
               className="font-medium text-slate-800 hover:text-blue-700 dark:text-slate-100 dark:hover:text-blue-300"
             >
               {season}
@@ -722,10 +722,9 @@ export default function TeamPage({
       //   accessorKey: "place",
       // },
     ],
-    [teamPageId]
+    [teamName, teamPageId]
   );
 
-  const teamName = fullName || abbreviation;
   const logoUrl = `https://assets.nhle.com/logos/nhl/svg/${abbreviation}_dark.svg`;
   const jsonLd = generateTeamJsonLd({
     name: teamName,
@@ -737,7 +736,7 @@ export default function TeamPage({
       <SEO
         title={`${teamName} Roster & Stats`}
         description={`${teamName} current roster, player statistics, and team history. View skaters, goalies, and historical team records.`}
-        path={`/teams/${id}`}
+        path={canonicalPath}
         ogImage={logoUrl}
         jsonLd={jsonLd}
       />
@@ -968,7 +967,7 @@ export default function TeamPage({
       <div className="p-1 mt-2">
         <ThreadMessageBoard
           threadType="team"
-          threadId={teamId || id}
+          threadId={teamId}
           title={`${teamName} Message Board`}
           emptyMessage={`No posts yet for ${teamName}.`}
         />
@@ -1004,12 +1003,13 @@ export default function TeamPage({
   );
 }
 
-export async function getServerSideProps({params, req}) {
+export async function getServerSideProps({params, req, query}) {
+  const id = extractEntityId(params.id);
   const protocol = req.headers["x-forwarded-proto"] || "http";
   const host = req.headers.host;
 
   try {
-    const response = await fetch(`${protocol}://${host}/api/teams/${params.id}`);
+    const response = await fetch(`${protocol}://${host}/api/teams/${id}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -1022,7 +1022,8 @@ export async function getServerSideProps({params, req}) {
           abbreviation: null,
           fullName: null,
           teamRecords: [],
-          teamId: params.id,
+          teamId: id,
+          canonicalPath: teamUrl(null, id),
         },
       };
     }
@@ -1035,6 +1036,20 @@ export async function getServerSideProps({params, req}) {
     const playoffSeasons = payload?.playoffSeasons || [];
     const normalizeSeasonId = (season) =>
       season === null || season === undefined ? "" : String(season);
+
+    const teamName = teamInfo?.fullName || teamInfo?.name || teamInfo?.abbreviation || "";
+    const canonicalPath = teamUrl(teamName, id);
+    if (params.id !== canonicalPath.split('/').pop()) {
+      const season = Array.isArray(query?.season) ? query.season[0] : query?.season;
+      return {
+        redirect: {
+          destination: season
+            ? `${canonicalPath}?season=${encodeURIComponent(season)}`
+            : canonicalPath,
+          permanent: false,
+        },
+      };
+    }
 
     const combinePlayersBySeason = (allSkaters, allGoalies) => {
       const seasonMap = {};
@@ -1071,9 +1086,10 @@ export async function getServerSideProps({params, req}) {
         seasons: seasonMap,
         seasonIds: seasons,
         abbreviation: teamInfo?.abbreviation || null,
-        fullName: teamInfo?.fullName || null,
+        fullName: teamInfo?.fullName || teamInfo?.name || null,
         teamRecords,
-        teamId: params.id,
+        teamId: id,
+        canonicalPath,
       },
     };
   } catch (error) {
@@ -1085,7 +1101,8 @@ export async function getServerSideProps({params, req}) {
         abbreviation: null,
         fullName: null,
         teamRecords: [],
-        teamId: params.id,
+        teamId: id,
+        canonicalPath: teamUrl(null, id),
       },
     };
   }

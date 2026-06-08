@@ -2,6 +2,7 @@ import {useState} from "react";
 import { MdOutlineChevronLeft } from "react-icons/md";
 import Link from 'next/link'
 import Image from 'next/image'
+import { playerUrl, teamUrl } from '../lib/routes';
 
 export default function TeamBox({team}) {
   const [active, setActive] = useState(false)
@@ -11,7 +12,7 @@ export default function TeamBox({team}) {
   const PlayerListItem = ({ person }) => (
     <li key={person?.id} className="odd:bg-slate-100 dark:odd:bg-gray-700 dark:even:bg-gray-800 px-1 divide-x dark:divide-gray-600">
       <Link
-        href={`/players/${encodeURIComponent(person.id)}`}
+        href={playerUrl(`${person.firstName || ''} ${person.lastName || ''}`, person.id)}
         className="text-sm hover:text-blue-700 dark:text-gray-200 dark:hover:text-blue-400 visited:text-purple-800 dark:visited:text-purple-400">
         <b>{person.sweaterNumber ? `${person.sweaterNumber} ` : ""}</b>
         {person.firstName + " " + person.lastName}
@@ -25,7 +26,7 @@ export default function TeamBox({team}) {
         <div className="flex justify-between items-center">
           <h2 className="text-xl text-left p-1">
             <Link
-              href={`/teams/${encodeURIComponent(team.team.id)}`}
+              href={teamUrl(team.team.name, team.team.id)}
               className="flex items-center gap-2 ml-2 pr-3 hover:text-blue-700 dark:text-white dark:hover:text-blue-400">
               <div className="w-8 h-8 relative flex-shrink-0">
                 <Image

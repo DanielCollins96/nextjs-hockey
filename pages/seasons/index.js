@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
+import { playerUrl, teamUrl } from '../../lib/routes';
 
 export default function Seasons({players, goalies, season, availableSeasons}) {
     const router = useRouter();
@@ -25,7 +26,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
             accessorKey: 'player_name',
             cell: ({row}) => (
                 <Link
-                    href={`/players/${row.original["playerId"]}`}
+                    href={playerUrl(row.original.player_name, row.original["playerId"])}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     {row.original.player_name}
@@ -37,7 +38,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
             accessorFn: (d) => d['team.name'],
             cell: ({row}) => (
                 <Link
-                    href={`/teams/${row.original['team.id']}`}
+                    href={teamUrl(row.original['team.name'], row.original['team.id'])}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     {row.original['team.name']}
@@ -87,7 +88,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
             accessorKey: 'player_name',
             cell: ({row}) => (
                 <Link
-                    href={`/players/${row.original["playerId"]}`}
+                    href={playerUrl(row.original.player_name, row.original["playerId"])}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     {row.original.player_name}
@@ -100,7 +101,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
             accessorFn: (d) => d['team.name'],
             cell: ({row}) => (
                 <Link
-                    href={`/teams/${row.original['team.id']}`}
+                    href={teamUrl(row.original['team.name'], row.original['team.id'])}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                     {row.original['team.name']}
