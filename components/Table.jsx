@@ -78,12 +78,13 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                 const headerClassName = header.column.columnDef.meta?.headerClassName || ""
                 const canExpand = header.column.columnDef.meta?.expandOnDoubleClick
                 const isRightAligned = headerClassName.includes("text-right")
+                const isGroupedHeader = modern && header.colSpan > 1
 
                 return (
                   <th
                     className={
                       modern
-                        ? `border-b border-slate-200 bg-slate-50 ${compact ? "px-1.5 py-1" : "px-2 py-2"} text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
+                        ? `border-b border-r border-slate-200 bg-slate-50 ${compact ? "px-1.5 py-1" : "px-2 py-2"} text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg last:border-r-0 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${isGroupedHeader ? "border-t bg-slate-100 text-center tracking-wide dark:bg-slate-700/70" : ""} ${headerClassName}`
                         : `${mobileFit ? "px-1 text-xs sm:text-sm whitespace-nowrap" : "px-1 whitespace-nowrap"} bg-white dark:bg-gray-800 dark:text-white border border-blue-600 dark:border-blue-500`
                     }
                     key={header.id}
@@ -91,7 +92,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                     onDoubleClick={() => toggleExpandedColumn(header.column)}
                     title={canExpand ? "Double-click to toggle column width" : undefined}
                   >
-                    <div className={`flex items-center gap-1 ${isRightAligned ? "justify-end" : "justify-between"}`}>
+                    <div className={`flex items-center gap-1 ${isGroupedHeader ? "justify-center" : isRightAligned ? "justify-end" : "justify-between"}`}>
                       {header.isPlaceholder ? null : (
                         <div
                           {...{
@@ -138,7 +139,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                   <td
                     className={
                       modern
-                        ? `border-b border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
+                        ? `border-b border-r border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 last:border-r-0 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
                         : `${mobileFit ? "px-1 text-xs sm:text-sm" : "px-1 text-sm"} border-black dark:border-gray-600 border dark:text-gray-200 whitespace-nowrap`
                     }
                     key={cell.id}
@@ -167,7 +168,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
               <td
                 key={header.id}
                 colSpan={header.colSpan}
-                className={modern ? `${compact ? "px-1.5 py-1" : "px-2 py-2"} whitespace-nowrap` : `px-1 border-black whitespace-nowrap`}
+                className={modern ? `border-r border-t border-slate-200 last:border-r-0 dark:border-slate-700 ${compact ? "px-1.5 py-1" : "px-2 py-2"} whitespace-nowrap` : `px-1 border-black whitespace-nowrap`}
               >
                 {header.isPlaceholder
                   ? null
