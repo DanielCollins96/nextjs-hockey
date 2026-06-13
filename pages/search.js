@@ -5,6 +5,8 @@ import SEO from '../components/SEO'
 export default function SearchPage({ query, players, teams }) {
   const hasQuery = query.trim().length > 0
   const hasResults = players.length > 0 || teams.length > 0
+  const skaterValue = (player, value) => player.position === 'G' ? '-' : (value ?? 0)
+  const goalieValue = (player, value) => player.position === 'G' ? (value ?? 0) : '-'
 
   return (
     <div className="mx-auto max-w-6xl px-3 py-6">
@@ -88,6 +90,13 @@ export default function SearchPage({ query, players, teams }) {
                       <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Name</th>
                       <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Pos</th>
                       <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Team</th>
+                      <th className="px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">GP</th>
+                      <th className="px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">G</th>
+                      <th className="px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">A</th>
+                      <th className="px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">P</th>
+                      <th className="px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">W</th>
+                      <th className="px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">L</th>
+                      <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Country</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -100,6 +109,13 @@ export default function SearchPage({ query, players, teams }) {
                         </td>
                         <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{player.position || '-'}</td>
                         <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{player.teamName || '-'}</td>
+                        <td className="px-3 py-2 text-right text-sm tabular-nums text-gray-700 dark:text-gray-300">{player.games ?? '-'}</td>
+                        <td className="px-3 py-2 text-right text-sm tabular-nums text-gray-700 dark:text-gray-300">{skaterValue(player, player.goals)}</td>
+                        <td className="px-3 py-2 text-right text-sm tabular-nums text-gray-700 dark:text-gray-300">{skaterValue(player, player.assists)}</td>
+                        <td className="px-3 py-2 text-right text-sm font-semibold tabular-nums text-gray-700 dark:text-gray-300">{skaterValue(player, player.points)}</td>
+                        <td className="px-3 py-2 text-right text-sm tabular-nums text-gray-700 dark:text-gray-300">{goalieValue(player, player.wins)}</td>
+                        <td className="px-3 py-2 text-right text-sm tabular-nums text-gray-700 dark:text-gray-300">{goalieValue(player, player.losses)}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{player.country || '-'}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -29,6 +29,13 @@ function mapPlayer(player) {
     name,
     teamName: player.team_name || player.team_abbrev || '',
     position: player.position || '',
+    games: player.games ?? null,
+    goals: player.goals ?? null,
+    assists: player.assists ?? null,
+    points: player.points ?? null,
+    wins: player.wins ?? null,
+    losses: player.losses ?? null,
+    country: player.birthCountry || '',
     href: playerUrl(name, id),
   }
 }

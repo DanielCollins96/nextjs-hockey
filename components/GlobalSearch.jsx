@@ -98,6 +98,14 @@ export default function GlobalSearch({compact = false, className = "", onNavigat
     router.push(href);
   };
 
+  const playerSummary = (player) => {
+    const games = player.games ?? "-";
+    if (player.position === "G") {
+      return `GP ${games} | W ${player.wins ?? 0} | L ${player.losses ?? 0}${player.country ? ` | ${player.country}` : ""}`;
+    }
+    return `GP ${games} | G ${player.goals ?? 0} | A ${player.assists ?? 0} | P ${player.points ?? 0}${player.country ? ` | ${player.country}` : ""}`;
+  };
+
   return (
     <div ref={wrapperRef} className={`relative ${compact ? "w-full" : "w-full max-w-md"} ${className}`}>
       <form onSubmit={submitSearch} className="relative">
@@ -170,6 +178,9 @@ export default function GlobalSearch({compact = false, className = "", onNavigat
                         </span>
                         <span className="block truncate text-xs text-gray-500 dark:text-gray-400">
                           {player.teamName || "NHL player"}
+                        </span>
+                        <span className="block truncate text-xs tabular-nums text-gray-500 dark:text-gray-400">
+                          {playerSummary(player)}
                         </span>
                       </span>
                     </SearchResultButton>
