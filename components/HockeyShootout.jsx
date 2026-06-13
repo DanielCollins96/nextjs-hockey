@@ -19,8 +19,8 @@ function ScoreWindow({ label, score }) {
 
 function Scoreboard({ score, onReset }) {
   return (
-    <div className="mt-4 flex justify-center px-2">
-      <div className="grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-stretch overflow-hidden border-4 border-white bg-blue-950 text-white shadow-lg ring-2 ring-blue-950">
+    <div className="flex justify-center px-2">
+      <div className="grid w-full max-w-3xl grid-cols-[1fr_auto_1fr] items-stretch overflow-hidden border-4 border-white bg-blue-950 text-white shadow-lg ring-2 ring-blue-950">
         <ScoreWindow label="Red" score={score.red} />
         <div className="grid h-full place-items-center gap-1 border-x-4 border-white px-2 py-2 text-center sm:px-4">
           <div className="grid gap-1">
@@ -80,7 +80,11 @@ function HockeyNet({ side, isScoredOn, netRef }) {
   const isBlue = side === "blue";
 
   return (
-    <div className="relative h-24 w-24 sm:h-40 sm:w-40 md:h-[200px] md:w-[200px]">
+    <div
+      className={`relative h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 lg:h-40 lg:w-40 ${
+        isBlue ? "translate-x-6 sm:translate-x-10" : "-translate-x-6 sm:-translate-x-10"
+      }`}
+    >
       {isScoredOn && <GoalFlash side={side} />}
       <motion.img
         ref={netRef}
@@ -103,6 +107,52 @@ function HockeyNet({ side, isScoredOn, netRef }) {
         fetchPriority="high"
         whileTap={{ scale: 0.9 }}
       />
+    </div>
+  );
+}
+
+function FaceoffCircle({ className = "", blue = false }) {
+  return (
+    <div
+      className={`absolute h-24 w-24 rounded-full border-2 bg-transparent sm:h-32 sm:w-32 md:h-40 md:w-40 ${
+        blue ? "border-blue-500/80" : "border-red-500/70"
+      } ${className}`}
+    >
+      <span
+        className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${
+          blue ? "bg-blue-500/80" : "bg-red-500/70"
+        }`}
+      />
+      <span className={`absolute left-1/2 top-1/2 h-8 w-px -translate-x-1/2 -translate-y-1/2 ${blue ? "bg-blue-500/80" : "bg-red-500/70"}`} />
+      <span className={`absolute left-1/2 top-1/2 h-px w-8 -translate-x-1/2 -translate-y-1/2 ${blue ? "bg-blue-500/80" : "bg-red-500/70"}`} />
+    </div>
+  );
+}
+
+function RinkMarkings() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[70px] border-4 border-gray-500/70 bg-white/70 shadow-[inset_0_0_28px_rgba(30,64,175,0.08)] sm:rounded-[90px]">
+      <div className="absolute inset-y-0 left-1/2 w-2 -translate-x-1/2 bg-red-500/85">
+        <div className="h-full border-x-2 border-dashed border-white/90" />
+      </div>
+      <div className="absolute inset-y-0 left-[34%] w-2 -translate-x-1/2 bg-blue-600/75" />
+      <div className="absolute inset-y-0 left-[66%] w-2 -translate-x-1/2 bg-blue-600/75" />
+      <div className="absolute inset-y-0 left-[9%] w-1 bg-red-500/65" />
+      <div className="absolute inset-y-0 right-[9%] w-1 bg-red-500/65" />
+
+      <FaceoffCircle className="left-[13%] top-[10%]" />
+      <FaceoffCircle className="bottom-[8%] left-[13%]" />
+      <FaceoffCircle className="right-[13%] top-[10%]" />
+      <FaceoffCircle className="bottom-[8%] right-[13%]" />
+      <FaceoffCircle blue className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+
+      <span className="absolute left-[38%] top-[24%] h-4 w-4 rounded-full bg-red-500/70" />
+      <span className="absolute bottom-[24%] left-[38%] h-4 w-4 rounded-full bg-red-500/70" />
+      <span className="absolute right-[38%] top-[24%] h-4 w-4 rounded-full bg-red-500/70" />
+      <span className="absolute bottom-[24%] right-[38%] h-4 w-4 rounded-full bg-red-500/70" />
+
+      <span className="absolute left-[9%] top-1/2 h-28 w-14 -translate-x-full -translate-y-1/2 rounded-l-full border-2 border-red-500/60 bg-sky-100/70" />
+      <span className="absolute right-[9%] top-1/2 h-28 w-14 -translate-y-1/2 translate-x-full rounded-r-full border-2 border-red-500/60 bg-sky-100/70" />
     </div>
   );
 }
@@ -177,24 +227,25 @@ export default function HockeyShootout() {
   }
 
   return (
-    <>
+    <div className="mx-auto w-full max-w-7xl px-2 py-4 sm:px-4">
       <Scoreboard score={score} onReset={resetPuck} />
-      <div className="mt-4 p-2">
-        <div className="flex w-full items-end justify-between gap-1 px-2 sm:justify-around sm:gap-2 sm:px-0">
+      <div className="relative mt-8 h-[360px] sm:h-[430px] md:h-[520px]">
+        <RinkMarkings />
+        <div className="relative z-10 flex h-full w-full items-center justify-between gap-1 px-4 sm:gap-2 sm:px-8">
           <HockeyNet
             side="red"
             isScoredOn={scoredSide === "red"}
             netRef={redNetRef}
           />
-          <div className="relative z-20 grid justify-items-center">
-            <div className="relative inset-0 z-20 grid h-12 w-12 place-content-end touch-none sm:h-16 sm:w-16 md:h-20 md:w-20">
+          <div className="relative z-20 grid justify-items-center self-center">
+            <div className="relative inset-0 z-20 grid h-10 w-10 place-content-end touch-none sm:h-12 sm:w-12 md:h-14 md:w-14">
               <Puck
                 key={puckKey}
                 ref={puckRef}
-                className="absolute bottom-0 z-20 h-12 w-12 text-black transition-colors duration-150 dark:text-gray-400 sm:h-16 sm:w-16 md:h-20 md:w-20"
+                className="absolute bottom-0 z-20 h-10 w-10 text-black transition-colors duration-150 sm:h-12 sm:w-12 md:h-14 md:w-14"
                 style={{ x: puckX, y: puckY }}
-                width={80}
-                height={80}
+                width={56}
+                height={56}
                 drag={!isGoalScored}
                 dragMomentum={!isGoalScored}
                 onDrag={onPuckMove}
@@ -209,6 +260,6 @@ export default function HockeyShootout() {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }
