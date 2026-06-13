@@ -212,7 +212,7 @@ export default function GamesBanner() {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 w-full max-w-none overflow-hidden">
-      <div className="flex items-center">
+      <div className="flex h-[88px] min-h-[88px] items-center">
         {/* Date selector */}
         <div className="flex-shrink-0 flex items-center self-stretch border-r border-gray-200 dark:border-gray-700 px-1 sm:px-2 bg-white dark:bg-gray-800">
           <button

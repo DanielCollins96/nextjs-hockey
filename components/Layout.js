@@ -9,14 +9,18 @@ export default function Layout ({children, title = 'Hockey Stats'}) {
                 <link rel="icon" href="/images/ice-hockey-puck.svg" />
                 <title>{title}</title>
             </Head>
+            <div className="md:ml-40">
             <GamesBanner />
+            </div>
             <Header />
+            <div className="md:ml-40">
             <main className="min-h-screen dark:text-white overflow-x-hidden">
             { children }
             </main>
             <footer className="p-4 text-center dark:text-white">
                 <h3>Hackey</h3>
             </footer>
+            </div>
         </div>
     )
 } 

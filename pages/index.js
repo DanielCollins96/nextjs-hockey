@@ -1,61 +1,11 @@
-import {useState} from "react";
 import Head from "next/head";
+import Link from "next/link";
 import HockeyShootout from "../components/HockeyShootout";
-import TeamBox from "../components/TeamBox";
 import SEO from "../components/SEO";
-import { getTeamRosters } from "../lib/team-rosters";
 
-export default function Home({teams}) {
-  const [searchedTeams, setSearchedTeams] = useState(teams);
-
-  const inputChange = (e) => {
-    let searchTerm = e.target.value.trim();
-    console.log('Search term:', searchTerm);
-    
-    if (!searchTerm) {
-      setSearchedTeams(teams);
-      return;
-    }
-    
-    const searchLower = searchTerm.toLowerCase();
-    
-    // Filter teams by team name OR by player name/number
-    let newList = teams.filter((team) => {
-      // Check if team name matches
-      if (team.team.name.toLowerCase().includes(searchLower)) {
-        return true;
-      }
-      
-      // Check if any player name or number matches
-      const allPlayers = [
-        ...(team.roster?.forwards || []),
-        ...(team.roster?.defensemen || []),
-        ...(team.roster?.goalies || [])
-      ];
-      
-      return allPlayers.some(player => {
-        // Check name matches
-        const fullName = `${player.firstName || ''} ${player.lastName || ''}`.toLowerCase();
-        const lastName = (player.lastName || '').toLowerCase();
-        const firstName = (player.firstName || '').toLowerCase();
-        
-        const nameMatch = fullName.includes(searchLower) || 
-               lastName.includes(searchLower) || 
-               firstName.includes(searchLower);
-        
-        // Check number match - convert both to strings for comparison
-        const sweaterStr = player.sweaterNumber != null ? String(player.sweaterNumber) : '';
-        const numberMatch = sweaterStr.includes(searchTerm);
-        
-        return nameMatch || numberMatch;
-      });
-    });
-    
-    setSearchedTeams(newList);
-  };
-
+export default function Home() {
   return (
-    <div className="">
+    <div>
       <Head>
         <link
           rel="preload"
@@ -69,68 +19,46 @@ export default function Home({teams}) {
         description="Browse current NHL team rosters, player statistics, and standings. Search by team or player name to find stats and profiles."
         path="/"
       />
-      <HockeyShootout />
-      <div>
-        <div className="relative w-5/6 max-w-sm m-auto box-border">
-          <label
-            className="absolute left-0 top-0 font-bold m-4 dark:text-white"
-            htmlFor="filter"
-          >
-            Search By Team or Player
-          </label>
-          <input
-            onChange={inputChange}
-            className="text-lg rounded-sm px-4 pb-3 pt-8 mt-2 focus:outline-none bg-gray-300 dark:bg-gray-700 dark:text-white w-full"
-            type="text"
-            name="filter"
-            id="filter"
-            placeholder="e.g., Bruins, McDavid, 97..."
-          />
+
+      <section className="border-b border-gray-200 bg-slate-50 dark:border-gray-700 dark:bg-gray-950">
+        <div className="mx-auto max-w-6xl px-3 py-5">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">
+              NHL scores and stats
+            </p>
+            <h1 className="mt-2 text-3xl font-bold text-gray-950 dark:text-white sm:text-4xl">
+              Find teams, players, games, and season stats quickly.
+            </h1>
+            <p className="mt-3 max-w-2xl text-gray-600 dark:text-gray-300">
+              Use the nav search for quick player and team lookups, or jump into the core stat sections below.
+            </p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-5">
+              <DashboardLink href="/teams" label="Teams" />
+              <DashboardLink href="/players" label="Players" />
+              <DashboardLink href="/games" label="Games" />
+              <DashboardLink href="/seasons" label="Seasons" />
+              <DashboardLink href="/drafts" label="Drafts" />
+            </div>
+          </div>
         </div>
-        <div className="grid m-1 md:grid-cols-2 xl:grid-cols-3">
-          {searchedTeams &&
-            searchedTeams
-              .sort((teamA, teamB) => {
-                return teamA.team.abbreviation > teamB.team.abbreviation
-                  ? 1
-                  : -1;
-              })
-              .map((team) => (
-                <TeamBox team={team} key={team.team.abbreviation} />
-              ))}
+      </section>
+
+      <section className="mx-auto max-w-6xl px-3 pb-16 pt-6">
+        <div className="min-h-[520px] overflow-visible bg-slate-50 py-6 dark:bg-gray-950">
+          <HockeyShootout />
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-export async function getServerSideProps() {
-  try {
-    const { rosters } = await getTeamRosters()
-
-    if (!rosters.length) {
-      console.error('No valid rosters were fetched successfully');
-      return {
-        props: {
-          teams: [],
-          error: 'No valid rosters available'
-        }
-      };
-    }
-
-    return {
-      props: {
-        teams: rosters,
-        error: null
-      }
-    };
-  } catch (error) {
-    console.error('Error in getStaticProps:', error);
-    return {
-      props: {
-        teams: [],
-        error: error.message || 'Failed to fetch data'
-      }
-    };
-  }
+function DashboardLink({href, label}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-md border border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-900 shadow-sm transition hover:border-blue-300 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-blue-500 dark:hover:text-blue-300"
+    >
+      {label}
+    </Link>
+  );
 }

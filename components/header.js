@@ -1,16 +1,16 @@
 import Link from "next/link";
 import {UseAuth} from "../contexts/Auth";
-import {Auth} from "aws-amplify";
 import ProfileButton from "./ProfileButton";
-import {FaUserCircle, FaSignOutAlt, FaBars, FaTimes} from "react-icons/fa";
+import {FaUserCircle, FaBars, FaTimes} from "react-icons/fa";
 import {useState, useEffect} from "react";
 import DarkModeToggle from "./DarkModeToggle";
+import GlobalSearch from "./GlobalSearch";
 
 const Header = () => {
-  const {user, setUser} = UseAuth();
+  const {user} = UseAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Close sidebar if screen size becomes md or larger
+  // Close drawer if screen size becomes md or larger
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -24,86 +24,65 @@ const Header = () => {
 
   return (
     <>
-      <header className="w-full max-w-full bg-gray-200 p-1 dark:bg-gray-800 flex justify-between py-2">
-        <Link href="/" className="self-center pl-1 text-xl font-bold dark:text-white">
-          <p className="text-xl m-2">NHL Stats</p>
-        </Link>
-        {/* Mobile: Dark mode toggle and hamburger */}
-        <div className="flex items-center md:hidden">
-          <DarkModeToggle />
-          <button
-            className="ml-4 flex items-center px-3 py-2"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
+      <header className="relative z-40 w-full max-w-full bg-gray-100 px-2 py-2 shadow-sm dark:bg-gray-800 md:ml-40 md:w-[calc(100%-10rem)]">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="block flex-shrink-0 self-center px-1 py-1 text-lg font-bold dark:text-white sm:px-2 sm:text-xl md:hidden"
           >
-            <FaBars size={24} />
-          </button>
-        </div>
-        {/* Desktop nav */}
-        <nav className="self-center my-2 mr-2 sm:my-0 hidden md:block">
-          <ul className="flex">
-            <li className="my-auto px-2">
-              <Link href="/teams" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
-                Teams
-              </Link>
-            </li>
-            <li className="my-auto px-3 py-1">
-              <Link href="/players" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
-                Players
-              </Link>
-            </li>
-            <li className="my-auto px-3 py-1">
-              <Link href="/games" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
-                Games
-              </Link>
-            </li>
-            <li className="my-auto px-3 py-1">
-              <Link href="/seasons" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
-                Seasons
-              </Link>
-            </li>
-            <li className="my-auto px-3 py-1">
-              <Link href="/drafts" className="text-xl dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
-                Drafts
-              </Link>
-            </li>
-            <li className="my-auto px-3 py-1">
+            <p>NHL Stats</p>
+          </Link>
+          <div className="ml-auto flex min-w-0 items-center gap-2">
+            <GlobalSearch className="w-[min(34vw,14rem)] sm:w-[min(54vw,30rem)] md:w-[min(46vw,30rem)] lg:w-[min(38vw,30rem)]" />
+            <div className="flex-shrink-0">
               <DarkModeToggle />
-            </li>
-            {!user ? (
-              <li>
+            </div>
+            <div className="hidden flex-shrink-0 md:block">
+              {!user ? (
                 <Link href="/login" passHref legacyBehavior>
                   <button className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
                     Login
                     <FaUserCircle className="ml-2 my-auto" />
                   </button>
                 </Link>
-              </li>
-            ) : (
-              <li>
+              ) : (
                 <ProfileButton onNavigate={() => setSidebarOpen(false)} />
-              </li>
-            )}
-          </ul>
-        </nav>
+              )}
+            </div>
+            <button
+              className="flex flex-shrink-0 items-center px-2 py-2 md:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+            >
+              <FaBars size={24} />
+            </button>
+          </div>
+        </div>
       </header>
-      {/* Sidebar for mobile */}
+      {/* Sidebar */}
       <div
-        className={`fixed inset-0 z-50 bg-black bg-opacity-40 transition-opacity ${
+        className={`fixed inset-0 z-50 bg-black bg-opacity-40 transition-opacity md:hidden ${
           sidebarOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        } md:hidden`}
+        }`}
         onClick={() => setSidebarOpen(false)}
       />
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-50 transform transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-50 h-full w-40 transform border-r border-gray-200 bg-white shadow-lg transition-transform duration-300 dark:border-gray-700 dark:bg-gray-800 md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:hidden`}
+        }`}
       >
-        <div className="flex justify-between items-center p-4 border-b">
-          <span className="font-bold text-xl dark:text-white">Menu</span>
+        <div className="flex h-[89px] min-h-[89px] items-center justify-between border-b px-4 dark:border-gray-700">
+          <Link
+            href="/"
+            onClick={() => setSidebarOpen(false)}
+            className="font-bold text-xl dark:text-white"
+          >
+            NHL Stats
+          </Link>
           <button
+            className="md:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
           >
@@ -158,7 +137,7 @@ const Header = () => {
               </Link>
             </li>
             {!user ? (
-              <li>
+              <li className="pt-2 md:hidden">
                 <Link href="/login" passHref legacyBehavior>
                   <button
                     className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
