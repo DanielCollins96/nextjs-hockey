@@ -253,7 +253,6 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
                     return (
                         <Link
                             href={`${teamUrl(teamName, row.original['team.id'])}?season=${encodeURIComponent(row.original.season)}`}
-                            passHref
                             className="text-blue-700 hover:underline visited:text-purple-700 dark:text-blue-300 dark:visited:text-purple-300"
                         >
                             {teamName}

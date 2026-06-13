@@ -190,7 +190,6 @@ export default function TeamPage({
           props.row.original?.playerId ? (
             <Link
               href={playerUrl(props.row.original.fullName, props.row.original.playerId)}
-              passHref
               className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300"
             >
               {props.row.original.fullName}
@@ -403,7 +402,6 @@ export default function TeamPage({
           props.row.original?.playerId ? (
             <Link
               href={playerUrl(props.row.original.fullName, props.row.original.playerId)}
-              passHref
               className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300"
             >
               {props.row.original.fullName}

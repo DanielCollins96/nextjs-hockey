@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { API, graphqlOperation } from "aws-amplify";
 import { FaChevronLeft, FaChevronRight, FaRegCommentDots } from "react-icons/fa";
 import { UseAuth } from "../contexts/Auth";
@@ -52,6 +53,8 @@ function getGameStatus(game) {
 }
 
 function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
+  const router = useRouter();
+  const gamePath = `/games/${game.id}`;
   const status = getGameStatus(game);
   const isLive = game.gameState === "LIVE" || game.gameState === "CRIT";
   const isScheduled = game.gameState === "FUT" || game.gameState === "PRE";
@@ -60,7 +63,20 @@ function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
   const homeTeamLink = game.homeTeam_dbId ? teamUrl(game.homeTeam_abbrev, game.homeTeam_dbId) : null;
 
   return (
-    <Link href={`/games/${game.id}`} className="flex-shrink-0 w-32 sm:w-40 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(gamePath)}
+      onFocus={() => router.prefetch(gamePath)}
+      onMouseEnter={() => router.prefetch(gamePath)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          router.push(gamePath);
+        }
+      }}
+      className="flex-shrink-0 w-32 sm:w-40 cursor-pointer bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+    >
       <div className={`text-[10px] sm:text-xs font-semibold mb-1 ${isLive ? "text-red-500" : "text-gray-500 dark:text-gray-400"} ${showCommentMeta ? "flex items-center justify-between" : ""}`}>
         <span>{status}</span>
         {showCommentMeta && (
@@ -71,7 +87,7 @@ function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              window.location.href = `/games/${game.id}#thread`;
+              router.push(`${gamePath}#thread`);
             }}
           >
             <FaRegCommentDots className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
@@ -82,21 +98,21 @@ function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
 
       {/* Away Team */}
       <div className="flex items-center justify-between mb-0.5">
-        <Link
-          href={awayTeamLink || "#"}
-          className={`flex items-center gap-1 sm:gap-2 ${awayTeamLink ? "hover:opacity-70" : ""}`}
-        >
-          <div className="w-5 h-5 sm:w-6 sm:h-6 relative">
-            <Image
-              src={game.awayTeam_darkLogo || `https://assets.nhle.com/logos/nhl/svg/${game.awayTeam_abbrev}_dark.svg`}
-              alt={game.awayTeam_abbrev}
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </div>
-          <span className="text-sm sm:text-base font-medium dark:text-white">{game.awayTeam_abbrev}</span>
-        </Link>
+        {awayTeamLink ? (
+          <Link
+            href={awayTeamLink}
+            className="flex items-center gap-1 sm:gap-2 hover:opacity-70"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <TeamLogo logo={game.awayTeam_darkLogo} abbrev={game.awayTeam_abbrev} />
+            <span className="text-sm sm:text-base font-medium dark:text-white">{game.awayTeam_abbrev}</span>
+          </Link>
+        ) : (
+          <span className="flex items-center gap-1 sm:gap-2">
+            <TeamLogo logo={game.awayTeam_darkLogo} abbrev={game.awayTeam_abbrev} />
+            <span className="text-sm sm:text-base font-medium dark:text-white">{game.awayTeam_abbrev}</span>
+          </span>
+        )}
         <span className={`font-bold text-sm sm:text-lg ${!isScheduled ? "dark:text-white" : "text-gray-400 dark:text-gray-500"}`}>
           {!isScheduled ? game.awayTeam_score : ""}
         </span>
@@ -104,26 +120,40 @@ function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
 
       {/* Home Team */}
       <div className="flex items-center justify-between">
-        <Link
-          href={homeTeamLink || "#"}
-          className={`flex items-center gap-1 sm:gap-2 ${homeTeamLink ? "hover:opacity-70" : ""}`}
-        >
-          <div className="w-5 h-5 sm:w-6 sm:h-6 relative">
-            <Image
-              src={game.homeTeam_darkLogo || `https://assets.nhle.com/logos/nhl/svg/${game.homeTeam_abbrev}_dark.svg`}
-              alt={game.homeTeam_abbrev}
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </div>
-          <span className="text-sm sm:text-base font-medium dark:text-white">{game.homeTeam_abbrev}</span>
-        </Link>
+        {homeTeamLink ? (
+          <Link
+            href={homeTeamLink}
+            className="flex items-center gap-1 sm:gap-2 hover:opacity-70"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <TeamLogo logo={game.homeTeam_darkLogo} abbrev={game.homeTeam_abbrev} />
+            <span className="text-sm sm:text-base font-medium dark:text-white">{game.homeTeam_abbrev}</span>
+          </Link>
+        ) : (
+          <span className="flex items-center gap-1 sm:gap-2">
+            <TeamLogo logo={game.homeTeam_darkLogo} abbrev={game.homeTeam_abbrev} />
+            <span className="text-sm sm:text-base font-medium dark:text-white">{game.homeTeam_abbrev}</span>
+          </span>
+        )}
         <span className={`font-bold text-sm sm:text-lg ${!isScheduled ? "dark:text-white" : "text-gray-400 dark:text-gray-500"}`}>
           {!isScheduled ? game.homeTeam_score : ""}
         </span>
       </div>
-    </Link>
+    </div>
+  );
+}
+
+function TeamLogo({ logo, abbrev }) {
+  return (
+    <span className="w-5 h-5 sm:w-6 sm:h-6 relative">
+      <Image
+        src={logo || `https://assets.nhle.com/logos/nhl/svg/${abbrev}_dark.svg`}
+        alt={abbrev}
+        fill
+        className="object-contain"
+        unoptimized
+      />
+    </span>
   );
 }
 

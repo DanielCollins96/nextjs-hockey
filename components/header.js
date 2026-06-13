@@ -3,12 +3,32 @@ import {UseAuth} from "../contexts/Auth";
 import ProfileButton from "./ProfileButton";
 import {FaUserCircle, FaBars, FaTimes} from "react-icons/fa";
 import {useState, useEffect} from "react";
+import {useRouter} from "next/router";
 import DarkModeToggle from "./DarkModeToggle";
 import GlobalSearch from "./GlobalSearch";
 
 const Header = () => {
   const {user} = UseAuth();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navItems = [
+    {href: "/teams", label: "Teams"},
+    {href: "/players", label: "Players"},
+    {href: "/seasons", label: "Seasons"},
+    {href: "/drafts", label: "Drafts"},
+    {href: "/games", label: "Games"},
+  ];
+  const isActivePath = (href) => {
+    const currentPath = router.asPath.split("?")[0].split("#")[0];
+    return currentPath === href || currentPath.startsWith(`${href}/`);
+  };
+  const getNavLinkClassName = (href) =>
+    [
+      "block rounded-md px-3 py-2 text-lg transition-colors",
+      isActivePath(href)
+        ? "bg-blue-600 font-semibold text-white shadow-sm dark:bg-blue-500 dark:text-white"
+        : "text-gray-800 hover:bg-gray-100 hover:text-blue-700 dark:text-white dark:hover:bg-gray-700 dark:hover:text-blue-300",
+    ].join(" ");
 
   // Close drawer if screen size becomes md or larger
   useEffect(() => {
@@ -39,11 +59,12 @@ const Header = () => {
             </div>
             <div className="hidden flex-shrink-0 md:block">
               {!user ? (
-                <Link href="/login" passHref legacyBehavior>
-                  <button className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
-                    Login
-                    <FaUserCircle className="ml-2 my-auto" />
-                  </button>
+                <Link
+                  href="/login"
+                  className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                >
+                  Login
+                  <FaUserCircle className="ml-2 my-auto" />
                 </Link>
               ) : (
                 <ProfileButton onNavigate={() => setSidebarOpen(false)} />
@@ -90,62 +111,28 @@ const Header = () => {
           </button>
         </div>
         <nav>
-          <ul className="flex flex-col p-4 space-y-4">
-            <li>
-              <Link
-                href="/teams"
-                onClick={() => setSidebarOpen(false)}
-                className="text-lg dark:text-white"
-              >
-                Teams
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/players"
-                onClick={() => setSidebarOpen(false)}
-                className="text-lg dark:text-white"
-              >
-                Players
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/seasons"
-                onClick={() => setSidebarOpen(false)}
-                className="text-lg dark:text-white"
-              >
-                Seasons
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/drafts"
-                onClick={() => setSidebarOpen(false)}
-                className="text-lg dark:text-white"
-              >
-                Drafts
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/games"
-                onClick={() => setSidebarOpen(false)}
-                className="text-lg dark:text-white"
-              >
-                Games
-              </Link>
-            </li>
+          <ul className="flex flex-col p-4 space-y-2">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={getNavLinkClassName(item.href)}
+                  aria-current={isActivePath(item.href) ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
             {!user ? (
               <li className="pt-2 md:hidden">
-                <Link href="/login" passHref legacyBehavior>
-                  <button
-                    className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    Login
-                    <FaUserCircle className="ml-2 my-auto" />
-                  </button>
+                <Link
+                  href="/login"
+                  className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 tracking-wider hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  Login
+                  <FaUserCircle className="ml-2 my-auto" />
                 </Link>
               </li>
             ) : (

@@ -75,14 +75,28 @@ function WinnerBadge() {
 }
 
 function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
+  const router = useRouter();
+  const gamePath = `/games/${game.id}`;
   const status = getGameStatus(game);
   const isLive = game.gameState === 'LIVE' || game.gameState === 'CRIT';
   const isScheduled = game.gameState === 'FUT' || game.gameState === 'PRE';
   const winnerSide = getWinnerSide(game);
 
   return (
-    <Link href={`/games/${game.id}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 cursor-pointer">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(gamePath)}
+      onFocus={() => router.prefetch(gamePath)}
+      onMouseEnter={() => router.prefetch(gamePath)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          router.push(gamePath);
+        }
+      }}
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 cursor-pointer"
+    >
         <div className={`text-sm font-semibold mb-3 ${showCommentMeta ? 'flex items-center justify-between' : 'text-center'} ${isLive ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
           <span>{status}</span>
           {showCommentMeta && (
@@ -93,7 +107,7 @@ function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                window.location.href = `/games/${game.id}#thread`;
+                router.push(`${gamePath}#thread`);
               }}
             >
               <FaRegCommentDots className="w-3 h-3" />
@@ -141,12 +155,12 @@ function GameCard({ game, commentCount = 0, showCommentMeta = false }) {
             {!isScheduled ? game.homeTeam_score : '-'}
           </span>
         </div>
-      </div>
-    </Link>
+    </div>
   );
 }
 
 function GamesTable({ games, showDate = false }) {
+  const router = useRouter();
   const [sorting, setSorting] = useState([]);
 
   const columns = useMemo(() => {
@@ -274,7 +288,8 @@ function GamesTable({ games, showDate = false }) {
             <tr
               key={row.id}
               className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-              onClick={() => window.location.href = `/games/${row.original.id}`}
+              onClick={() => router.push(`/games/${row.original.id}`)}
+              onMouseEnter={() => router.prefetch(`/games/${row.original.id}`)}
             >
               {row.getVisibleCells().map(cell => (
                 <td key={cell.id} className="px-4 py-3 dark:text-gray-200">

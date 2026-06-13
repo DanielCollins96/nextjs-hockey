@@ -103,14 +103,13 @@ export default function Drafts({id,draft,draftYears}) {
       accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
         href={teamUrl(row.original.teamAbbrev, row.original.draftedByTeamId || row.original.teamId)}
-        passHref
         className=" hover:text-blue-700 visited:text-purple-800">{row.original.teamAbbrev}</Link>),
       size: 72,
     },
     {
       header: 'Player',
       accessorFn: d => d['playerName'],
-      cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={playerUrl(props.row.original.playerName, props.row.original.playerId)} passHref >{props.row.original.playerName}</Link>) : (props.row.original.playerName),
+      cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={playerUrl(props.row.original.playerName, props.row.original.playerId)}>{props.row.original.playerName}</Link>) : (props.row.original.playerName),
       size: 210,
     },
     {
