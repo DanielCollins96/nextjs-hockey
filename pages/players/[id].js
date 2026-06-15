@@ -59,10 +59,28 @@ const formatSeason = (season) => {
     return seasonString || '-';
 };
 
+const formatShortSeason = (season) => {
+    const formattedSeason = formatSeason(season);
+    if (/^\d{4}\/\d{2}$/.test(formattedSeason)) {
+        return `${formattedSeason.slice(2, 4)}/${formattedSeason.slice(5, 7)}`;
+    }
+    return formattedSeason;
+};
+
 const formatValue = (value, digits = 0) => {
     const number = toNumber(value);
     if (number === null) return '-';
     return digits > 0 ? number.toFixed(digits) : String(number);
+};
+
+const formatCurrency = (value) => {
+    const number = toNumber(value);
+    if (number === null) return '-';
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+    }).format(number);
 };
 
 const getPersonValue = (person, keys) => {
@@ -204,9 +222,18 @@ const makePlayoffAverageColumn = ({ header, keys, weightKeys, size = 54, digits 
     footer: weightedAverageFooter(keys, weightKeys, digits),
 });
 
-const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
+const contractCapHitColumn = {
+    id: 'cap-hit',
+    header: 'Cap Hit',
+    accessorKey: 'contract_cap_hit',
+    size: 108,
+    meta: numericColumnMeta,
+    cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+};
+
+const Players = ({ playerId, stats, person, awards, contracts, currentContract, canonicalPath }) => {
     const id = playerId;
-    const rows = useMemo(() => (Array.isArray(stats) ? stats : []), [stats]);
+    const contractRows = useMemo(() => (Array.isArray(contracts) ? contracts : []), [contracts]);
     const position = person?.position || '';
     const isGoalie = position === 'G';
     const getRowClassName = (row) => {
@@ -216,6 +243,45 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
 
         return 'player-stat-row';
     };
+
+    const contractSeasonRows = useMemo(() => (
+        contractRows.flatMap((contract) => {
+            const seasons = Array.isArray(contract?.seasons) ? contract.seasons : [];
+            return seasons.map((season) => ({
+                ...season,
+                contract_id: contract.contract_id,
+                contract_type: contract.contract_type,
+                start_season: contract.start_season,
+                end_season: contract.end_season,
+                source_url: season.source_url || contract.source_url,
+            }));
+        })
+    ), [contractRows]);
+
+    const capHitBySeason = useMemo(() => {
+        const capHits = new Map();
+        contractSeasonRows.forEach((season) => {
+            if (season?.season && season?.cap_hit !== null && season?.cap_hit !== undefined) {
+                capHits.set(String(season.season), season.cap_hit);
+            }
+        });
+        return capHits;
+    }, [contractSeasonRows]);
+
+    const rows = useMemo(() => (
+        (Array.isArray(stats) ? stats : []).map((row) => {
+            if (!isNHLDataRow(row)) return row;
+
+            const capHit = capHitBySeason.get(String(row?.season));
+            const capHitNumber = toNumber(capHit);
+            if (!capHitNumber || capHitNumber <= 0) return row;
+
+            return {
+                ...row,
+                contract_cap_hit: capHit,
+            };
+        })
+    ), [capHitBySeason, stats]);
 
     const currentTeam = useMemo(() => {
         const nhlRows = rows.filter((row) => isNHLDataRow(row) && row?.['team.name']);
@@ -231,6 +297,8 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
             return gamesB - gamesA;
         })[0];
     }, [rows]);
+
+    const hasContractSeasonRows = contractSeasonRows.length > 0;
 
     const columns = useMemo(() => {
         const baseColumns = [
@@ -269,7 +337,7 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
         ];
 
         if (isGoalie) {
-            return [
+            const goalieColumns = [
                 ...baseColumns,
                 {
                     header: 'Regular Season',
@@ -319,9 +387,18 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
                     ],
                 },
             ];
+
+            if (hasContractSeasonRows) {
+                goalieColumns.push({
+                    header: 'Contract',
+                    columns: [contractCapHitColumn],
+                });
+            }
+
+            return goalieColumns;
         }
 
-        return [
+        const skaterColumns = [
             ...baseColumns,
             {
                 header: 'Regular Season',
@@ -346,7 +423,16 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
                 ],
             },
         ];
-    }, [isGoalie]);
+
+        if (hasContractSeasonRows) {
+            skaterColumns.push({
+                header: 'Contract',
+                columns: [contractCapHitColumn],
+            });
+        }
+
+        return skaterColumns;
+    }, [hasContractSeasonRows, isGoalie]);
 
     const nhlRows = useMemo(
         () => rows.filter((row) => isNHLDataRow(row) && hasAnyStat(row, regularStatKeys)),
@@ -370,6 +456,70 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
             { label: 'Points', value: sumRows(nhlRows, regularStatKeys.points) },
         ];
     }, [isGoalie, nhlRows]);
+
+    const contractColumns = useMemo(() => [
+        {
+            header: 'Season',
+            accessorKey: 'season',
+            size: 76,
+            cell: (props) => formatShortSeason(props.getValue()),
+        },
+        {
+            header: 'Cap Hit',
+            accessorKey: 'cap_hit',
+            size: 108,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'AAV',
+            accessorKey: 'aav',
+            size: 108,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'Base',
+            accessorKey: 'base_salary',
+            size: 108,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'Signing Bonus',
+            accessorKey: 'signing_bonus',
+            size: 118,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'Perf. Bonus',
+            accessorKey: 'performance_bonus',
+            size: 110,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'Total',
+            accessorKey: 'total_salary',
+            size: 108,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'Minors',
+            accessorKey: 'minors_salary',
+            size: 108,
+            meta: numericColumnMeta,
+            cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        },
+        {
+            header: 'Clause',
+            accessorKey: 'clause',
+            size: 76,
+            cell: (props) => props.getValue() || '-',
+        },
+    ], []);
 
     if (!person) {
         return (
@@ -525,6 +675,66 @@ const Players = ({ playerId, stats, person, awards, canonicalPath }) => {
                     )}
                 </section>
 
+                {(currentContract || contractSeasonRows.length > 0) && (
+                    <section className="mt-4">
+                        <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+                            <h2 className="text-lg font-bold text-slate-950 dark:text-white">Contract</h2>
+                            {currentContract?.source_url && (
+                                <a
+                                    href={currentContract.source_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-sm font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                                >
+                                    Source
+                                </a>
+                            )}
+                        </div>
+
+                        {currentContract && (
+                            <div className="mb-3 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-2 lg:grid-cols-3">
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Cap Hit</p>
+                                    <p className="text-xl font-bold tabular-nums">{formatCurrency(currentContract.cap_hit)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Total Value</p>
+                                    <p className="text-xl font-bold tabular-nums">{formatCurrency(currentContract.total_value)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Term</p>
+                                    <p className="text-xl font-bold tabular-nums">
+                                        {formatShortSeason(currentContract.start_season)} to {formatShortSeason(currentContract.end_season)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Current Salary</p>
+                                    <p className="text-lg font-bold tabular-nums">{formatCurrency(currentContract.current_total_salary)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Current Season</p>
+                                    <p className="text-lg font-bold tabular-nums">{formatShortSeason(currentContract.current_season)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Clause</p>
+                                    <p className="text-lg font-bold tabular-nums">{currentContract.current_clause || '-'}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {contractSeasonRows.length > 0 && (
+                            <ReactTable
+                                columns={contractColumns}
+                                data={contractSeasonRows}
+                                sortKey="season"
+                                sortDesc
+                                modern
+                                compact
+                            />
+                        )}
+                    </section>
+                )}
+
                 {awards?.length > 0 && (
                     <section className="mt-4">
                         <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">Awards</h2>
@@ -570,6 +780,8 @@ export async function getServerSideProps({ params, req }) {
                     stats: null,
                     person: null,
                     awards: [],
+                    contracts: [],
+                    currentContract: null,
                     canonicalPath: playerUrl(null, id),
                 },
             };
@@ -585,6 +797,8 @@ export async function getServerSideProps({ params, req }) {
                     stats: null,
                     person: null,
                     awards: [],
+                    contracts: [],
+                    currentContract: null,
                     canonicalPath: playerUrl(null, id),
                 },
             };
@@ -606,6 +820,8 @@ export async function getServerSideProps({ params, req }) {
                 stats: payload?.playerStats || [],
                 person,
                 awards: payload?.awards || [],
+                contracts: payload?.contracts || [],
+                currentContract: payload?.currentContract || null,
                 canonicalPath,
             },
         };
@@ -617,6 +833,8 @@ export async function getServerSideProps({ params, req }) {
                 stats: null,
                 person: null,
                 awards: [],
+                contracts: [],
+                currentContract: null,
                 canonicalPath: playerUrl(null, id),
             },
         };

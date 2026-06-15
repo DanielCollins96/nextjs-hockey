@@ -73,7 +73,9 @@ export default async function handler(req, res) {
       return res.status(200).json({
         player: hydratedPlayer,
         playerStats: readModel.playerStats || readModel.stats || [],
-        awards: readModel.awards || []
+        awards: readModel.awards || [],
+        contracts: readModel.contracts || [],
+        currentContract: readModel.currentContract || null
       })
     }
 
@@ -82,8 +84,10 @@ export default async function handler(req, res) {
     if(!player || player.length === 0) return res.status(404).json({error_message: "Player not found"})
     // console.log({player});
 
-    let result = await getPlayerStats(id, player[0]?.position)
-    let awards = await getPlayerAwards(id)
+    const [result, awards] = await Promise.all([
+      getPlayerStats(id, player[0]?.position),
+      getPlayerAwards(id)
+    ])
     
     res.setHeader('X-Data-Source', 'postgres')
     // Cache for 12 hours (43200 seconds) at the CDN level
@@ -93,7 +97,7 @@ export default async function handler(req, res) {
       'public, s-maxage=43200, stale-while-revalidate=86400'
     );
 
-    res.status(200).json({player, playerStats: result, awards})
+    res.status(200).json({player, playerStats: result, awards, contracts: [], currentContract: null})
   } catch (e) {
     console.log(e)
     res.status(500).json({error_message: "Internal Server Error"})
