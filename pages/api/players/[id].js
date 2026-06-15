@@ -45,6 +45,38 @@ async function hydratePlayerMeasurements(id, playerRows) {
   )
 }
 
+function normalizeContractReadModel(payload) {
+  if (!payload) {
+    return {
+      contracts: [],
+      currentContract: null
+    }
+  }
+
+  if (Array.isArray(payload)) {
+    return {
+      contracts: payload,
+      currentContract: null
+    }
+  }
+
+  return {
+    contracts: Array.isArray(payload.contracts) ? payload.contracts : [],
+    currentContract: payload.currentContract || payload.current_contract || null
+  }
+}
+
+async function fetchPlayerContracts(id, playerReadModel) {
+  const embeddedContracts = normalizeContractReadModel(playerReadModel)
+  if (embeddedContracts.currentContract || embeddedContracts.contracts.length > 0) {
+    return embeddedContracts
+  }
+
+  return normalizeContractReadModel(
+    await fetchReadModel(readModelPaths.playerContracts(id))
+  )
+}
+
 export default async function handler(req, res) {
   try {
     const id = extractEntityId(req.query.id)
@@ -63,6 +95,7 @@ export default async function handler(req, res) {
         birthdate: playerRow.birthdate || playerRow.birthDate || null
       }))
       const hydratedPlayer = await hydratePlayerMeasurements(id, player)
+      const { contracts, currentContract } = await fetchPlayerContracts(id, readModel)
 
       res.setHeader('X-Data-Source', 's3-read-model')
       res.setHeader(
@@ -74,8 +107,8 @@ export default async function handler(req, res) {
         player: hydratedPlayer,
         playerStats: readModel.playerStats || readModel.stats || [],
         awards: readModel.awards || [],
-        contracts: readModel.contracts || [],
-        currentContract: readModel.currentContract || null
+        contracts,
+        currentContract
       })
     }
 
