@@ -1,11 +1,11 @@
 import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
 import { extractEntityId } from '../../../lib/routes'
-
-const normalizeSeasonId = (season) =>
-  season === null || season === undefined ? '' : String(season)
+import { normalizeSeasonId } from '../../../lib/season'
 
 const appendDataSource = (dataSource, suffix) =>
   dataSource.includes(suffix) ? dataSource : `${dataSource}+${suffix}`
+
+const MIN_CONTRACT_SEASON = '20052006'
 
 function hasMissingRosterSeasonRecord(skaters, goalies, teamRecords) {
   const rosterSeasonIds = new Set(
@@ -31,9 +31,46 @@ function hasMissingRosterVitals(skaters, goalies) {
   return rosterRows.length > 0 && rosterRows.some((player) => !player?.birthdate)
 }
 
+function getContractSeason(rosterRows, requestedSeason) {
+  const requestedSeasonId = normalizeSeasonId(requestedSeason)
+  if (requestedSeasonId) return requestedSeasonId
+
+  return rosterRows
+    .map((player) => normalizeSeasonId(player?.season))
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a))[0] || ''
+}
+
+function normalizeTeamContractReadModel(payload) {
+  if (!payload) return []
+  if (Array.isArray(payload)) return payload
+  return Array.isArray(payload.teamContracts) ? payload.teamContracts : []
+}
+
+async function fetchTeamContracts(skaters, goalies, requestedSeason) {
+  const rosterRows = [...(skaters || []), ...(goalies || [])].filter(
+    (player) => normalizeSeasonId(player?.season) >= MIN_CONTRACT_SEASON
+  )
+  const contractSeason = getContractSeason(rosterRows, requestedSeason)
+  if (!contractSeason) return []
+
+  const teamId = rosterRows.find((player) => normalizeSeasonId(player?.season) === contractSeason)?.id
+  if (!teamId) return []
+
+  const teamContractReadModel = await fetchReadModel(
+    readModelPaths.teamContracts(teamId, contractSeason),
+    { missStatuses: [403, 404] }
+  )
+  return normalizeTeamContractReadModel(teamContractReadModel)
+}
+
 export default async function handler(req, res) {
   try {
     const id = extractEntityId(req.query.id)
+    const contractSeason = Array.isArray(req.query.contractSeason)
+      ? req.query.contractSeason[0]
+      : req.query.contractSeason
+    const contractsOnly = req.query.contractsOnly === '1'
     const readModel = await fetchReadModel(readModelPaths.team(id))
 
     if (readModel) {
@@ -78,17 +115,27 @@ export default async function handler(req, res) {
         }
       }
 
+      const teamContracts = await fetchTeamContracts(skaters, goalies, contractSeason)
+      if (teamContracts.length) {
+        dataSource = appendDataSource(dataSource, 's3-player-contracts')
+      }
+
       res.setHeader('X-Data-Source', dataSource)
       res.setHeader(
         'Cache-Control',
         'public, s-maxage=43200, stale-while-revalidate=86400'
       )
 
+      if (contractsOnly) {
+        return res.status(200).json({ teamContracts })
+      }
+
       return res.status(200).json({
         team: readModel.team,
         teamRecords,
         skaters,
         goalies,
+        teamContracts,
         playoffSeasons: readModel.playoffSeasons || []
       })
     }
@@ -105,8 +152,9 @@ export default async function handler(req, res) {
     ])
 
     const playoffSeasons = await getPlayoffYears(teamInfo.abbreviation)
+    const teamContracts = await fetchTeamContracts(skaters, goalies, contractSeason)
     
-    res.setHeader('X-Data-Source', 'postgres')
+    res.setHeader('X-Data-Source', teamContracts.length ? 'postgres+s3-player-contracts' : 'postgres')
     // Cache for 12 hours (43200 seconds) at the CDN level
     // stale-while-revalidate serves stale data while fetching fresh data in the background
     res.setHeader(
@@ -114,11 +162,16 @@ export default async function handler(req, res) {
       'public, s-maxage=43200, stale-while-revalidate=86400'
     );
 
+    if (contractsOnly) {
+      return res.status(200).json({ teamContracts })
+    }
+
     res.status(200).json({
       team: teamInfo,
       teamRecords,
       skaters,
       goalies,
+      teamContracts,
       playoffSeasons
     })
   } catch (e) {

@@ -24,7 +24,7 @@ const Header = () => {
   };
   const getNavLinkClassName = (href) =>
     [
-      "block rounded-md px-3 py-2 text-lg transition-colors",
+      "block rounded-md px-2 py-2 text-base transition-colors",
       isActivePath(href)
         ? "bg-blue-600 font-semibold text-white shadow-sm dark:bg-blue-500 dark:text-white"
         : "text-gray-800 hover:bg-gray-100 hover:text-blue-700 dark:text-white dark:hover:bg-gray-700 dark:hover:text-blue-300",
@@ -44,7 +44,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="relative z-40 w-full max-w-full bg-gray-100 px-2 py-2 shadow-sm dark:bg-gray-800 md:ml-40 md:w-[calc(100%-10rem)]">
+      <header className="relative z-40 w-full max-w-full bg-gray-100 px-2 py-2 shadow-sm dark:bg-gray-800 md:ml-32 md:w-[calc(100%-8rem)]">
         <div className="flex items-center justify-between gap-3">
           <Link
             href="/"
@@ -90,15 +90,15 @@ const Header = () => {
         onClick={() => setSidebarOpen(false)}
       />
       <aside
-        className={`fixed left-0 top-0 z-50 h-full w-40 transform border-r border-gray-200 bg-white shadow-lg transition-transform duration-300 dark:border-gray-700 dark:bg-gray-800 md:translate-x-0 ${
+        className={`fixed left-0 top-0 z-50 h-full w-32 transform border-r border-gray-200 bg-white shadow-lg transition-transform duration-300 dark:border-gray-700 dark:bg-gray-800 md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-[89px] min-h-[89px] items-center justify-between border-b px-4 dark:border-gray-700">
+        <div className="flex h-[89px] min-h-[89px] items-center justify-between border-b px-3 dark:border-gray-700">
           <Link
             href="/"
             onClick={() => setSidebarOpen(false)}
-            className="font-bold text-xl dark:text-white"
+            className="font-bold text-lg dark:text-white"
           >
             NHL Stats
           </Link>
@@ -111,7 +111,7 @@ const Header = () => {
           </button>
         </div>
         <nav>
-          <ul className="flex flex-col p-4 space-y-2">
+          <ul className="flex flex-col p-3 space-y-2">
             {navItems.map((item) => (
               <li key={item.href}>
                 <Link

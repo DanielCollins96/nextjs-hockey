@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ReactTable from '../../components/Table';
 import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
+import { formatCurrency, formatSeason, formatShortSeason, toNumber } from '../../lib/format';
 import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
 
 const numericColumnMeta = {
@@ -46,41 +47,10 @@ const getFirstValue = (row, keys) => {
     return null;
 };
 
-const toNumber = (value) => {
-    const number = Number(value);
-    return Number.isFinite(number) ? number : null;
-};
-
-const formatSeason = (season) => {
-    const seasonString = String(season || '');
-    if (/^\d{8}$/.test(seasonString)) {
-        return `${seasonString.slice(0, 4)}/${seasonString.slice(6, 8)}`;
-    }
-    return seasonString || '-';
-};
-
-const formatShortSeason = (season) => {
-    const formattedSeason = formatSeason(season);
-    if (/^\d{4}\/\d{2}$/.test(formattedSeason)) {
-        return `${formattedSeason.slice(2, 4)}/${formattedSeason.slice(5, 7)}`;
-    }
-    return formattedSeason;
-};
-
 const formatValue = (value, digits = 0) => {
     const number = toNumber(value);
     if (number === null) return '-';
     return digits > 0 ? number.toFixed(digits) : String(number);
-};
-
-const formatCurrency = (value) => {
-    const number = toNumber(value);
-    if (number === null) return '-';
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0,
-    }).format(number);
 };
 
 const getPersonValue = (person, keys) => {

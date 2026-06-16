@@ -1,4 +1,5 @@
 import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
+import { hasContractData, normalizeContractReadModel } from '../../../lib/contracts'
 import { extractEntityId } from '../../../lib/routes'
 
 const hasPositiveNumber = (value) => {
@@ -45,35 +46,14 @@ async function hydratePlayerMeasurements(id, playerRows) {
   )
 }
 
-function normalizeContractReadModel(payload) {
-  if (!payload) {
-    return {
-      contracts: [],
-      currentContract: null
-    }
-  }
-
-  if (Array.isArray(payload)) {
-    return {
-      contracts: payload,
-      currentContract: null
-    }
-  }
-
-  return {
-    contracts: Array.isArray(payload.contracts) ? payload.contracts : [],
-    currentContract: payload.currentContract || payload.current_contract || null
-  }
-}
-
 async function fetchPlayerContracts(id, playerReadModel) {
   const embeddedContracts = normalizeContractReadModel(playerReadModel)
-  if (embeddedContracts.currentContract || embeddedContracts.contracts.length > 0) {
+  if (hasContractData(embeddedContracts)) {
     return embeddedContracts
   }
 
   return normalizeContractReadModel(
-    await fetchReadModel(readModelPaths.playerContracts(id))
+    await fetchReadModel(readModelPaths.playerContracts(id), { missStatuses: [403, 404] })
   )
 }
 

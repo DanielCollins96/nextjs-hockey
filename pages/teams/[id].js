@@ -9,7 +9,10 @@ import PaginatedTable from "../../components/PaginatedTable";
 import { ClickableImage } from "../../components/ImageModal";
 import ThreadMessageBoard from "../../components/ThreadMessageBoard";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
+import { getContractSeasonRows } from "../../lib/contracts";
+import { formatCurrency, formatSeason, formatSeasonStartYear, formatShortSeason, toNumber } from "../../lib/format";
 import { extractEntityId, playerUrl, teamUrl } from "../../lib/routes";
+import { normalizeSeasonId } from "../../lib/season";
 import {
   CartesianGrid,
   LineChart,
@@ -26,12 +29,27 @@ const numericColumnMeta = {
   cellClassName: "text-right",
 };
 
+const contractCurrencyFooter = (field) => {
+  const ContractCurrencyFooter = ({table}) => {
+    const total = table
+      .getFilteredRowModel()
+      .rows
+      .reduce((sum, row) => sum + (toNumber(row?.original?.[field]) || 0), 0);
+
+    return <div className="text-right pr-1">{total > 0 ? formatCurrency(total) : "-"}</div>;
+  };
+
+  return ContractCurrencyFooter;
+};
+
 export default function TeamPage({
   seasons = [],
   seasonIds = [],
   abbreviation,
   fullName,
   teamRecords,
+  teamContracts = [],
+  initialContractSeason,
   teamId,
   canonicalPath,
 }) {
@@ -49,6 +67,10 @@ export default function TeamPage({
   const [seasonId, setSeasonId] = useState(() => getValidSeasonId(querySeason));
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId));
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
+  const [rosterSearch, setRosterSearch] = useState("");
+  const [teamContractsBySeason, setTeamContractsBySeason] = useState(() =>
+    initialContractSeason ? {[initialContractSeason]: teamContracts || []} : {}
+  );
 
   useEffect(() => {
     if (seasonId && seasons[seasonId]) {
@@ -70,6 +92,36 @@ export default function TeamPage({
       );
     }
   }, [getValidSeasonId, querySeason, router.isReady]);
+
+  useEffect(() => {
+    if (!router.isReady || !teamId || !seasonId || Object.prototype.hasOwnProperty.call(teamContractsBySeason, seasonId)) return;
+
+    let ignore = false;
+    const controller = new AbortController();
+
+    fetch(`/api/teams/${encodeURIComponent(teamId)}?contractsOnly=1&contractSeason=${encodeURIComponent(seasonId)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (ignore) return;
+
+        setTeamContractsBySeason((current) => ({
+          ...current,
+          [seasonId]: payload?.teamContracts || [],
+        }));
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") {
+          console.warn(`Unable to load ${seasonId} team contracts`, error);
+        }
+      });
+
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [router.isReady, seasonId, teamContractsBySeason, teamId]);
 
   const selectSeason = useCallback(
     (nextSeasonId) => {
@@ -99,7 +151,6 @@ export default function TeamPage({
   );
 
   const handleDecrementSeason = () => {
-    console.log("Next season");
     if (currentIndex < seasonIds.length - 1) {
       const newIndex = currentIndex + 1;
       selectSeason(seasonIds[newIndex]);
@@ -107,13 +158,31 @@ export default function TeamPage({
   };
 
   const handleIncrementSeason = () => {
-    console.log("Previous season");
-    console.log(currentIndex);
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       selectSeason(seasonIds[newIndex]);
     }
   };
+
+  const filteredSkaters = useMemo(() => {
+    const skaters = seasonData?.skaters || [];
+    const search = rosterSearch.trim().toLowerCase();
+    if (!search) return skaters;
+
+    return skaters.filter((player) =>
+      String(player?.fullName || "").toLowerCase().includes(search)
+    );
+  }, [rosterSearch, seasonData]);
+
+  const filteredGoalies = useMemo(() => {
+    const goalies = seasonData?.goalies || [];
+    const search = rosterSearch.trim().toLowerCase();
+    if (!search) return goalies;
+
+    return goalies.filter((player) =>
+      String(player?.fullName || "").toLowerCase().includes(search)
+    );
+  }, [rosterSearch, seasonData]);
 
   const sumFromRows = useCallback(
     (rows, field) =>
@@ -600,16 +669,12 @@ export default function TeamPage({
         })),
     [team_table_data, visibleTeamTableRows]
   );
-  const normalizeTeamSeasonId = useCallback(
-    (season) => (season === null || season === undefined ? "" : String(season)),
-    []
-  );
   const selectedTeamRecord = useMemo(
     () =>
       (teamRecords || []).find(
-        (record) => normalizeTeamSeasonId(record?.seasonId) === seasonId
+        (record) => normalizeSeasonId(record?.seasonId) === seasonId
       ),
-    [normalizeTeamSeasonId, teamRecords, seasonId]
+    [teamRecords, seasonId]
   );
   const formatStat = (value, digits = 0) => {
     const number = Number(value);
@@ -621,29 +686,136 @@ export default function TeamPage({
     if (!Number.isFinite(number)) return "-";
     return `${(number * 100).toFixed(1)}%`;
   };
-  const formatSeasonStartYear = (season) => {
-    const seasonValue = String(season || "");
-    return /^\d{8}$/.test(seasonValue) ? seasonValue.slice(0, 4) : seasonValue;
-  };
   const teamPageId = teamId;
   const teamName = fullName || abbreviation;
+  const contractsLoadedForSeason = Object.prototype.hasOwnProperty.call(teamContractsBySeason, seasonId);
+  const selectedSeasonContracts = useMemo(
+    () => (Array.isArray(teamContractsBySeason[seasonId]) ? teamContractsBySeason[seasonId] : []),
+    [seasonId, teamContractsBySeason]
+  );
+  const teamContractRows = useMemo(
+    () =>
+      selectedSeasonContracts
+        .flatMap((playerContract) => {
+          const rosterSeasons = Array.isArray(playerContract.rosterSeasons)
+            ? playerContract.rosterSeasons.map(String)
+            : [];
+          if (!rosterSeasons.includes(String(seasonId))) return [];
+
+          const contractRows = getContractSeasonRows(playerContract.contracts);
+          const selectedContractRows = contractRows.filter(
+            (contract) => String(contract.season) === String(seasonId)
+          );
+          const fallbackCurrentContract =
+            playerContract.currentContract && String(playerContract.currentContract.current_season) === String(seasonId)
+              ? [playerContract.currentContract]
+              : [];
+
+          return (selectedContractRows.length ? selectedContractRows : fallbackCurrentContract).map((contract) => {
+            if (!contract) return null;
+
+            return {
+              playerId: playerContract.playerId,
+              fullName: playerContract.fullName,
+              positionCode: playerContract.positionCode || "-",
+              rosterSeason: seasonId,
+              cap_hit: contract.cap_hit,
+              current_total_salary: contract.current_total_salary || contract.total_salary,
+              current_season: contract.current_season || contract.season,
+              start_season: contract.start_season,
+              end_season: contract.end_season,
+              clause: contract.current_clause || contract.clause,
+              source_url: contract.source_url,
+            };
+          });
+        })
+        .filter(Boolean),
+    [seasonId, selectedSeasonContracts]
+  );
+  const hasTeamContracts = teamContractRows.length > 0;
+  const showContractCard = !contractsLoadedForSeason || hasTeamContracts;
+
+  const contract_table_columns = useMemo(
+    () => [
+      {
+        header: "Player",
+        accessorKey: "fullName",
+        size: 150,
+        cell: (props) =>
+          props.row.original?.playerId ? (
+            <Link
+              href={playerUrl(props.row.original.fullName, props.row.original.playerId)}
+              className="hover:text-blue-700 visited:text-purple-700 dark:visited:text-purple-300"
+            >
+              {props.row.original.fullName}
+            </Link>
+          ) : (
+            props.getValue()
+          ),
+      },
+      {
+        header: "Pos.",
+        accessorKey: "positionCode",
+        size: 42,
+      },
+      {
+        header: "Cap Hit",
+        accessorKey: "cap_hit",
+        size: 108,
+        meta: numericColumnMeta,
+        cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        footer: contractCurrencyFooter("cap_hit"),
+      },
+      {
+        header: "Salary",
+        accessorKey: "current_total_salary",
+        size: 108,
+        meta: numericColumnMeta,
+        cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
+        footer: contractCurrencyFooter("current_total_salary"),
+      },
+      {
+        header: "Term",
+        id: "term",
+        accessorFn: (row) =>
+          row.start_season || row.end_season
+            ? `${formatShortSeason(row.start_season)} to ${formatShortSeason(row.end_season)}`
+            : "-",
+        size: 90,
+      },
+      {
+        header: "Season",
+        accessorKey: "current_season",
+        size: 74,
+        cell: (props) => formatShortSeason(props.getValue()),
+      },
+      {
+        header: "Clause",
+        accessorKey: "clause",
+        size: 70,
+        cell: (props) => props.getValue() || "-",
+      },
+    ],
+    []
+  );
 
   const team_table_columns = useMemo(
     () => [
       {
         header: "Year",
         accessorKey: "seasonId",
-        size: 78,
+        size: 68,
         cell: (props) => {
           const season = props.getValue();
-          if (!teamPageId || !season) return season;
+          const seasonLabel = formatSeason(season);
+          if (!teamPageId || !season) return seasonLabel;
 
           return (
             <Link
               href={`${teamUrl(teamName, teamPageId)}?season=${encodeURIComponent(season)}`}
               className="font-medium text-slate-800 hover:text-blue-700 dark:text-slate-100 dark:hover:text-blue-300"
             >
-              {season}
+              {seasonLabel}
             </Link>
           );
         },
@@ -693,28 +865,6 @@ export default function TeamPage({
         ),
         meta: { headerClassName: "text-right" },
       },
-      {
-        header: "GFPG",
-        accessorKey: "goalsForPerGame",
-        size: 56,
-        cell: (props) => (
-          <p className="text-right">
-            {props.getValue() != null ? Number(props.getValue()).toFixed(2) : "-"}
-          </p>
-        ),
-        meta: { headerClassName: "text-right" },
-      },
-      {
-        header: "GAPG",
-        accessorKey: "goalsAgainstPerGame",
-        size: 56,
-        cell: (props) => (
-          <p className="text-right">
-            {props.getValue() != null ? Number(props.getValue()).toFixed(2) : "-"}
-          </p>
-        ),
-        meta: { headerClassName: "text-right" },
-      },
       // {
       //   header: "Place",
       //   accessorKey: "place",
@@ -750,7 +900,7 @@ export default function TeamPage({
           {selectedTeamRecord && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <span className="font-medium text-gray-800 dark:text-gray-100">
-                {normalizeTeamSeasonId(selectedTeamRecord.seasonId)}
+                {normalizeSeasonId(selectedTeamRecord.seasonId)}
               </span>
               <span>
                 {formatStat(selectedTeamRecord.wins)}-
@@ -772,7 +922,7 @@ export default function TeamPage({
       <div className="team-content-grid">
         {seasons && (
           <div className="roster-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-0.5 flex flex-col items-start">
-            <div className="flex items-center justify-between pb-0.5">
+            <div className="flex flex-wrap items-center gap-2 pb-0.5">
               <div className="flex items-center gap-1">
                 <div>
                   <label className="pr-1 dark:text-white font-medium" htmlFor="season">
@@ -811,11 +961,19 @@ export default function TeamPage({
                   <MdOutlineChevronRight size={28} />
                 </button>
               </div>
+              <input
+                type="search"
+                value={rosterSearch}
+                onChange={(event) => setRosterSearch(event.target.value)}
+                placeholder="Search players..."
+                className="min-w-0 flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:max-w-xs"
+                aria-label="Search roster players"
+              />
             </div>
 
             {seasonData && seasonData?.skaters && (
               <ReactTable
-                data={seasonData.skaters}
+                data={filteredSkaters}
                 columns={roster_player_table_columns}
                 sortKey="P"
                 modern
@@ -824,7 +982,7 @@ export default function TeamPage({
             )}
             {seasonData && seasonData?.goalies && (
               <ReactTable
-                data={seasonData.goalies}
+                data={filteredGoalies}
                 columns={roster_goalie_table_columns}
                 sortKey="P"
                 modern
@@ -833,133 +991,166 @@ export default function TeamPage({
             )}
           </div>
         )}
-        <div className="history-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-1">
-          <div className="grid min-w-0 grid-cols-1 gap-2 2xl:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="h-64 min-w-0 xl:h-72">
-              {/* <input type="" /> */}
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={team_chart_data}
-                  margin={{ top: 6, right: 28, left: 8, bottom: 18 }}
-                >
-                  <CartesianGrid stroke="#e5e7eb" strokeOpacity={0.8} />
-                  <YAxis
-                    yAxisId="record"
-                    width={44}
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    label={{
-                      value: "Points / Wins / Losses",
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 0,
-                      style: { fontSize: 11, fill: "#334155" },
-                    }}
-                  />
-                  <YAxis
-                    yAxisId="pct"
-                    orientation="right"
-                    domain={[0, 100]}
-                    width={44}
-                    tick={{ fontSize: 11, fill: "#7c3aed" }}
-                    tickFormatter={(value) => `${value}%`}
-                    label={{
-                      value: "P%",
-                      angle: 90,
-                      position: "insideRight",
-                      offset: 0,
-                      style: { fontSize: 11, fill: "#7c3aed" },
-                    }}
-                  />
-                  <XAxis
-                    dataKey="seasonId"
-                    tickFormatter={formatSeasonStartYear}
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    tickMargin={8}
-                    label={{
-                      value: "Season start year",
-                      position: "insideBottom",
-                      offset: -12,
-                      style: { fontSize: 11, fill: "#334155" },
-                    }}
-                  />
-                  <Tooltip
-                    labelFormatter={(label) => formatSeasonStartYear(label)}
-                    formatter={(value, name) => [
-                      name === "P%" && Number.isFinite(Number(value))
-                        ? `${Number(value).toFixed(1)}%`
-                        : value,
-                      name,
-                    ]}
-                  />
-                  <Legend
-                    align="left"
-                    verticalAlign="top"
+        <div className="team-side-column min-w-0">
+          <div className="history-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-1">
+            <div className="grid min-w-0 grid-cols-1 gap-2 2xl:grid-cols-[minmax(24rem,1fr)_auto]">
+              <div className="h-72 min-w-0 xl:h-80">
+                {/* <input type="" /> */}
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={team_chart_data}
+                    margin={{ top: 22, right: 32, left: 8, bottom: 18 }}
+                  >
+                    <CartesianGrid stroke="#e5e7eb" strokeOpacity={0.8} />
+                    <YAxis
+                      yAxisId="record"
+                      width={44}
+                      tick={{ fontSize: 11, fill: "#64748b" }}
+                      label={{
+                        value: "Points / Wins / Losses",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 0,
+                        style: { fontSize: 11, fill: "#334155" },
+                      }}
+                    />
+                    <YAxis
+                      yAxisId="pct"
+                      orientation="right"
+                      domain={[0, 100]}
+                      width={44}
+                      tick={{ fontSize: 11, fill: "#7c3aed" }}
+                      tickFormatter={(value) => `${value}%`}
+                      label={{
+                        value: "P%",
+                        angle: 90,
+                        position: "insideRight",
+                        offset: 0,
+                        style: { fontSize: 11, fill: "#7c3aed" },
+                      }}
+                    />
+                    <XAxis
+                      dataKey="seasonId"
+                      tickFormatter={formatSeasonStartYear}
+                      tick={{ fontSize: 11, fill: "#64748b" }}
+                      tickMargin={8}
+                      label={{
+                        value: "Season start year",
+                        position: "insideBottom",
+                        offset: -12,
+                        style: { fontSize: 11, fill: "#334155" },
+                      }}
+                    />
+                    <Tooltip
+                      labelFormatter={(label) => formatSeasonStartYear(label)}
+                      formatter={(value, name) => [
+                        name === "P%" && Number.isFinite(Number(value))
+                          ? `${Number(value).toFixed(1)}%`
+                          : value,
+                        name,
+                      ]}
+                    />
+                    <Legend
+                      align="left"
+                      verticalAlign="top"
                     height={28}
                     iconType="circle"
-                    wrapperStyle={{ fontSize: 12 }}
+                    wrapperStyle={{ fontSize: 12, lineHeight: "18px" }}
+                    />
+                    <Line
+                      type="linear"
+                      name="Points"
+                      dataKey="points"
+                      yAxisId="record"
+                      strokeWidth={2}
+                      stroke="#2563eb"
+                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line
+                      type="linear"
+                      name="Wins"
+                      dataKey="wins"
+                      yAxisId="record"
+                      strokeWidth={2}
+                      stroke="#009966"
+                      strokeDasharray="4 3"
+                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line
+                      type="linear"
+                      name="P%"
+                      dataKey="pointPctPercent"
+                      yAxisId="pct"
+                      strokeWidth={2}
+                      stroke="#7c3aed"
+                      strokeDasharray="6 2 2 2"
+                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line
+                      type="linear"
+                      name="Losses (reg)"
+                      dataKey="losses"
+                      yAxisId="record"
+                      strokeWidth={2}
+                      stroke="#FF0000"
+                      strokeDasharray="1 4"
+                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="min-w-0 overflow-x-auto">
+                {team_table_data && (
+                  <PaginatedTable
+                    // columns={newColumns}
+                    columns={team_table_columns}
+                    data={team_table_data}
+                    sortKey="seasonId"
+                    pageSize={10}
+                    onPageRowsChange={handleTeamTablePageRowsChange}
+                    fillLastPage
+                    modern
+                    compact
                   />
-                  <Line
-                    type="linear"
-                    name="Points"
-                    dataKey="points"
-                    yAxisId="record"
-                    strokeWidth={2}
-                    stroke="#2563eb"
-                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                    activeDot={{ r: 5 }}
-                  />
-                  <Line
-                    type="linear"
-                    name="Wins"
-                    dataKey="wins"
-                    yAxisId="record"
-                    strokeWidth={2}
-                    stroke="#009966"
-                    strokeDasharray="4 3"
-                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                    activeDot={{ r: 5 }}
-                  />
-                  <Line
-                    type="linear"
-                    name="P%"
-                    dataKey="pointPctPercent"
-                    yAxisId="pct"
-                    strokeWidth={2}
-                    stroke="#7c3aed"
-                    strokeDasharray="6 2 2 2"
-                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                    activeDot={{ r: 5 }}
-                  />
-                  <Line
-                    type="linear"
-                    name="Losses (reg)"
-                    dataKey="losses"
-                    yAxisId="record"
-                    strokeWidth={2}
-                    stroke="#FF0000"
-                    strokeDasharray="1 4"
-                    dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                    activeDot={{ r: 5 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                )}
+              </div>
             </div>
-            <div className="min-w-0 overflow-x-auto">
-              {team_table_data && (
+          </div>
+          {showContractCard && (
+            <section className="contracts-card mt-1 overflow-hidden rounded-md border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2 px-1">
+                <h2 className="text-lg font-bold text-slate-950 dark:text-white">
+                  Player Contracts
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Selected season
+                </p>
+              </div>
+              {!contractsLoadedForSeason ? (
+                <div className="flex min-h-24 items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-slate-600 dark:border-t-blue-300" />
+                  Loading contracts
+                </div>
+              ) : hasTeamContracts ? (
                 <PaginatedTable
-                  // columns={newColumns}
-                  columns={team_table_columns}
-                  data={team_table_data}
-                  sortKey="seasonId"
-                  pageSize={10}
-                  onPageRowsChange={handleTeamTablePageRowsChange}
-                  fillLastPage
+                  columns={contract_table_columns}
+                  data={teamContractRows}
+                  sortKey="cap_hit"
+                  pageSize={20}
                   modern
                   compact
                 />
+              ) : (
+                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  No contract data for this season.
+                </div>
               )}
-            </div>
-          </div>
+            </section>
+          )}
         </div>
       </div>
       <div className="p-1 mt-2">
@@ -981,14 +1172,22 @@ export default function TeamPage({
         }
 
         .roster-card,
-        .history-card {
+        .history-card,
+        .contracts-card,
+        .team-side-column {
           width: 100%;
+        }
+
+        .team-side-column {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
         }
 
         @media (min-width: 1280px) {
           .team-content-grid {
             align-items: start;
-            grid-template-columns: max-content minmax(0, 1fr);
+            grid-template-columns: minmax(44rem, max-content) minmax(32rem, 1fr);
           }
 
           .roster-card {
@@ -1007,7 +1206,13 @@ export async function getServerSideProps({params, req, query}) {
   const host = req.headers.host;
 
   try {
-    const response = await fetch(`${protocol}://${host}/api/teams/${id}`);
+    const requestedSeason = Array.isArray(query?.season) ? query.season[0] : query?.season;
+    const teamApiUrl = new URL(`${protocol}://${host}/api/teams/${id}`);
+    if (requestedSeason) {
+      teamApiUrl.searchParams.set("contractSeason", requestedSeason);
+    }
+
+    const response = await fetch(teamApiUrl.toString());
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -1020,6 +1225,8 @@ export async function getServerSideProps({params, req, query}) {
           abbreviation: null,
           fullName: null,
           teamRecords: [],
+          teamContracts: [],
+          initialContractSeason: null,
           teamId: id,
           canonicalPath: teamUrl(null, id),
         },
@@ -1031,18 +1238,15 @@ export async function getServerSideProps({params, req, query}) {
     const skaters = payload?.skaters || [];
     const goalies = payload?.goalies || [];
     const teamRecords = payload?.teamRecords || [];
+    const teamContracts = payload?.teamContracts || [];
     const playoffSeasons = payload?.playoffSeasons || [];
-    const normalizeSeasonId = (season) =>
-      season === null || season === undefined ? "" : String(season);
-
     const teamName = teamInfo?.fullName || teamInfo?.name || teamInfo?.abbreviation || "";
     const canonicalPath = teamUrl(teamName, id);
     if (params.id !== canonicalPath.split('/').pop()) {
-      const season = Array.isArray(query?.season) ? query.season[0] : query?.season;
       return {
         redirect: {
-          destination: season
-            ? `${canonicalPath}?season=${encodeURIComponent(season)}`
+          destination: requestedSeason
+            ? `${canonicalPath}?season=${encodeURIComponent(requestedSeason)}`
             : canonicalPath,
           permanent: false,
         },
@@ -1073,6 +1277,9 @@ export async function getServerSideProps({params, req, query}) {
 
     const seasonMap = combinePlayersBySeason(skaters, goalies);
     const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
+    const initialContractSeason = requestedSeason && seasons.includes(requestedSeason)
+      ? requestedSeason
+      : seasons[0] || null;
     const playoffSeasonIds = new Set(playoffSeasons.map(normalizeSeasonId));
 
     seasons.forEach((season) => {
@@ -1086,6 +1293,8 @@ export async function getServerSideProps({params, req, query}) {
         abbreviation: teamInfo?.abbreviation || null,
         fullName: teamInfo?.fullName || teamInfo?.name || null,
         teamRecords,
+        teamContracts,
+        initialContractSeason,
         teamId: id,
         canonicalPath,
       },
@@ -1099,6 +1308,8 @@ export async function getServerSideProps({params, req, query}) {
         abbreviation: null,
         fullName: null,
         teamRecords: [],
+        teamContracts: [],
+        initialContractSeason: null,
         teamId: id,
         canonicalPath: teamUrl(null, id),
       },
