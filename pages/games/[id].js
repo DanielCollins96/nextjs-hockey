@@ -292,7 +292,7 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
     <div className="container mx-auto px-4 py-5">
       <SEO
         title={pageTitle}
-        description={`${game.awayTeam_abbrev} vs ${game.homeTeam_abbrev} - ${formatDate(game.gameDate)}. View game details and scores.`}
+        description={`${game.awayTeam_abbrev} vs ${game.homeTeam_abbrev} - ${formatDate(game.gameDate)}. View game data, details, and scores.`}
         path={`/games/${game.id}`}
       />
 

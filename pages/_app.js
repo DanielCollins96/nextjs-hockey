@@ -61,7 +61,7 @@ function MyApp({Component, pageProps}) {
             />
             <meta
               name="description"
-              content="hocke.ca provides statistics for National Hockey League Teams and Players"
+              content="hocke.ca provides NHL team, player, game, season, and contract data."
             />
             <meta name="theme-color" content="#319795"></meta>
           </Head>

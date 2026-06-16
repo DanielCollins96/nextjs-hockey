@@ -471,7 +471,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
     <div className="container mx-auto px-4 py-8">
       <SEO
         title="NHL Games"
-        description="View NHL game scores and schedules. Browse games by date and see live scores, final results, and upcoming matchups."
+        description="View NHL game data, scores, and schedules. Browse games by date and see live scores, final results, and upcoming matchups."
         path="/games"
       />
 

@@ -193,7 +193,7 @@ export default function PlayersIndex({ players, searchTerm }) {
         <div>
             <SEO
                 title="NHL Players"
-                description="Search and browse NHL player statistics, career stats, and profiles. Find any current or former NHL player."
+                description="Search and browse NHL player statistics, career stats, game data, contract data, and profiles. Find any current or former NHL player."
                 path="/players"
             />
 

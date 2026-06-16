@@ -16,7 +16,7 @@ export default function Home() {
       </Head>
       <SEO
         title="NHL Scores and Stats"
-        description="Browse current NHL team rosters, player statistics, and standings. Search by team or player name to find stats and profiles."
+        description="Browse NHL team rosters, game data, player statistics, standings, and player contract data. Search by team or player name to find stats and profiles."
         path="/"
       />
 

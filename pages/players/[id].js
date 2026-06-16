@@ -580,7 +580,7 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
             `}</style>
             <SEO
                 title={`${playerName} Stats & Profile`}
-                description={`${playerName}'s NHL career statistics, draft info, regular season stats, and playoff stats.`}
+                description={`${playerName}'s NHL career statistics, game data, contract data, draft info, regular season stats, and playoff stats.`}
                 path={canonicalPath}
                 ogImage={headshotUrl}
                 ogType="profile"
