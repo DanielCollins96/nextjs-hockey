@@ -54,7 +54,8 @@ function MyApp({Component, pageProps}) {
         <AuthProvider>
           <Head>
             <title>NHL Scores and Stats | hocke.ca</title>
-            <meta title="NHL Scores and Stats | hocke.ca" />
+            <meta name="application-name" content="hocke.ca" />
+            <meta property="og:site_name" content="hocke.ca" />
             <meta
               name="viewport"
               content="width=device-width, initial-scale=1"

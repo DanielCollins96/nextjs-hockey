@@ -2,11 +2,12 @@ import Head from 'next/head';
 import Header from './header';
 import GamesBanner from './GamesBanner';
 
-export default function Layout ({children, title = 'Hockey Stats'}) {
+export default function Layout ({children, title = 'hocke.ca'}) {
     return (
         <div className="bg-white dark:bg-gray-900 transition-colors w-full overflow-x-hidden">
             <Head>
-                <link rel="icon" href="/images/ice-hockey-puck.svg" />
+                <link rel="icon" href="/favicon.ico" sizes="any" />
+                <link rel="icon" type="image/svg+xml" href="/images/ice-hockey-puck.svg" />
                 <title>{title}</title>
             </Head>
             <div className="md:ml-32">

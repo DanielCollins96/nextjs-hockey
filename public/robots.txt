@@ -7,4 +7,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://nextjs-hockey.vercel.app/sitemap.xml
+Sitemap: https://www.hocke.ca/sitemap.xml

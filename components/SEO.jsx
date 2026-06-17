@@ -1,7 +1,7 @@
 import Head from 'next/head';
 
-const SITE_URL = 'https://nextjs-hockey.vercel.app';
-const SITE_NAME = 'NHL Hockey Stats';
+const SITE_URL = 'https://www.hocke.ca';
+const SITE_NAME = 'hocke.ca';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/Hockey-Net.svg`;
 
 /**
@@ -38,6 +38,7 @@ export default function SEO({
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:type" content={ogType} />
       <meta property="og:image" content={ogImage} />
+      <meta name="application-name" content={SITE_NAME} />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />

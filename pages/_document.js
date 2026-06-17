@@ -14,7 +14,9 @@ class Document extends NextDocument {
                 <Head>
                     <meta charSet="utf-8" />
                     <meta name="google-site-verification" content="VUUqOnHAWuSsJzbTMxRJ1c8VvzljEFObxWmd0CWkdPA" />
-                    <link rel="icon" sizes="96x96" href="/images/Hockey-Net.svg" />
+                    <link rel="icon" href="/favicon.ico" sizes="any" />
+                    <link rel="icon" type="image/svg+xml" href="/images/ice-hockey-puck.svg" />
+                    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
                     {/* Preconnect to external domains for faster loading */}
                     <link rel="preconnect" href="https://assets.nhle.com" />
                     <link rel="dns-prefetch" href="https://assets.nhle.com" />

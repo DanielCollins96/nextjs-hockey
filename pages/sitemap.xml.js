@@ -1,6 +1,6 @@
 import { playerUrl, teamUrl } from '../lib/routes';
 
-const SITE_URL = 'https://nextjs-hockey.vercel.app';
+const SITE_URL = 'https://www.hocke.ca';
 
 function generateSiteMap({ playerIds, draftYears, teamIds }) {
   const today = new Date().toISOString().split('T')[0];
