@@ -20,7 +20,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -36,7 +35,7 @@ const contractCurrencyFooter = (field) => {
       .rows
       .reduce((sum, row) => sum + (toNumber(row?.original?.[field]) || 0), 0);
 
-    return <div className="text-right pr-1">{total > 0 ? formatCurrency(total) : "-"}</div>;
+    return <div className="text-right">{total > 0 ? formatCurrency(total) : "-"}</div>;
   };
 
   return ContractCurrencyFooter;
@@ -68,6 +67,8 @@ export default function TeamPage({
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId));
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
   const [rosterSearch, setRosterSearch] = useState("");
+  const [sidePanelTab, setSidePanelTab] = useState("stats");
+  const [hiddenTeamChartSeries, setHiddenTeamChartSeries] = useState({});
   const [teamContractsBySeason, setTeamContractsBySeason] = useState(() =>
     initialContractSeason ? {[initialContractSeason]: teamContracts || []} : {}
   );
@@ -163,6 +164,13 @@ export default function TeamPage({
       selectSeason(seasonIds[newIndex]);
     }
   };
+
+  const toggleTeamChartSeries = useCallback((seriesKey) => {
+    setHiddenTeamChartSeries((current) => ({
+      ...current,
+      [seriesKey]: !current[seriesKey],
+    }));
+  }, []);
 
   const filteredSkaters = useMemo(() => {
     const skaters = seasonData?.skaters || [];
@@ -369,7 +377,7 @@ export default function TeamPage({
           {
             header: "PIM",
             accessorFn: (d) => d["penaltyMinutes"],
-            size: 42,
+            size: 38,
             meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(
@@ -388,9 +396,9 @@ export default function TeamPage({
         header: "Playoffs",
         columns: [
           {
-            header: "PO GP",
+            header: "GP",
             accessorFn: (d) => d["playoffGamesPlayed"],
-            size: 44,
+            size: 34,
             meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
@@ -399,9 +407,9 @@ export default function TeamPage({
             ),
           },
           {
-            header: "PO P",
+            header: "P",
             accessorFn: (d) => d["playoffPoints"],
-            size: 42,
+            size: 34,
             meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
@@ -410,9 +418,9 @@ export default function TeamPage({
             ),
           },
           {
-            header: "PO W",
+            header: "W",
             accessorFn: (d) => d["playoffWins"],
-            size: 42,
+            size: 34,
             meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
@@ -421,9 +429,9 @@ export default function TeamPage({
             ),
           },
           {
-            header: "PO L",
+            header: "L",
             accessorFn: (d) => d["playoffLosses"],
-            size: 42,
+            size: 34,
             meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
@@ -441,12 +449,12 @@ export default function TeamPage({
           {
             header: "Nat.",
             accessorFn: (d) => d?.birthCountry || "-",
-            size: 42,
+            size: 38,
           },
           {
             header: "Age",
             accessorFn: (d) => calculateSeasonAge(d),
-            size: 38,
+            size: 34,
             meta: numericColumnMeta,
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -485,7 +493,7 @@ export default function TeamPage({
           {
             header: "Pos.",
             accessorFn: (d) => d["positionCode"],
-            size: 42,
+            size: 34,
           },
           {
             header: "GP",
@@ -530,7 +538,7 @@ export default function TeamPage({
           {
             header: "PIM",
             accessorFn: (d) => d["penaltyMinutes"],
-            size: 42,
+            size: 38,
             meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(
@@ -544,7 +552,7 @@ export default function TeamPage({
           {
             header: "+/-",
             accessorFn: (d) => d["plusMinus"],
-            size: 38,
+            size: 34,
             meta: numericColumnMeta,
             footer: ({table}) => {
               const total = sumFromRows(table.getFilteredRowModel().rows, "plusMinus");
@@ -611,7 +619,7 @@ export default function TeamPage({
             header: "PIM",
             id: "PO PIM",
             accessorFn: (d) => d["playoffPenaltyMinutes"],
-            size: 42,
+            size: 38,
             meta: numericColumnMeta,
             cell: (props) => (
               <p className="text-right">
@@ -629,12 +637,12 @@ export default function TeamPage({
           {
             header: "Nat.",
             accessorFn: (d) => d?.birthCountry || "-",
-            size: 42,
+            size: 38,
           },
           {
             header: "Age",
             accessorFn: (d) => calculateSeasonAge(d),
-            size: 38,
+            size: 34,
             meta: numericColumnMeta,
             cell: (props) => <p className="text-right">{props.getValue()}</p>,
           },
@@ -733,7 +741,6 @@ export default function TeamPage({
     [seasonId, selectedSeasonContracts]
   );
   const hasTeamContracts = teamContractRows.length > 0;
-  const showContractCard = !contractsLoadedForSeason || hasTeamContracts;
 
   const contract_table_columns = useMemo(
     () => [
@@ -754,14 +761,18 @@ export default function TeamPage({
           ),
       },
       {
-        header: "Pos.",
+        header: "Pos",
         accessorKey: "positionCode",
-        size: 42,
+        size: 28,
+        meta: {
+          headerClassName: "text-center",
+          cellClassName: "text-center",
+        },
       },
       {
         header: "Cap Hit",
         accessorKey: "cap_hit",
-        size: 108,
+        size: 92,
         meta: numericColumnMeta,
         cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
         footer: contractCurrencyFooter("cap_hit"),
@@ -769,7 +780,7 @@ export default function TeamPage({
       {
         header: "Salary",
         accessorKey: "current_total_salary",
-        size: 108,
+        size: 92,
         meta: numericColumnMeta,
         cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
         footer: contractCurrencyFooter("current_total_salary"),
@@ -781,18 +792,18 @@ export default function TeamPage({
           row.start_season || row.end_season
             ? `${formatShortSeason(row.start_season)} to ${formatShortSeason(row.end_season)}`
             : "-",
-        size: 90,
+        size: 62,
       },
       {
         header: "Season",
         accessorKey: "current_season",
-        size: 74,
+        size: 60,
         cell: (props) => formatShortSeason(props.getValue()),
       },
       {
         header: "Clause",
         accessorKey: "clause",
-        size: 70,
+        size: 54,
         cell: (props) => props.getValue() || "-",
       },
     ],
@@ -991,137 +1002,191 @@ export default function TeamPage({
             )}
           </div>
         )}
-        <div className="team-side-column min-w-0">
-          <div className="history-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-1">
-            <div className="grid min-w-0 grid-cols-1 gap-2 2xl:grid-cols-[minmax(24rem,1fr)_auto]">
-              <div className="h-72 min-w-0 xl:h-80">
-                {/* <input type="" /> */}
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={team_chart_data}
-                    margin={{ top: 22, right: 32, left: 8, bottom: 18 }}
-                  >
-                    <CartesianGrid stroke="#e5e7eb" strokeOpacity={0.8} />
-                    <YAxis
-                      yAxisId="record"
-                      width={44}
-                      tick={{ fontSize: 11, fill: "#64748b" }}
-                      label={{
-                        value: "Points / Wins / Losses",
-                        angle: -90,
-                        position: "insideLeft",
-                        offset: 0,
-                        style: { fontSize: 11, fill: "#334155" },
-                      }}
-                    />
-                    <YAxis
-                      yAxisId="pct"
-                      orientation="right"
-                      domain={[0, 100]}
-                      width={44}
-                      tick={{ fontSize: 11, fill: "#7c3aed" }}
-                      tickFormatter={(value) => `${value}%`}
-                      label={{
-                        value: "P%",
-                        angle: 90,
-                        position: "insideRight",
-                        offset: 0,
-                        style: { fontSize: 11, fill: "#7c3aed" },
-                      }}
-                    />
-                    <XAxis
-                      dataKey="seasonId"
-                      tickFormatter={formatSeasonStartYear}
-                      tick={{ fontSize: 11, fill: "#64748b" }}
-                      tickMargin={8}
-                      label={{
-                        value: "Season start year",
-                        position: "insideBottom",
-                        offset: -12,
-                        style: { fontSize: 11, fill: "#334155" },
-                      }}
-                    />
-                    <Tooltip
-                      labelFormatter={(label) => formatSeasonStartYear(label)}
-                      formatter={(value, name) => [
-                        name === "P%" && Number.isFinite(Number(value))
-                          ? `${Number(value).toFixed(1)}%`
-                          : value,
-                        name,
-                      ]}
-                    />
-                    <Legend
-                      align="left"
-                      verticalAlign="top"
-                    height={28}
-                    iconType="circle"
-                    wrapperStyle={{ fontSize: 12, lineHeight: "18px" }}
-                    />
-                    <Line
-                      type="linear"
-                      name="Points"
-                      dataKey="points"
-                      yAxisId="record"
-                      strokeWidth={2}
-                      stroke="#2563eb"
-                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                      activeDot={{ r: 5 }}
-                    />
-                    <Line
-                      type="linear"
-                      name="Wins"
-                      dataKey="wins"
-                      yAxisId="record"
-                      strokeWidth={2}
-                      stroke="#009966"
-                      strokeDasharray="4 3"
-                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                      activeDot={{ r: 5 }}
-                    />
-                    <Line
-                      type="linear"
-                      name="P%"
-                      dataKey="pointPctPercent"
-                      yAxisId="pct"
-                      strokeWidth={2}
-                      stroke="#7c3aed"
-                      strokeDasharray="6 2 2 2"
-                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                      activeDot={{ r: 5 }}
-                    />
-                    <Line
-                      type="linear"
-                      name="Losses (reg)"
-                      dataKey="losses"
-                      yAxisId="record"
-                      strokeWidth={2}
-                      stroke="#FF0000"
-                      strokeDasharray="1 4"
-                      dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
-                      activeDot={{ r: 5 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="min-w-0 overflow-x-auto">
-                {team_table_data && (
-                  <PaginatedTable
-                    // columns={newColumns}
-                    columns={team_table_columns}
-                    data={team_table_data}
-                    sortKey="seasonId"
-                    pageSize={10}
-                    onPageRowsChange={handleTeamTablePageRowsChange}
-                    fillLastPage
-                    modern
-                    compact
-                  />
-                )}
-              </div>
-            </div>
+        <div className="team-side-column min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-1 flex rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-900">
+            {[
+              {id: "stats", label: "Team Stats"},
+              {id: "contracts", label: "Contracts"},
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`flex-1 rounded px-3 py-1.5 text-sm font-semibold transition ${
+                  sidePanelTab === tab.id
+                    ? "bg-white text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-300"
+                    : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                }`}
+                aria-pressed={sidePanelTab === tab.id}
+                onClick={() => setSidePanelTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-          {showContractCard && (
-            <section className="contracts-card mt-1 overflow-hidden rounded-md border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-800">
+          {sidePanelTab === "stats" && (
+            <section className="history-card min-w-0 overflow-hidden">
+              <div className="grid min-w-0 grid-cols-1 gap-2 2xl:grid-cols-[minmax(24rem,1fr)_auto]">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 py-1 text-xs font-medium">
+                    {[
+                      {key: "points", label: "Points", color: "#2563eb"},
+                      {key: "wins", label: "Wins", color: "#009966"},
+                      {key: "pointPctPercent", label: "P%", color: "#7c3aed"},
+                      {key: "losses", label: "Losses (reg)", color: "#FF0000"},
+                    ].map((series) => {
+                      const isHidden = Boolean(hiddenTeamChartSeries[series.key]);
+
+                      return (
+                        <button
+                          key={series.key}
+                          type="button"
+                          className={`flex items-center gap-1.5 transition ${
+                            isHidden ? "opacity-40" : ""
+                          }`}
+                          style={{color: series.color}}
+                          aria-pressed={!isHidden}
+                          onClick={() => toggleTeamChartSeries(series.key)}
+                        >
+                          <span
+                            className="h-3 w-3 rounded-full"
+                            style={{backgroundColor: series.color}}
+                          />
+                          {series.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="h-72 min-w-0 xl:h-80">
+                    {/* <input type="" /> */}
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={team_chart_data}
+                        margin={{ top: 10, right: 32, left: 8, bottom: 18 }}
+                      >
+                        <CartesianGrid stroke="#e5e7eb" strokeOpacity={0.8} />
+                        <YAxis
+                          yAxisId="record"
+                          width={44}
+                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          label={{
+                            value: "Points / Wins / Losses",
+                            angle: -90,
+                            position: "insideLeft",
+                            offset: 0,
+                            style: { fontSize: 11, fill: "#334155" },
+                          }}
+                        />
+                        <YAxis
+                          yAxisId="pct"
+                          orientation="right"
+                          domain={[0, 100]}
+                          width={44}
+                          tick={{ fontSize: 11, fill: "#7c3aed" }}
+                          tickFormatter={(value) => `${value}%`}
+                          label={{
+                            value: "P%",
+                            angle: 90,
+                            position: "insideRight",
+                            offset: 0,
+                            style: { fontSize: 11, fill: "#7c3aed" },
+                          }}
+                        />
+                        <XAxis
+                          dataKey="seasonId"
+                          tickFormatter={formatSeasonStartYear}
+                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          tickMargin={8}
+                          label={{
+                            value: "Season start year",
+                            position: "insideBottom",
+                            offset: -12,
+                            style: { fontSize: 11, fill: "#334155" },
+                          }}
+                        />
+                        <Tooltip
+                          labelFormatter={(label) => formatSeasonStartYear(label)}
+                          formatter={(value, name) => [
+                            name === "P%" && Number.isFinite(Number(value))
+                              ? `${Number(value).toFixed(1)}%`
+                              : value,
+                            name,
+                          ]}
+                        />
+                        {!hiddenTeamChartSeries.points && (
+                          <Line
+                            type="linear"
+                            name="Points"
+                            dataKey="points"
+                            yAxisId="record"
+                            strokeWidth={2}
+                            stroke="#2563eb"
+                            dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                            activeDot={{ r: 5 }}
+                          />
+                        )}
+                        {!hiddenTeamChartSeries.wins && (
+                          <Line
+                            type="linear"
+                            name="Wins"
+                            dataKey="wins"
+                            yAxisId="record"
+                            strokeWidth={2}
+                            stroke="#009966"
+                            strokeDasharray="4 3"
+                            dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                            activeDot={{ r: 5 }}
+                          />
+                        )}
+                        {!hiddenTeamChartSeries.pointPctPercent && (
+                          <Line
+                            type="linear"
+                            name="P%"
+                            dataKey="pointPctPercent"
+                            yAxisId="pct"
+                            strokeWidth={2}
+                            stroke="#7c3aed"
+                            strokeDasharray="6 2 2 2"
+                            dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                            activeDot={{ r: 5 }}
+                          />
+                        )}
+                        {!hiddenTeamChartSeries.losses && (
+                          <Line
+                            type="linear"
+                            name="Losses (reg)"
+                            dataKey="losses"
+                            yAxisId="record"
+                            strokeWidth={2}
+                            stroke="#FF0000"
+                            strokeDasharray="1 4"
+                            dot={{ r: 3, strokeWidth: 2, fill: "#fff" }}
+                            activeDot={{ r: 5 }}
+                          />
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                <div className="min-w-0 overflow-x-auto">
+                  {team_table_data && (
+                    <PaginatedTable
+                      // columns={newColumns}
+                      columns={team_table_columns}
+                      data={team_table_data}
+                      sortKey="seasonId"
+                      pageSize={10}
+                      onPageRowsChange={handleTeamTablePageRowsChange}
+                      fillLastPage
+                      modern
+                      compact
+                    />
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+          {sidePanelTab === "contracts" && (
+            <section className="contracts-card overflow-hidden">
               <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2 px-1">
                 <h2 className="text-lg font-bold text-slate-950 dark:text-white">
                   Player Contracts
@@ -1165,34 +1230,49 @@ export default function TeamPage({
         .team-content-grid {
           display: grid;
           grid-template-columns: minmax(0, 1fr);
-          gap: 0.25rem;
+          gap: 0.125rem;
           max-width: 100%;
-          padding: 0.125rem;
+          padding: 0;
           width: 100%;
         }
 
-        .roster-card,
         .history-card,
         .contracts-card,
         .team-side-column {
+          max-width: 100%;
+          min-width: 0;
           width: 100%;
+        }
+
+        .roster-card {
+          max-width: none;
+          width: max-content;
         }
 
         .team-side-column {
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
+          min-width: 0;
+          overflow: hidden;
         }
 
-        @media (min-width: 1280px) {
+        .roster-card :global(th),
+        .roster-card :global(td) {
+          padding-left: 0.25rem;
+          padding-right: 0.25rem;
+        }
+
+        .contracts-card :global(th),
+        .contracts-card :global(td) {
+          padding-left: 0.25rem;
+          padding-right: 0.25rem;
+        }
+
+        @media (min-width: 1180px) {
           .team-content-grid {
             align-items: start;
-            grid-template-columns: minmax(44rem, max-content) minmax(32rem, 1fr);
-          }
-
-          .roster-card {
-            max-width: 100%;
-            width: max-content;
+            grid-template-columns: max-content minmax(0, 1fr);
           }
         }
       `}</style>
