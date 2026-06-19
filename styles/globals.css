@@ -36,12 +36,12 @@
   color: #f3f4f6; /* gray-100 */
 }
 .react-tabs__tab--selected {
-  background: #fecaca; /* red-300 */
-  color: #000000;
+  background: #ffffff;
+  color: #1d4ed8;
 }
 .dark .react-tabs__tab--selected {
-  background: #991b1b; /* red-700 */
-  color: #ffffff;
+  background: #1f2937;
+  color: #93c5fd;
 }
 
 /* make sure react-tabs panels match site bg */

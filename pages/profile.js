@@ -267,30 +267,30 @@ function Profile() {
   }
 
   return (
-    <div>
-      <div className="flex flex-col items-center sm:flex-row m-2 sm:items-start">
-        <div className="bg-white dark:bg-gray-800 dark:text-gray-100 m-2 p-2 rounded">
+    <div className="mx-auto w-full max-w-7xl px-4 py-6">
+      <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
           {user && (
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {displayUsername}
             </h2>
           )}
-          <div className="mt-3 rounded border border-gray-200 p-4 text-gray-700 dark:border-gray-700 dark:text-gray-100">
+          <div className="mt-4 rounded-md border border-gray-200 p-4 text-gray-700 dark:border-gray-700 dark:text-gray-100">
             <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Bio</h3>
             <p className="whitespace-pre-wrap text-sm">
               {profile.bio || "No bio yet."}
             </p>
           </div>
-        </div>
-        <div className="w-11/12 sm:w-3/4 flex flex-col p-2 gap-2">
+        </aside>
+        <main className="min-w-0">
           <Tabs>
-            <TabList className="flex gap-3 bg-gray-100 dark:bg-gray-900 p-2 rounded">
-              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Posts</Tab>
-              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Board Posts</Tab>
-              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Settings</Tab>
-              <Tab className="px-3 py-1 rounded text-gray-900 dark:text-gray-100" selectedClassName="bg-red-300 dark:bg-red-600 text-white">Create Post</Tab>
+            <TabList className="mb-3 flex flex-wrap gap-2 rounded-lg bg-gray-100 p-1 dark:bg-gray-900">
+              <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Posts</Tab>
+              <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Board Posts</Tab>
+              <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Settings</Tab>
+              <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Create Post</Tab>
             </TabList>
-            <div className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded min-h-72 p-2">
+            <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
               <TabPanel>
                 <PostsList
                   error={status === "error"}
@@ -363,7 +363,7 @@ function Profile() {
               </TabPanel>
             </div>
           </Tabs>
-        </div>
+        </main>
       </div>
       <ConfirmDialog
         open={!!deleteTarget}
