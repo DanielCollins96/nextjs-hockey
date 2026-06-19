@@ -136,8 +136,11 @@ const Header = () => {
                 </Link>
               </li>
             ) : (
-              <li>
-                <ProfileButton onNavigate={() => setSidebarOpen(false)} />
+              <li className="md:hidden">
+                <ProfileButton
+                  className="w-full"
+                  onNavigate={() => setSidebarOpen(false)}
+                />
               </li>
             )}
           </ul>

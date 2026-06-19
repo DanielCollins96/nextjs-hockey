@@ -199,7 +199,7 @@ function Profile() {
         <div className="bg-white dark:bg-gray-800 dark:text-gray-100 m-2 p-2 rounded">
           {user && (
             <h2 className="font-bold text-gray-900 dark:text-gray-100">
-              Welcome, {user?.attributes?.email}
+              Welcome back
             </h2>
           )}
           <div className="dark:text-white p-12 rounded">

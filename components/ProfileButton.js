@@ -5,17 +5,17 @@ import { UseAuth } from '../contexts/Auth';
 
 import {BiChevronDown} from 'react-icons/bi'
 
-export default function ProfileButton({ onNavigate }) {
+export default function ProfileButton({ onNavigate, className = "" }) {
 
     const { logout } = UseAuth()
     return (
-        (<div className="relative">
-            <Menu as="div" className="relative inline-block text-left">
-                <Menu.Button className="inline-flex justify-center w-full px-4 py-2 text-md font-bold text-white bg-black border border-gray-400 rounded-md bg-opacity-50 hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
-                    <span className="m-auto tracking-wide">Profile</span>
-                    <BiChevronDown className="my-auto ml-1 font-bold" size={26}/>
+        (<div className={`relative ${className}`}>
+            <Menu as="div" className="relative block text-left">
+                <Menu.Button className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-gray-400 bg-black bg-opacity-50 px-3 py-2 text-sm font-bold text-white hover:bg-opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 sm:text-md">
+                    <span className="min-w-0 truncate tracking-wide">Profile</span>
+                    <BiChevronDown className="shrink-0 font-bold" size={22}/>
                 </Menu.Button>
-                <Menu.Items className="z-30 origin-top-right absolute divide-y divide-gray-100 p-2 bg-white w-28 mt-2 border border-black rounded">
+                <Menu.Items className="z-30 origin-top-right absolute right-0 divide-y divide-gray-100 p-2 bg-white w-28 mt-2 border border-black rounded">
                     <div className="flex flex-col gap-1 divide-y text-center">
                         <Menu.Item>
                             {({active}) => (
