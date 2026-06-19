@@ -9,6 +9,8 @@ import { UseAuth } from "../contexts/Auth";
 import * as queries from "../src/graphql/queries";
 import * as mutations from "../src/graphql/mutations";
 import ConfirmDialog from "./ConfirmDialog";
+import RichTextEditor from "./RichTextEditor";
+import ReactMarkdown from "react-markdown";
 import {
   PROFILE_BIO_SUBJECT,
   parseProfileContent,
@@ -250,7 +252,9 @@ export default function ThreadMessageBoard({
                     </button>
                   )}
                 </div>
-                <p className="mt-1 whitespace-pre-wrap text-sm dark:text-gray-100">{entry.content}</p>
+                <div className="prose prose-sm mt-1 max-w-none dark:prose-invert">
+                  <ReactMarkdown>{entry.content || ""}</ReactMarkdown>
+                </div>
               </article>
             );
           })}
@@ -278,13 +282,12 @@ export default function ThreadMessageBoard({
             placeholder="Subject (optional)"
             className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white"
           />
-          <textarea
-            name="content"
-            rows="3"
+          <RichTextEditor
             value={post.content}
-            onChange={updateField}
+            onChange={(value) =>
+              setPost((current) => ({ ...current, content: value }))
+            }
             placeholder="Share your take"
-            className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white"
           />
           <div>
             <button

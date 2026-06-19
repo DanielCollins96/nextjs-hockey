@@ -10,6 +10,7 @@ import Script from "next/script";
 import {Toaster} from "react-hot-toast";
 
 import "../styles/globals.css";
+import "easymde/dist/easymde.min.css";
 
 import {Amplify} from "aws-amplify";
 import config from "../aws-exports.js";

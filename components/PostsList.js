@@ -2,6 +2,7 @@ import { formatDistance } from 'date-fns'
 import { BiSearch } from 'react-icons/bi'
 import { FaTrashAlt } from 'react-icons/fa'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 
 export default function PostsList({posts, search, setSearch, error, deletePost, toggle}) {
 
@@ -76,7 +77,9 @@ const Post = ({post, deletePost}) => {
                 </div>
             )}
             <p className="text-gray-800 dark:text-gray-100">{post.subject}</p>
-            <p className="text-gray-800 dark:text-gray-100">{post.content}</p>
+            <div className="prose prose-sm max-w-none text-gray-800 dark:prose-invert dark:text-gray-100">
+                <ReactMarkdown>{post.content || ""}</ReactMarkdown>
+            </div>
         </div>
     )
 }
