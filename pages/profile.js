@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {UseAuth} from "../contexts/Auth";
 import {useQuery} from "react-query";
 import {API, graphqlOperation} from "aws-amplify";
@@ -12,12 +12,15 @@ import PostEditor from "../components/PostEditor";
 import PostsList from "../components/PostsList";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { teamUrl } from "../lib/routes";
+import {
+  PROFILE_BIO_SUBJECT,
+  getNormalizedSubject,
+  isProfileBioPost,
+  parseProfileContent,
+  serializeProfileContent,
+} from "../lib/user-profile";
 
 const THREAD_SUBJECT_PREFIX_REGEX = /^THREAD#/i;
-
-function getNormalizedSubject(post) {
-  return String(post?.subject || "").trim();
-}
 
 function isThreadSubject(post) {
   return THREAD_SUBJECT_PREFIX_REGEX.test(getNormalizedSubject(post));
@@ -64,6 +67,9 @@ function Profile() {
   const [postDateOrder, setPostDateOrder] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [usernameDraft, setUsernameDraft] = useState("");
+  const [bioDraft, setBioDraft] = useState("");
+  const [savingBio, setSavingBio] = useState(false);
 
   const fetchPosts = async () => {
     try {
@@ -90,6 +96,17 @@ function Profile() {
     refetch,
   } = useQuery(`userposts - ${user?.username}`, fetchPosts, {enabled: !!user});
 
+  const profileBioPost = (userPosts || []).find(isProfileBioPost);
+  const profile = parseProfileContent(profileBioPost?.content);
+  const displayUsername = profile.username || "Member";
+
+  useEffect(() => {
+    if (status === "success") {
+      setUsernameDraft(profile.username);
+      setBioDraft(profile.bio);
+    }
+  }, [profile.bio, profile.username, status]);
+
   const sortedPosts = (posts = []) => {
     const copy = [...posts];
     return copy.sort((a, b) => {
@@ -100,7 +117,9 @@ function Profile() {
   };
 
   const personalPosts = sortedPosts(
-    (userPosts || []).filter((post) => !isThreadSubject(post))
+    (userPosts || []).filter(
+      (post) => !isThreadSubject(post) && !isProfileBioPost(post)
+    )
   );
 
   const boardPosts = sortedPosts(
@@ -165,9 +184,15 @@ function Profile() {
   };
 
   const savePost = () => {
+    const trimmedName = post.name?.trim();
+
     API.graphql(
       graphqlOperation(mutations.createPost, {
-        input: {...post, userId: user.username},
+        input: {
+          ...post,
+          name: trimmedName || displayUsername,
+          userId: user.username,
+        },
       })
     )
       .then(() => {
@@ -185,6 +210,54 @@ function Profile() {
       });
   };
 
+  const saveProfile = async () => {
+    if (!user?.username) return;
+
+    const trimmedBio = bioDraft.trim();
+    const trimmedUsername = usernameDraft.trim();
+    setSavingBio(true);
+    try {
+      const profileContent = serializeProfileContent({
+        username: trimmedUsername,
+        bio: trimmedBio,
+      });
+
+      if (profileBioPost?._version) {
+        await API.graphql(
+          graphqlOperation(mutations.updatePost, {
+            input: {
+              id: profileBioPost.id,
+              userId: user.username,
+              subject: PROFILE_BIO_SUBJECT,
+              content: profileContent,
+              name: "Profile",
+              _version: profileBioPost._version,
+            },
+          })
+        );
+      } else {
+        await API.graphql(
+          graphqlOperation(mutations.createPost, {
+            input: {
+              userId: user.username,
+              subject: PROFILE_BIO_SUBJECT,
+              content: profileContent,
+              name: "Profile",
+            },
+          })
+        );
+      }
+
+      toast.success("Profile saved");
+      refetch();
+    } catch (err) {
+      console.error(err);
+      toast.error("Error saving profile");
+    } finally {
+      setSavingBio(false);
+    }
+  };
+
   if (!user) {
     return (
       <p className="text-xl mx-auto mt-12 text-gray-900 dark:text-gray-100">
@@ -199,11 +272,14 @@ function Profile() {
         <div className="bg-white dark:bg-gray-800 dark:text-gray-100 m-2 p-2 rounded">
           {user && (
             <h2 className="font-bold text-gray-900 dark:text-gray-100">
-              Welcome back
+              {displayUsername}
             </h2>
           )}
-          <div className="dark:text-white p-12 rounded">
-            My Bio
+          <div className="mt-3 rounded border border-gray-200 p-4 text-gray-700 dark:border-gray-700 dark:text-gray-100">
+            <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Bio</h3>
+            <p className="whitespace-pre-wrap text-sm">
+              {profile.bio || "No bio yet."}
+            </p>
           </div>
         </div>
         <div className="w-11/12 sm:w-3/4 flex flex-col p-2 gap-2">
@@ -236,8 +312,50 @@ function Profile() {
                 />
               </TabPanel>
               <TabPanel>
-                <div id="settings">
-                  <p className="text-gray-900 dark:text-gray-100">LOLOLOL</p>
+                <div id="settings" className="max-w-2xl">
+                  <label
+                    htmlFor="profile-username"
+                    className="mb-2 block font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Username
+                  </label>
+                  <input
+                    id="profile-username"
+                    type="text"
+                    maxLength="40"
+                    value={usernameDraft}
+                    onChange={(event) => setUsernameDraft(event.target.value)}
+                    placeholder="Choose a username"
+                    className="mb-4 w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                  <label
+                    htmlFor="profile-bio"
+                    className="mb-2 block font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Profile bio
+                  </label>
+                  <textarea
+                    id="profile-bio"
+                    rows="6"
+                    maxLength="500"
+                    value={bioDraft}
+                    onChange={(event) => setBioDraft(event.target.value)}
+                    placeholder="Write a short bio for your profile."
+                    className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {bioDraft.length}/500 characters
+                    </p>
+                    <button
+                      type="button"
+                      onClick={saveProfile}
+                      disabled={savingBio}
+                      className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-70"
+                    >
+                      {savingBio ? "Saving..." : "Save profile"}
+                    </button>
+                  </div>
                 </div>
               </TabPanel>
               <TabPanel>

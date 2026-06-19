@@ -9,6 +9,10 @@ import { UseAuth } from "../contexts/Auth";
 import * as queries from "../src/graphql/queries";
 import * as mutations from "../src/graphql/mutations";
 import ConfirmDialog from "./ConfirmDialog";
+import {
+  PROFILE_BIO_SUBJECT,
+  parseProfileContent,
+} from "../lib/user-profile";
 
 function formatThreadSubject(subject, prefix) {
   if (!subject) return "General";
@@ -17,6 +21,11 @@ function formatThreadSubject(subject, prefix) {
     return cleaned || "General";
   }
   return subject;
+}
+
+function formatAuthorName(name) {
+  if (!name) return "Member";
+  return /^\S+@\S+\.\S+$/.test(name) ? "Member" : name;
 }
 
 export default function ThreadMessageBoard({
@@ -68,6 +77,28 @@ export default function ThreadMessageBoard({
     enabled: Boolean(normalizedType && normalizedId && user?.username),
   });
 
+  const fetchProfile = async () => {
+    const result = await API.graphql(
+      graphqlOperation(queries.listPosts, {
+        limit: 1,
+        filter: {
+          userId: { eq: user.username },
+          subject: { eq: PROFILE_BIO_SUBJECT },
+        },
+      })
+    );
+    const profilePost = result?.data?.listPosts?.items?.find(
+      (item) => !item?._deleted
+    );
+    return parseProfileContent(profilePost?.content);
+  };
+
+  const { data: profile = { username: "", bio: "" } } = useQuery(
+    ["user-profile", user?.username],
+    fetchProfile,
+    { enabled: Boolean(user?.username) }
+  );
+
   const filteredPosts = posts.filter((entry) => {
     const term = search.toLowerCase();
     if (!term) return true;
@@ -101,7 +132,7 @@ export default function ThreadMessageBoard({
 
     setSaving(true);
     try {
-      const authorName = trimmedName || user?.attributes?.email || user?.username || "Member";
+      const authorName = trimmedName || profile.username || "Member";
 
       await API.graphql(
         graphqlOperation(mutations.createPost, {
@@ -203,7 +234,7 @@ export default function ThreadMessageBoard({
                   <div>
                     <p className="font-medium dark:text-white">{formatThreadSubject(entry.subject, threadPrefix)}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {entry.name || "Member"} · {formatDistance(new Date(entry.createdAt), new Date())} ago
+                      {formatAuthorName(entry.name)} · {formatDistance(new Date(entry.createdAt), new Date())} ago
                     </p>
                   </div>
                   {canDelete && (
