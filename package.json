@@ -15,7 +15,7 @@
     "@aws-amplify/ui-react": "^4.6.0",
     "@aws-sdk/client-rds-data": "^3.969.0",
     "@headlessui/react": "^1.4.1",
-    "@sentry/nextjs": "^10.5.0",
+    "@sentry/nextjs": "^10.58.0",
     "@tanstack/react-table": "^8.9.1",
     "aws-amplify": "^5.2.1",
     "bcryptjs": "^2.4.3",
