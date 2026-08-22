@@ -5,15 +5,32 @@ import {
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, modern = false, compact = false}) {
+export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, modern = false, compact = false, mobileCollapsedColumns = []}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
             desc: sortDesc,
           },]);
   const [expandedColumns, setExpandedColumns] = useState({})
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileExpanded, setMobileExpanded] = useState(false)
+
+  useEffect(() => {
+    if (mobileCollapsedColumns.length === 0) return undefined
+
+    const mediaQuery = window.matchMedia("(max-width: 639px), (pointer: coarse)")
+    const updateMobileState = () => setIsMobile(mediaQuery.matches)
+    updateMobileState()
+    mediaQuery.addEventListener("change", updateMobileState)
+
+    return () => mediaQuery.removeEventListener("change", updateMobileState)
+  }, [mobileCollapsedColumns.length])
+
+  const mobileColumnVisibility = isMobile && !mobileExpanded
+    ? Object.fromEntries(mobileCollapsedColumns.map((columnId) => [columnId, false]))
+    : {}
 
   const toggleExpandedColumn = (column) => {
     if (!column.columnDef.meta?.expandOnDoubleClick) return
@@ -43,6 +60,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
       data,
       state: {
       sorting,
+      columnVisibility: mobileColumnVisibility,
       },
       onSortingChange: setSorting,
       sortDescFirst: true,
@@ -54,6 +72,17 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
 
   return (
     <div>
+    {mobileCollapsedColumns.length > 0 && isMobile && (
+      <div className="mb-1 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setMobileExpanded((expanded) => !expanded)}
+          className="rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white shadow-sm"
+        >
+          {mobileExpanded ? "Collapse" : "Expand"}
+        </button>
+      </div>
+    )}
     <div
       className={`relative overflow-x-auto max-w-full ${
         mobileFit || compact

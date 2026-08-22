@@ -701,6 +701,13 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
                                 sortDesc
                                 modern
                                 compact
+                                mobileCollapsedColumns={[
+                                    'aav',
+                                    'base_salary',
+                                    'signing_bonus',
+                                    'performance_bonus',
+                                    'minors_salary',
+                                ]}
                             />
                         )}
                     </section>
