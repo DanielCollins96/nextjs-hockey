@@ -638,6 +638,7 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
                             sortDesc
                             modern
                             compact
+                            mobileFit
                             rowClassName={getRowClassName}
                         />
                     ) : (

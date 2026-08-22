@@ -72,6 +72,29 @@
   animation: loading-bar 2s ease-in-out infinite;
 }
 
+@media (max-width: 639px) {
+  .mobile-fit-table {
+    width: 125%;
+    min-width: 0;
+    zoom: 0.8;
+  }
+
+  .mobile-fit-table th,
+  .mobile-fit-table td {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
+  .mobile-fit-table .sort-indicator {
+    display: none;
+    margin-left: 0;
+  }
+
+  .mobile-fit-table th:first-child > div > div {
+    gap: 0;
+  }
+}
+
 .rich-text-editor .EasyMDEContainer {
   border-radius: 0.5rem;
 }

@@ -62,7 +62,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
       } ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}
     >
       <table
-        className={modern ? `${compact ? "w-max text-sm" : "min-w-[58rem] w-full text-sm"} table-fixed border-collapse` : `${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
+        className={modern ? `${compact ? "w-max text-sm" : "min-w-[58rem] w-full text-sm"} ${mobileFit ? "mobile-fit-table table-auto" : "table-fixed"} border-collapse` : `${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
       >
         {modern && (
           <colgroup>
@@ -106,7 +106,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          <span className="text-xs align-middle opacity-70 ml-1">
+                          <span className="sort-indicator text-xs align-middle opacity-70 ml-1">
                           {{
                             asc: '▲',
                             desc: '▼',
