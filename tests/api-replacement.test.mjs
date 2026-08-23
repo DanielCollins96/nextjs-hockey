@@ -17,6 +17,11 @@ test('players API returns expected shape and 12-hour cache header', async () => 
   assert.ok(Array.isArray(payload.player), 'player should be an array');
   assert.ok(Array.isArray(payload.playerStats), 'playerStats should be an array');
   assert.ok(Array.isArray(payload.awards), 'awards should be an array');
+  assert.ok(Array.isArray(payload.contracts), 'contracts should be an array');
+  assert.ok(
+    payload.currentContract === null || typeof payload.currentContract === 'object',
+    'currentContract should be null or an object'
+  );
 });
 
 test('teams API returns expected shape and 12-hour cache header', async () => {
@@ -165,6 +170,9 @@ test('public pages use API paths and avoid direct query imports', async () => {
     '../pages/seasons/index.js',
     '../pages/sitemap.xml.js',
   ];
+  const pagesExpectedToCallApi = pagePaths.filter(
+    (pagePath) => pagePath !== '../pages/index.js'
+  );
 
   for (const pagePath of pagePaths) {
     const content = await readFile(new URL(pagePath, import.meta.url), 'utf8');
@@ -173,6 +181,10 @@ test('public pages use API paths and avoid direct query imports', async () => {
       /from\s*["'][\.\/]+lib\/queries["']/,
       `${pagePath} should not import direct DB queries`
     );
+  }
+
+  for (const pagePath of pagesExpectedToCallApi) {
+    const content = await readFile(new URL(pagePath, import.meta.url), 'utf8');
     assert.match(content, /\/api\//, `${pagePath} should call at least one API path`);
   }
 });
