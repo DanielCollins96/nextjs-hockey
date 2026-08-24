@@ -163,11 +163,16 @@ export default function GamesBanner() {
   const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [loading, setLoading] = useState(true);
   const [commentCounts, setCommentCounts] = useState({});
+  const [isBannerHovered, setIsBannerHovered] = useState(false);
+  const [keepBannerExpanded, setKeepBannerExpanded] = useState(false);
+  const [isDatePickerFocused, setIsDatePickerFocused] = useState(false);
   const scrollContainerRef = useRef(null);
+  const dateInputRef = useRef(null);
 
   useEffect(() => {
     async function fetchGames() {
       setLoading(true);
+      setGames([]);
       try {
         const res = await fetch(`/api/games?date=${selectedDate}`);
         const data = await res.json();
@@ -224,6 +229,12 @@ export default function GamesBanner() {
     fetchCommentCounts();
   }, [games, user?.username]);
 
+  useEffect(() => {
+    if (games.length > 0) {
+      setKeepBannerExpanded(true);
+    }
+  }, [games.length]);
+
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
       const scrollAmount = 400;
@@ -241,8 +252,17 @@ export default function GamesBanner() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 w-full max-w-none overflow-hidden">
-      <div className="flex h-[88px] min-h-[88px] items-center">
+    <div
+      className="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 w-full max-w-none overflow-hidden"
+      onMouseEnter={() => setIsBannerHovered(true)}
+      onMouseLeave={() => {
+        setIsBannerHovered(false);
+        if (!isDatePickerFocused) {
+          setKeepBannerExpanded(false);
+        }
+      }}
+    >
+      <div className={`flex ${games.length > 0 || (keepBannerExpanded && (isBannerHovered || isDatePickerFocused)) ? "h-[88px] min-h-[88px]" : "h-10 min-h-10"} items-center transition-[height] duration-150 ease-out`}>
         {/* Date selector */}
         <div className="flex-shrink-0 flex items-center self-stretch border-r border-gray-200 dark:border-gray-700 px-1 sm:px-2 bg-white dark:bg-gray-800">
           <button
@@ -252,12 +272,26 @@ export default function GamesBanner() {
           >
             <FaChevronLeft className="w-2.5 h-2.5 sm:w-3 sm:h-3 dark:text-white" />
           </button>
-          <div className="text-center px-1 sm:px-2 min-w-14 sm:min-w-20">
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase">
+          <label className="relative flex min-w-24 flex-col items-center px-1 sm:min-w-32 sm:px-2">
+            <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400">
               {formatDateForDisplay(selectedDate).split(",")[0]}
-            </div>
-            <div className="text-xs sm:text-base font-bold dark:text-white">{formatDate(selectedDate)}</div>
-          </div>
+            </span>
+            <span className="text-xs font-bold dark:text-white sm:text-base">{formatDate(selectedDate)}</span>
+            <input
+              ref={dateInputRef}
+              type="date"
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
+              onClick={(event) => event.currentTarget.showPicker?.()}
+              onFocus={() => setIsDatePickerFocused(true)}
+              onBlur={() => {
+                setIsDatePickerFocused(false);
+                setKeepBannerExpanded(false);
+              }}
+              aria-label="Select date"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
+          </label>
           <button
             onClick={() => changeDate(1)}
             className="p-0.5 sm:p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
@@ -268,52 +302,48 @@ export default function GamesBanner() {
         </div>
 
         {/* Games scroll area */}
-        <div className="relative flex-1 min-w-0 overflow-hidden">
-          {/* Left scroll button */}
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-0 bottom-0 z-10 bg-gradient-to-r from-gray-100 dark:from-gray-900 to-transparent px-2 hover:from-gray-200 dark:hover:from-gray-800"
-            aria-label="Scroll left"
-          >
-            <FaChevronLeft className="w-4 h-4 dark:text-white" />
-          </button>
+        {games.length > 0 ? (
+          <div className="relative flex-1 min-w-0 overflow-hidden">
+            {/* Left scroll button */}
+            <button
+              onClick={() => scroll("left")}
+              className="absolute left-0 top-0 bottom-0 z-10 bg-gradient-to-r from-gray-100 dark:from-gray-900 to-transparent px-2 hover:from-gray-200 dark:hover:from-gray-800"
+              aria-label="Scroll left"
+            >
+              <FaChevronLeft className="w-4 h-4 dark:text-white" />
+            </button>
 
-          {/* Scrollable games container */}
-          <div
-            ref={scrollContainerRef}
-            className="flex overflow-x-scroll scroll-smooth pl-8 sm:pl-10"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
-          >
-            <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
-            {loading ? (
-              <div className="flex items-center justify-center w-full py-8">
-                <span className="text-gray-500 dark:text-gray-400">Loading...</span>
-              </div>
-            ) : games.length === 0 ? (
-              <div className="flex items-center justify-center w-full py-8">
-                <span className="text-gray-500 dark:text-gray-400">No games scheduled</span>
-              </div>
-            ) : (
-              games.map((game) => (
+            {/* Scrollable games container */}
+            <div
+              ref={scrollContainerRef}
+              className="flex overflow-x-scroll scroll-smooth pl-8 sm:pl-10"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+            >
+              <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
+              {games.map((game) => (
                 <GameCard
                   key={game.id}
                   game={game}
                   showCommentMeta={!!user?.username}
                   commentCount={commentCounts[String(game.id)] || 0}
                 />
-              ))
-            )}
-          </div>
+              ))}
+            </div>
 
-          {/* Right scroll button */}
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-0 bottom-0 z-10 bg-gradient-to-l from-gray-100 dark:from-gray-900 to-transparent px-2 hover:from-gray-200 dark:hover:from-gray-800"
-            aria-label="Scroll right"
-          >
-            <FaChevronRight className="w-4 h-4 dark:text-white" />
-          </button>
-        </div>
+            {/* Right scroll button */}
+            <button
+              onClick={() => scroll("right")}
+              className="absolute right-0 top-0 bottom-0 z-10 bg-gradient-to-l from-gray-100 dark:from-gray-900 to-transparent px-2 hover:from-gray-200 dark:hover:from-gray-800"
+              aria-label="Scroll right"
+            >
+              <FaChevronRight className="w-4 h-4 dark:text-white" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex h-full flex-1 items-center justify-center border-l border-gray-200 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400" aria-label="No games scheduled">
+            {loading ? "Loading..." : "No games scheduled"}
+          </div>
+        )}
       </div>
     </div>
   );
