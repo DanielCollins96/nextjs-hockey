@@ -2,34 +2,7 @@ import { fetchReadModel, readModelPaths } from '../../../lib/read-models'
 import { extractEntityId } from '../../../lib/routes'
 import { normalizeSeasonId } from '../../../lib/season'
 
-const appendDataSource = (dataSource, suffix) =>
-  dataSource.includes(suffix) ? dataSource : `${dataSource}+${suffix}`
-
 const MIN_CONTRACT_SEASON = '20052006'
-
-function hasMissingRosterSeasonRecord(skaters, goalies, teamRecords) {
-  const rosterSeasonIds = new Set(
-    [...skaters, ...goalies]
-      .map((player) => normalizeSeasonId(player?.season))
-      .filter(Boolean)
-  )
-
-  if (!rosterSeasonIds.size) return false
-
-  const teamRecordSeasonIds = new Set(
-    teamRecords
-      .map((record) => normalizeSeasonId(record?.seasonId))
-      .filter(Boolean)
-  )
-
-  return [...rosterSeasonIds].some((season) => !teamRecordSeasonIds.has(season))
-}
-
-function hasMissingRosterVitals(skaters, goalies) {
-  const rosterRows = [...skaters, ...goalies]
-
-  return rosterRows.length > 0 && rosterRows.some((player) => !player?.birthdate)
-}
 
 function getContractSeason(rosterRows, requestedSeason) {
   const requestedSeasonId = normalizeSeasonId(requestedSeason)
@@ -83,41 +56,9 @@ export default async function handler(req, res) {
       let teamRecords = readModel.teamRecords || []
       let dataSource = 's3-read-model'
 
-      if ((!skaters.length && !goalies.length) || hasMissingRosterVitals(skaters, goalies)) {
-        try {
-          const { getTeamSkaters, getTeamGoalies } = await import('../../../lib/queries')
-          const [dbSkaters, dbGoalies] = await Promise.all([
-            getTeamSkaters(id),
-            getTeamGoalies(id)
-          ])
-
-          if (dbSkaters?.length || dbGoalies?.length) {
-            skaters = dbSkaters || skaters
-            goalies = dbGoalies || goalies
-            dataSource = appendDataSource(dataSource, 'postgres-team-players')
-          }
-        } catch (error) {
-          console.warn(`Team ${id} player fallback failed:`, error.message)
-        }
-      }
-
-      if (hasMissingRosterSeasonRecord(skaters, goalies, teamRecords)) {
-        try {
-          const { getTeamSeasons } = await import('../../../lib/queries')
-          const dbTeamRecords = await getTeamSeasons(id)
-
-          if (dbTeamRecords?.length) {
-            teamRecords = dbTeamRecords
-            dataSource = appendDataSource(dataSource, 'postgres-team-records')
-          }
-        } catch (error) {
-          console.warn(`Team ${id} team records fallback failed:`, error.message)
-        }
-      }
-
       const teamContracts = await fetchTeamContracts(skaters, goalies, contractSeason)
       if (teamContracts.length) {
-        dataSource = appendDataSource(dataSource, 's3-player-contracts')
+        dataSource = `${dataSource}+s3-player-contracts`
       }
 
       res.setHeader('X-Data-Source', dataSource)
