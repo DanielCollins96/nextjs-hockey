@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox';
 import SEO from '../../components/SEO';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 
 export default function Teams({rosters}) {
@@ -96,7 +97,8 @@ export default function Teams({rosters}) {
     )
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ res }) {
+    setPageCache(res, PAGE_CACHE.hourly)
     try {
         const { getTeamRosters } = await import('../../lib/team-rosters');
         const { rosters } = await getTeamRosters();

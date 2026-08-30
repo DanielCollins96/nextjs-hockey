@@ -8,6 +8,7 @@ import { UseAuth } from '../../contexts/Auth';
 import * as queries from '../../src/graphql/queries';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
 import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload, FaRegCommentDots } from 'react-icons/fa';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 function formatDateShort(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -615,7 +616,8 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   );
 }
 
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ query, res }) {
+  setPageCache(res, PAGE_CACHE.live);
   const selectedDate = query.date || new Date().toISOString().split('T')[0];
 
   try {

@@ -7,11 +7,15 @@ export default async function handler(req, res) {
     const contractSeason = Array.isArray(req.query.contractSeason)
       ? req.query.contractSeason[0]
       : req.query.contractSeason
+    const season = Array.isArray(req.query.season) ? req.query.season[0] : req.query.season
     const contractsOnly = req.query.contractsOnly === '1'
 
     const result = contractsOnly
-      ? await loadTeamContractsOnly(id, contractSeason)
-      : await loadTeam(id, { contractSeason })
+      ? await loadTeamContractsOnly(id, contractSeason || season)
+      : await loadTeam(id, {
+          contractSeason: contractSeason || season,
+          rosterSeason: season || undefined,
+        })
 
     if (result.notFound) {
       return res.status(404).json({error_message: "Team not found"})
@@ -33,7 +37,8 @@ export default async function handler(req, res) {
       skaters: result.skaters,
       goalies: result.goalies,
       teamContracts: result.teamContracts,
-      playoffSeasons: result.playoffSeasons
+      playoffSeasons: result.playoffSeasons,
+      seasonIds: result.seasonIds || [],
     })
   } catch (e) {
     console.log(e)

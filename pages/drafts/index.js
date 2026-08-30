@@ -1,6 +1,7 @@
 import React from 'react'
 import DraftList from '../../components/DraftList'
 import SEO from '../../components/SEO'
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 
 
@@ -17,7 +18,8 @@ export default function Drafts({draftYears}) {
   )
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ res }) {
+  setPageCache(res, PAGE_CACHE.stable)
   let draftYears = []
 
   try {

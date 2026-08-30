@@ -6,6 +6,7 @@ import DraftList from '../../components/DraftList'
 import { useRouter } from 'next/router'
 import { FaDownload } from 'react-icons/fa'
 import { playerUrl, teamUrl } from '../../lib/routes'
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 
 export default function Drafts({id,draft,draftYears}) {
@@ -257,7 +258,8 @@ export default function Drafts({id,draft,draftYears}) {
   )
 }
 
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, res }) {
+    setPageCache(res, PAGE_CACHE.stable)
     const {id} = params
 
     let draft = []

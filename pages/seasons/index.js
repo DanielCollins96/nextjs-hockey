@@ -5,6 +5,7 @@ import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 import { playerUrl, teamUrl } from '../../lib/routes';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 export default function Seasons({players, goalies, season, availableSeasons}) {
     const router = useRouter();
@@ -290,6 +291,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
 }
 
 export async function getServerSideProps(context) {
+    setPageCache(context.res, PAGE_CACHE.hourly);
     const { year } = context.query;
     const season = year ? parseInt(year, 10) : 20252026;
 

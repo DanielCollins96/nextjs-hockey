@@ -1,5 +1,5 @@
 import { playerUrl, teamUrl } from '../lib/routes';
-import { loadPlayerIds } from '../lib/player-data';
+import { loadSitemapPlayers } from '../lib/player-data';
 import { loadTeamIds } from '../lib/team-data';
 import { loadDraftYears } from '../lib/draft-data';
 
@@ -97,12 +97,12 @@ function generateSiteMap({ playerIds, draftYears, teamIds }) {
 
 export async function getServerSideProps({ res }) {
   const [playersPayload, draftsPayload, teamsPayload] = await Promise.all([
-    loadPlayerIds().catch(() => ({})),
+    loadSitemapPlayers().catch(() => ({})),
     loadDraftYears().catch(() => ({})),
     loadTeamIds().catch(() => ({})),
   ]);
 
-  const playerIds = playersPayload?.playerIds || [];
+  const playerIds = playersPayload?.players || [];
   const draftYears = draftsPayload?.years || [];
   const teamIds = teamsPayload?.teamIds || [];
 

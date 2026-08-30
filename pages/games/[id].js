@@ -4,6 +4,7 @@ import Image from 'next/image';
 import SEO from '../../components/SEO';
 import ThreadMessageBoard from '../../components/ThreadMessageBoard';
 import { playerUrl, teamUrl } from '../../lib/routes';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 function formatDate(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -387,7 +388,8 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
   );
 }
 
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, res }) {
+  setPageCache(res, PAGE_CACHE.live);
   try {
     const { loadGame } = await import('../../lib/game-data');
     const payload = await loadGame(params.id);

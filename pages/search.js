@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import SEO from '../components/SEO'
+import { PAGE_CACHE, setPageCache } from '../lib/http-cache'
 
 export default function SearchPage({ query, players, teams }) {
   const hasQuery = query.trim().length > 0
@@ -138,6 +139,7 @@ export default function SearchPage({ query, players, teams }) {
 export async function getServerSideProps(context) {
   const { q = '' } = context.query
   const query = String(q || '').trim()
+  setPageCache(context.res, PAGE_CACHE.search)
 
   let players = []
   let teams = []

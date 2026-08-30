@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import ReactTable from '../../components/Table';
 import { ClickableImage } from '../../components/ImageModal';
@@ -6,6 +6,7 @@ import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 import { formatCurrency, formatSeason, formatShortSeason, toNumber } from '../../lib/format';
 import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
 import { loadPlayer } from '../../lib/player-data';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 const numericColumnMeta = {
     headerClassName: 'text-right',
@@ -202,8 +203,44 @@ const contractCapHitColumn = {
     cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
 };
 
-const Players = ({ playerId, stats, person, awards, contracts, currentContract, canonicalPath }) => {
+const Players = ({ playerId, stats: initialStats, person, awards: initialAwards, contracts: initialContracts, currentContract: initialCurrentContract, canonicalPath, hydrateDetails = false }) => {
     const id = playerId;
+    const [stats, setStats] = useState(() => (Array.isArray(initialStats) ? initialStats : []));
+    const [awards, setAwards] = useState(() => (Array.isArray(initialAwards) ? initialAwards : []));
+    const [contracts, setContracts] = useState(() => (Array.isArray(initialContracts) ? initialContracts : []));
+    const [currentContract, setCurrentContract] = useState(initialCurrentContract || null);
+    const [detailsLoading, setDetailsLoading] = useState(Boolean(hydrateDetails));
+
+    useEffect(() => {
+        if (!hydrateDetails || !id) {
+            setDetailsLoading(false);
+            return undefined;
+        }
+
+        const controller = new AbortController();
+        setDetailsLoading(true);
+
+        fetch(`/api/players/${encodeURIComponent(id)}`, { signal: controller.signal })
+            .then((response) => (response.ok ? response.json() : null))
+            .then((payload) => {
+                if (!payload) return;
+                setStats(Array.isArray(payload.playerStats) ? payload.playerStats : []);
+                setAwards(Array.isArray(payload.awards) ? payload.awards : []);
+                setContracts(Array.isArray(payload.contracts) ? payload.contracts : []);
+                setCurrentContract(payload.currentContract || null);
+            })
+            .catch((error) => {
+                if (error.name !== 'AbortError') {
+                    console.warn('Unable to load player details', error);
+                }
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setDetailsLoading(false);
+            });
+
+        return () => controller.abort();
+    }, [hydrateDetails, id]);
+
     const contractRows = useMemo(() => (Array.isArray(contracts) ? contracts : []), [contracts]);
     const position = person?.position || '';
     const isGoalie = position === 'G';
@@ -618,7 +655,7 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
                             {regularSummary.map((stat) => (
                                 <div key={stat.label}>
                                     <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{stat.label}</p>
-                                    <p className="text-2xl font-bold tabular-nums">{stat.value}</p>
+                                    <p className="text-2xl font-bold tabular-nums">{detailsLoading ? '—' : stat.value}</p>
                                 </div>
                             ))}
                         </div>
@@ -631,7 +668,9 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
                             <h2 className="text-lg font-bold text-slate-950 dark:text-white">Season Stats</h2>
                         </div>
                     </div>
-                    {rows.length > 0 ? (
+                    {detailsLoading ? (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Loading season stats...</p>
+                    ) : rows.length > 0 ? (
                         <ReactTable
                             columns={columns}
                             data={rows}
@@ -746,15 +785,17 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
 
 const emptyPlayerProps = (id) => ({
     playerId: id,
-    stats: null,
+    stats: [],
     person: null,
     awards: [],
     contracts: [],
     currentContract: null,
     canonicalPath: playerUrl(null, id),
+    hydrateDetails: false,
 });
 
-export async function getServerSideProps({ params }) {
+export async function getServerSideProps({ params, res }) {
+    setPageCache(res, PAGE_CACHE.hourly);
     const id = extractEntityId(params.id);
 
     try {
@@ -783,12 +824,13 @@ export async function getServerSideProps({ params }) {
         return {
             props: {
                 playerId: id,
-                stats: payload?.playerStats || [],
+                stats: [],
                 person,
-                awards: payload?.awards || [],
-                contracts: payload?.contracts || [],
-                currentContract: payload?.currentContract || null,
+                awards: [],
+                contracts: [],
+                currentContract: null,
                 canonicalPath,
+                hydrateDetails: true,
             },
         };
     } catch (error) {

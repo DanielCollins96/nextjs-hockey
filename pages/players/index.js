@@ -5,6 +5,7 @@ import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 import { FaDownload } from 'react-icons/fa';
 import { playerUrl, teamUrl } from '../../lib/routes';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 export default function PlayersIndex({ players, searchTerm }) {
     const router = useRouter();
@@ -273,6 +274,7 @@ export default function PlayersIndex({ players, searchTerm }) {
 export async function getServerSideProps(context) {
     const { q } = context.query;
     const searchTerm = q || '';
+    setPageCache(context.res, searchTerm ? PAGE_CACHE.search : PAGE_CACHE.hourly);
 
     let players = [];
     if (searchTerm) {
