@@ -265,17 +265,25 @@ export async function getServerSideProps({ params }) {
 
     try {
       const { loadDraft, loadDraftYears } = await import('../../lib/draft-data')
-      const [draftResult, yearsResult] = await Promise.all([
+      const [draftResult, yearsResult] = await Promise.allSettled([
         loadDraft(id),
         loadDraftYears(),
       ])
 
-      if (draftResult.notFound) {
-        return { notFound: true }
+      if (draftResult.status === 'fulfilled') {
+        if (draftResult.value?.notFound) {
+          return { notFound: true }
+        }
+        draft = draftResult.value?.draft || []
+      } else {
+        console.log(draftResult.reason)
       }
 
-      draft = draftResult?.draft || []
-      draftYears = yearsResult?.years || []
+      if (yearsResult.status === 'fulfilled') {
+        draftYears = yearsResult.value?.years || []
+      } else {
+        console.log(yearsResult.reason)
+      }
     } catch (error) {
       console.log(error)
     }
