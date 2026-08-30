@@ -1343,7 +1343,6 @@ const emptyTeamProps = (id) => ({
 });
 
 export async function getServerSideProps({params, query, res}) {
-  setPageCache(res, PAGE_CACHE.hourly);
   const id = extractEntityId(params.id);
 
   try {
@@ -1382,6 +1381,7 @@ export async function getServerSideProps({params, query, res}) {
       ? normalizeSeasonId(requestedSeason)
       : seasonIds[0] || null;
 
+    setPageCache(res, PAGE_CACHE.hourly);
     return {
       props: {
         seasons: seasonMap,
@@ -1398,6 +1398,7 @@ export async function getServerSideProps({params, query, res}) {
     };
   } catch (error) {
     console.log(error);
+    setPageCache(res, PAGE_CACHE.error);
     return {
       props: emptyTeamProps(id),
     };

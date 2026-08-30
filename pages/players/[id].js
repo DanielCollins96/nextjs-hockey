@@ -795,19 +795,20 @@ const emptyPlayerProps = (id) => ({
 });
 
 export async function getServerSideProps({ params, res }) {
-    setPageCache(res, PAGE_CACHE.hourly);
     const id = extractEntityId(params.id);
 
     try {
         const payload = await loadPlayer(id);
 
         if (payload.notFound) {
+            setPageCache(res, PAGE_CACHE.error);
             return { props: emptyPlayerProps(id) };
         }
 
         const person = payload?.player?.[0] || null;
 
         if (!person) {
+            setPageCache(res, PAGE_CACHE.error);
             return { props: emptyPlayerProps(id) };
         }
 
@@ -821,6 +822,7 @@ export async function getServerSideProps({ params, res }) {
             };
         }
 
+        setPageCache(res, PAGE_CACHE.hourly);
         return {
             props: {
                 playerId: id,
@@ -835,6 +837,7 @@ export async function getServerSideProps({ params, res }) {
         };
     } catch (error) {
         console.log(error);
+        setPageCache(res, PAGE_CACHE.error);
         return { props: emptyPlayerProps(id) };
     }
 }

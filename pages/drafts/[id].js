@@ -259,7 +259,6 @@ export default function Drafts({id,draft,draftYears}) {
 }
 
 export async function getServerSideProps({ params, res }) {
-    setPageCache(res, PAGE_CACHE.stable)
     const {id} = params
 
     let draft = []
@@ -277,8 +276,10 @@ export async function getServerSideProps({ params, res }) {
           return { notFound: true }
         }
         draft = draftResult.value?.draft || []
+        setPageCache(res, PAGE_CACHE.stable)
       } else {
         console.log(draftResult.reason)
+        setPageCache(res, PAGE_CACHE.error)
       }
 
       if (yearsResult.status === 'fulfilled') {
@@ -288,6 +289,7 @@ export async function getServerSideProps({ params, res }) {
       }
     } catch (error) {
       console.log(error)
+      setPageCache(res, PAGE_CACHE.error)
     }
 
     if (draft) {
