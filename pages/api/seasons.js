@@ -4,6 +4,10 @@ export default async function handler(req, res) {
   try {
     const result = await loadSeason(req.query.year)
 
+    if (result.notFound) {
+      return res.status(404).json({ error_message: "Season not found" })
+    }
+
     if (result.error) {
       return res.status(400).json({ error_message: result.error })
     }

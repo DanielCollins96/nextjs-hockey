@@ -783,33 +783,15 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
     );
 };
 
-const emptyPlayerProps = (id) => ({
-    playerId: id,
-    stats: [],
-    person: null,
-    awards: [],
-    contracts: [],
-    currentContract: null,
-    canonicalPath: playerUrl(null, id),
-    hydrateDetails: false,
-});
-
 export async function getServerSideProps({ params, res }) {
     const id = extractEntityId(params.id);
 
     try {
         const payload = await loadPlayer(id);
-
-        if (payload.notFound) {
-            setPageCache(res, PAGE_CACHE.error);
-            return { props: emptyPlayerProps(id) };
-        }
-
         const person = payload?.player?.[0] || null;
 
-        if (!person) {
-            setPageCache(res, PAGE_CACHE.error);
-            return { props: emptyPlayerProps(id) };
+        if (payload.notFound || !person) {
+            return { notFound: true };
         }
 
         const canonicalPath = playerUrl(person.player_name, id);
@@ -837,8 +819,7 @@ export async function getServerSideProps({ params, res }) {
         };
     } catch (error) {
         console.log(error);
-        setPageCache(res, PAGE_CACHE.error);
-        return { props: emptyPlayerProps(id) };
+        return { notFound: true };
     }
 }
 

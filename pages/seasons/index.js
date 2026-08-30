@@ -291,35 +291,45 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
 }
 
 export async function getServerSideProps(context) {
-    setPageCache(context.res, PAGE_CACHE.hourly);
     const { year } = context.query;
-    const season = year ? parseInt(year, 10) : 20252026;
+    const hasYearQuery = year != null && String(year).trim() !== '';
+    const season = hasYearQuery ? parseInt(year, 10) : 20252026;
+
+    if (hasYearQuery && Number.isNaN(season)) {
+        return { notFound: true };
+    }
 
     try {
         const { loadSeason } = await import('../../lib/season-data');
         const payload = await loadSeason(season);
 
-        if (payload.error) {
-            return {
-                props: {
-                    players: [],
-                    goalies: [],
-                    season,
-                    availableSeasons: []
-                }
-            };
+        if (payload.notFound || payload.error) {
+            return { notFound: true };
         }
 
+        const availableSeasons = payload?.availableSeasons || [];
+        const resolvedSeason = payload?.season || season;
+        const seasonKnown = availableSeasons.some((value) => Number(value) === Number(resolvedSeason));
+
+        if (hasYearQuery && availableSeasons.length && !seasonKnown) {
+            return { notFound: true };
+        }
+
+        setPageCache(context.res, PAGE_CACHE.hourly);
         return {
             props: {
                 players: payload?.players || [],
                 goalies: payload?.goalies || [],
-                season: payload?.season || season,
-                availableSeasons: payload?.availableSeasons || []
+                season: resolvedSeason,
+                availableSeasons,
             }
         };
     } catch (error) {
         console.log(error);
+        if (hasYearQuery) {
+            return { notFound: true };
+        }
+        setPageCache(context.res, PAGE_CACHE.error);
         return {
             props: {
                 players: [],

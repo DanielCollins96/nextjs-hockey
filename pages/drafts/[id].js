@@ -271,15 +271,16 @@ export async function getServerSideProps({ params, res }) {
         loadDraftYears(),
       ])
 
-      if (draftResult.status === 'fulfilled') {
-        if (draftResult.value?.notFound) {
-          return { notFound: true }
+      if (draftResult.status !== 'fulfilled' || draftResult.value?.notFound) {
+        if (draftResult.status !== 'fulfilled') {
+          console.log(draftResult.reason)
         }
-        draft = draftResult.value?.draft || []
-        setPageCache(res, PAGE_CACHE.stable)
-      } else {
-        console.log(draftResult.reason)
-        setPageCache(res, PAGE_CACHE.error)
+        return { notFound: true }
+      }
+
+      draft = draftResult.value?.draft || []
+      if (!draft.length) {
+        return { notFound: true }
       }
 
       if (yearsResult.status === 'fulfilled') {
@@ -287,20 +288,20 @@ export async function getServerSideProps({ params, res }) {
       } else {
         console.log(yearsResult.reason)
       }
+
+      setPageCache(res, PAGE_CACHE.stable)
     } catch (error) {
       console.log(error)
-      setPageCache(res, PAGE_CACHE.error)
+      return { notFound: true }
     }
 
-    if (draft) {
-      draft = draft.reduce((acc, player) => {
-        if (!acc[player.round]) {
-          acc[player.round] = []
-        }
-        acc[player.round].push(player)
-        return acc
-      },{})
-    }
+    draft = draft.reduce((acc, player) => {
+      if (!acc[player.round]) {
+        acc[player.round] = []
+      }
+      acc[player.round].push(player)
+      return acc
+    },{})
 
     return {
       props: {

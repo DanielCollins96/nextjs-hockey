@@ -389,22 +389,15 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
 }
 
 export async function getServerSideProps({ params, res }) {
-  setPageCache(res, PAGE_CACHE.live);
   try {
     const { loadGame } = await import('../../lib/game-data');
     const payload = await loadGame(params.id);
 
-    if (payload.notFound) {
-      return {
-        props: {
-          game: null,
-          goals: [],
-          penalties: [],
-          threeStars: [],
-        },
-      };
+    if (payload.notFound || !payload.game) {
+      return { notFound: true };
     }
 
+    setPageCache(res, PAGE_CACHE.live);
     return {
       props: {
         game: payload.game,
@@ -415,13 +408,6 @@ export async function getServerSideProps({ params, res }) {
     };
   } catch (error) {
     console.log(error);
-    return {
-      props: {
-        game: null,
-        goals: [],
-        penalties: [],
-        threeStars: [],
-      },
-    };
+    return { notFound: true };
   }
 }

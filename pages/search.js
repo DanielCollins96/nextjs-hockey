@@ -139,7 +139,6 @@ export default function SearchPage({ query, players, teams }) {
 export async function getServerSideProps(context) {
   const { q = '' } = context.query
   const query = String(q || '').trim()
-  setPageCache(context.res, PAGE_CACHE.search)
 
   let players = []
   let teams = []
@@ -150,9 +149,13 @@ export async function getServerSideProps(context) {
       const payload = await loadSearch(query, 25)
       players = payload?.players || []
       teams = payload?.teams || []
+      setPageCache(context.res, PAGE_CACHE.search)
     } catch (error) {
       console.log(error)
+      setPageCache(context.res, PAGE_CACHE.error)
     }
+  } else {
+    setPageCache(context.res, PAGE_CACHE.search)
   }
 
   return {

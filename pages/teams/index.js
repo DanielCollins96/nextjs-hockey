@@ -98,7 +98,6 @@ export default function Teams({rosters}) {
 }
 
 export async function getServerSideProps({ res }) {
-    setPageCache(res, PAGE_CACHE.hourly)
     try {
         const { getTeamRosters } = await import('../../lib/team-rosters');
         const { rosters } = await getTeamRosters();
@@ -108,6 +107,7 @@ export async function getServerSideProps({ res }) {
             throw new Error('No valid rosters were fetched successfully');
         }
 
+        setPageCache(res, PAGE_CACHE.hourly)
         return {
             props: {
                 rosters: validRosters
@@ -115,6 +115,7 @@ export async function getServerSideProps({ res }) {
         };
     } catch (error) {
         console.error('Error in getServerSideProps:', error);
+        setPageCache(res, PAGE_CACHE.error)
         return {
             props: {
                 rosters: []

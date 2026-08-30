@@ -1329,18 +1329,9 @@ export default function TeamPage({
   );
 }
 
-const emptyTeamProps = (id) => ({
-  seasons: {},
-  seasonIds: [],
-  abbreviation: null,
-  fullName: null,
-  teamRecords: [],
-  teamContracts: [],
-  initialContractSeason: null,
-  playoffSeasonIds: [],
-  teamId: id,
-  canonicalPath: teamUrl(null, id),
-});
+function hasTeamIdentity(team) {
+  return Boolean(team?.fullName || team?.name || team?.abbreviation);
+}
 
 export async function getServerSideProps({params, query, res}) {
   const id = extractEntityId(params.id);
@@ -1352,18 +1343,18 @@ export async function getServerSideProps({params, query, res}) {
       rosterSeason: requestedSeason || "latest",
     });
 
-    if (payload.notFound) {
+    const teamInfo = payload?.team || null;
+    if (payload.notFound || !hasTeamIdentity(teamInfo)) {
       return { notFound: true };
     }
 
-    const teamInfo = payload?.team || null;
     const skaters = payload?.skaters || [];
     const goalies = payload?.goalies || [];
     const teamRecords = payload?.teamRecords || [];
     const teamContracts = payload?.teamContracts || [];
     const playoffSeasons = payload?.playoffSeasons || [];
     const seasonIds = payload?.seasonIds || [];
-    const teamName = teamInfo?.fullName || teamInfo?.name || teamInfo?.abbreviation || "";
+    const teamName = teamInfo.fullName || teamInfo.name || teamInfo.abbreviation || "";
     const canonicalPath = teamUrl(teamName, id);
     if (params.id !== canonicalPath.split('/').pop()) {
       return {
@@ -1398,9 +1389,6 @@ export async function getServerSideProps({params, query, res}) {
     };
   } catch (error) {
     console.log(error);
-    setPageCache(res, PAGE_CACHE.error);
-    return {
-      props: emptyTeamProps(id),
-    };
+    return { notFound: true };
   }
 }

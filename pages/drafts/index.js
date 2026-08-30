@@ -19,20 +19,24 @@ export default function Drafts({draftYears}) {
 }
 
 export async function getServerSideProps({ res }) {
-  setPageCache(res, PAGE_CACHE.stable)
-  let draftYears = []
-
   try {
     const { loadDraftYears } = await import('../../lib/draft-data')
     const payload = await loadDraftYears()
-    draftYears = payload?.years || []
+    const draftYears = payload?.years || []
+
+    setPageCache(res, PAGE_CACHE.stable)
+    return {
+      props: {
+        draftYears,
+      }
+    }
   } catch (error) {
     console.log(error)
-  }
-
-  return {
-    props: {
-      draftYears,
+    setPageCache(res, PAGE_CACHE.error)
+    return {
+      props: {
+        draftYears: [],
+      }
     }
   }
 }

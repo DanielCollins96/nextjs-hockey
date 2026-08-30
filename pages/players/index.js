@@ -274,7 +274,6 @@ export default function PlayersIndex({ players, searchTerm }) {
 export async function getServerSideProps(context) {
     const { q } = context.query;
     const searchTerm = q || '';
-    setPageCache(context.res, searchTerm ? PAGE_CACHE.search : PAGE_CACHE.hourly);
 
     let players = [];
     if (searchTerm) {
@@ -282,9 +281,13 @@ export async function getServerSideProps(context) {
             const { searchPlayersList } = await import('../../lib/player-data');
             const payload = await searchPlayersList(searchTerm, 100);
             players = payload?.players || [];
+            setPageCache(context.res, PAGE_CACHE.search);
         } catch (error) {
             console.log(error);
+            setPageCache(context.res, PAGE_CACHE.error);
         }
+    } else {
+        setPageCache(context.res, PAGE_CACHE.hourly);
     }
 
     return {

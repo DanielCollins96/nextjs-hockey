@@ -617,24 +617,27 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
 }
 
 export async function getServerSideProps({ query, res }) {
-  setPageCache(res, PAGE_CACHE.live);
   const selectedDate = query.date || new Date().toISOString().split('T')[0];
 
   try {
     const { loadGames } = await import('../../lib/game-data');
     const payload = await loadGames({ date: selectedDate });
-    const games = payload?.error ? [] : payload?.games || [];
-    const dateBounds = payload?.error ? null : payload?.dateBounds || null;
 
+    if (payload?.error) {
+      return { notFound: true };
+    }
+
+    setPageCache(res, PAGE_CACHE.live);
     return {
       props: {
-        games,
+        games: payload?.games || [],
         selectedDate,
-        dateBounds,
+        dateBounds: payload?.dateBounds || null,
       },
     };
   } catch (error) {
     console.error('Error fetching games:', error);
+    setPageCache(res, PAGE_CACHE.error);
     return {
       props: {
         games: [],
