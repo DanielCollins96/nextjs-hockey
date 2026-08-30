@@ -5,6 +5,7 @@ import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 import { formatCurrency, formatSeason, formatShortSeason, toNumber } from '../../lib/format';
 import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
+import { loadPlayer } from '../../lib/player-data';
 
 const numericColumnMeta = {
     headerClassName: 'text-right',
@@ -743,43 +744,30 @@ const Players = ({ playerId, stats, person, awards, contracts, currentContract, 
     );
 };
 
-export async function getServerSideProps({ params, req }) {
+const emptyPlayerProps = (id) => ({
+    playerId: id,
+    stats: null,
+    person: null,
+    awards: [],
+    contracts: [],
+    currentContract: null,
+    canonicalPath: playerUrl(null, id),
+});
+
+export async function getServerSideProps({ params }) {
     const id = extractEntityId(params.id);
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const host = req.headers.host;
 
     try {
-        const response = await fetch(`${protocol}://${host}/api/players/${id}`);
+        const payload = await loadPlayer(id);
 
-        if (!response.ok) {
-            return {
-                props: {
-                    playerId: id,
-                    stats: null,
-                    person: null,
-                    awards: [],
-                    contracts: [],
-                    currentContract: null,
-                    canonicalPath: playerUrl(null, id),
-                },
-            };
+        if (payload.notFound) {
+            return { props: emptyPlayerProps(id) };
         }
 
-        const payload = await response.json();
         const person = payload?.player?.[0] || null;
 
         if (!person) {
-            return {
-                props: {
-                    playerId: id,
-                    stats: null,
-                    person: null,
-                    awards: [],
-                    contracts: [],
-                    currentContract: null,
-                    canonicalPath: playerUrl(null, id),
-                },
-            };
+            return { props: emptyPlayerProps(id) };
         }
 
         const canonicalPath = playerUrl(person.player_name, id);
@@ -805,17 +793,7 @@ export async function getServerSideProps({ params, req }) {
         };
     } catch (error) {
         console.log(error);
-        return {
-            props: {
-                playerId: id,
-                stats: null,
-                person: null,
-                awards: [],
-                contracts: [],
-                currentContract: null,
-                canonicalPath: playerUrl(null, id),
-            },
-        };
+        return { props: emptyPlayerProps(id) };
     }
 }
 

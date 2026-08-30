@@ -13,6 +13,7 @@ import { getContractSeasonRows } from "../../lib/contracts";
 import { formatCurrency, formatSeason, formatSeasonStartYear, formatShortSeason, toNumber } from "../../lib/format";
 import { extractEntityId, playerUrl, teamUrl } from "../../lib/routes";
 import { normalizeSeasonId } from "../../lib/season";
+import { loadTeam } from "../../lib/team-data";
 import {
   CartesianGrid,
   LineChart,
@@ -1280,40 +1281,29 @@ export default function TeamPage({
   );
 }
 
-export async function getServerSideProps({params, req, query}) {
+const emptyTeamProps = (id) => ({
+  seasons: {},
+  seasonIds: [],
+  abbreviation: null,
+  fullName: null,
+  teamRecords: [],
+  teamContracts: [],
+  initialContractSeason: null,
+  teamId: id,
+  canonicalPath: teamUrl(null, id),
+});
+
+export async function getServerSideProps({params, query}) {
   const id = extractEntityId(params.id);
-  const protocol = req.headers["x-forwarded-proto"] || "http";
-  const host = req.headers.host;
 
   try {
     const requestedSeason = Array.isArray(query?.season) ? query.season[0] : query?.season;
-    const teamApiUrl = new URL(`${protocol}://${host}/api/teams/${id}`);
-    if (requestedSeason) {
-      teamApiUrl.searchParams.set("contractSeason", requestedSeason);
+    const payload = await loadTeam(id, {contractSeason: requestedSeason});
+
+    if (payload.notFound) {
+      return { notFound: true };
     }
 
-    const response = await fetch(teamApiUrl.toString());
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return { notFound: true };
-      }
-      return {
-        props: {
-          seasons: {},
-          seasonIds: [],
-          abbreviation: null,
-          fullName: null,
-          teamRecords: [],
-          teamContracts: [],
-          initialContractSeason: null,
-          teamId: id,
-          canonicalPath: teamUrl(null, id),
-        },
-      };
-    }
-
-    const payload = await response.json();
     const teamInfo = payload?.team || null;
     const skaters = payload?.skaters || [];
     const goalies = payload?.goalies || [];
@@ -1382,17 +1372,7 @@ export async function getServerSideProps({params, req, query}) {
   } catch (error) {
     console.log(error);
     return {
-      props: {
-        seasons: {},
-        seasonIds: [],
-        abbreviation: null,
-        fullName: null,
-        teamRecords: [],
-        teamContracts: [],
-        initialContractSeason: null,
-        teamId: id,
-        canonicalPath: teamUrl(null, id),
-      },
+      props: emptyTeamProps(id),
     };
   }
 }

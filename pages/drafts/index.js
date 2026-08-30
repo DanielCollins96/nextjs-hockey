@@ -17,15 +17,15 @@ export default function Drafts({draftYears}) {
   )
 }
 
-export async function getServerSideProps({ req }) {
-  const protocol = req.headers['x-forwarded-proto'] || 'http'
-  const host = req.headers.host
-
+export async function getServerSideProps() {
   let draftYears = []
-  const response = await fetch(`${protocol}://${host}/api/drafts`)
-  if (response.ok) {
-    const payload = await response.json()
+
+  try {
+    const { loadDraftYears } = await import('../../lib/draft-data')
+    const payload = await loadDraftYears()
     draftYears = payload?.years || []
+  } catch (error) {
+    console.log(error)
   }
 
   return {

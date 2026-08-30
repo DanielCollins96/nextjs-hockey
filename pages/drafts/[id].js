@@ -257,30 +257,27 @@ export default function Drafts({id,draft,draftYears}) {
   )
 }
 
-export async function getServerSideProps({ params, req }) {
+export async function getServerSideProps({ params }) {
     const {id} = params
-    const protocol = req.headers['x-forwarded-proto'] || 'http'
-    const host = req.headers.host
 
     let draft = []
     let draftYears = []
-    const [response, yearsResponse] = await Promise.all([
-      fetch(`${protocol}://${host}/api/drafts/${id}`),
-      fetch(`${protocol}://${host}/api/drafts`),
-    ])
 
-    if (response.status === 404) {
-      return { notFound: true }
-    }
+    try {
+      const { loadDraft, loadDraftYears } = await import('../../lib/draft-data')
+      const [draftResult, yearsResult] = await Promise.all([
+        loadDraft(id),
+        loadDraftYears(),
+      ])
 
-    if (response.ok) {
-      const payload = await response.json()
-      draft = payload?.draft || []
-    }
+      if (draftResult.notFound) {
+        return { notFound: true }
+      }
 
-    if (yearsResponse.ok) {
-      const payload = await yearsResponse.json()
-      draftYears = payload?.years || []
+      draft = draftResult?.draft || []
+      draftYears = yearsResult?.years || []
+    } catch (error) {
+      console.log(error)
     }
 
     if (draft) {

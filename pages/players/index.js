@@ -272,16 +272,16 @@ export default function PlayersIndex({ players, searchTerm }) {
 
 export async function getServerSideProps(context) {
     const { q } = context.query;
-    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
-    const host = context.req.headers.host;
     const searchTerm = q || '';
 
     let players = [];
     if (searchTerm) {
-        const response = await fetch(`${protocol}://${host}/api/players?q=${encodeURIComponent(searchTerm)}&limit=100`);
-        if (response.ok) {
-            const payload = await response.json();
+        try {
+            const { searchPlayersList } = await import('../../lib/player-data');
+            const payload = await searchPlayersList(searchTerm, 100);
             players = payload?.players || [];
+        } catch (error) {
+            console.log(error);
         }
     }
 

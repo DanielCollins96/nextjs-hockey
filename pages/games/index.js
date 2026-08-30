@@ -615,27 +615,30 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   );
 }
 
-export async function getServerSideProps({ query, req }) {
+export async function getServerSideProps({ query }) {
   const selectedDate = query.date || new Date().toISOString().split('T')[0];
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers.host;
-  const response = await fetch(`${protocol}://${host}/api/games?date=${selectedDate}`);
-  const payload = response.ok ? await response.json() : {};
-  const games = payload?.games || [];
-  const dateBounds = payload?.dateBounds || null;
 
-  // Serialize Date objects to strings for JSON
-  const serializedGames = games.map(game => ({
-    ...game,
-    gameDate: game.gameDate instanceof Date ? game.gameDate.toISOString().split('T')[0] : game.gameDate,
-    startTimeUTC: game.startTimeUTC instanceof Date ? game.startTimeUTC.toISOString() : game.startTimeUTC,
-  }));
+  try {
+    const { loadGames } = await import('../../lib/game-data');
+    const payload = await loadGames({ date: selectedDate });
+    const games = payload?.error ? [] : payload?.games || [];
+    const dateBounds = payload?.error ? null : payload?.dateBounds || null;
 
-  return {
-    props: {
-      games: serializedGames,
-      selectedDate,
-      dateBounds,
-    },
-  };
+    return {
+      props: {
+        games,
+        selectedDate,
+        dateBounds,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching games:', error);
+    return {
+      props: {
+        games: [],
+        selectedDate,
+        dateBounds: null,
+      },
+    };
+  }
 }

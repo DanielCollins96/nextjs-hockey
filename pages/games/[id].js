@@ -387,33 +387,39 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
   );
 }
 
-export async function getServerSideProps({ params, req }) {
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers.host;
+export async function getServerSideProps({ params }) {
+  try {
+    const { loadGame } = await import('../../lib/game-data');
+    const payload = await loadGame(params.id);
 
-  const response = await fetch(`${protocol}://${host}/api/games/${params.id}`);
-  const payload = response.ok ? await response.json() : {};
-  const game = payload?.game || null;
-  const goals = payload?.goals || [];
-  const penalties = payload?.penalties || [];
-  const threeStars = payload?.threeStars || [];
+    if (payload.notFound) {
+      return {
+        props: {
+          game: null,
+          goals: [],
+          penalties: [],
+          threeStars: [],
+        },
+      };
+    }
 
-  // Serialize Date objects to strings for JSON
-  if (game) {
-    if (game.gameDate instanceof Date) {
-      game.gameDate = game.gameDate.toISOString().split('T')[0];
-    }
-    if (game.startTimeUTC instanceof Date) {
-      game.startTimeUTC = game.startTimeUTC.toISOString();
-    }
+    return {
+      props: {
+        game: payload.game,
+        goals: payload.goals || [],
+        penalties: payload.penalties || [],
+        threeStars: payload.threeStars || [],
+      },
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      props: {
+        game: null,
+        goals: [],
+        penalties: [],
+        threeStars: [],
+      },
+    };
   }
-
-  return {
-    props: {
-      game,
-      goals,
-      penalties,
-      threeStars,
-    },
-  };
 }

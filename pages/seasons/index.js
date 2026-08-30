@@ -291,19 +291,40 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
 
 export async function getServerSideProps(context) {
     const { year } = context.query;
-    const season = year ? parseInt(year) : 20252026;
-    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
-    const host = context.req.headers.host;
+    const season = year ? parseInt(year, 10) : 20252026;
 
-    const response = await fetch(`${protocol}://${host}/api/seasons?year=${season}`);
-    const payload = response.ok ? await response.json() : {};
+    try {
+        const { loadSeason } = await import('../../lib/season-data');
+        const payload = await loadSeason(season);
 
-    return {
-        props: {
-            players: payload?.players || [],
-            goalies: payload?.goalies || [],
-            season: payload?.season || season,
-            availableSeasons: payload?.availableSeasons || []
+        if (payload.error) {
+            return {
+                props: {
+                    players: [],
+                    goalies: [],
+                    season,
+                    availableSeasons: []
+                }
+            };
         }
+
+        return {
+            props: {
+                players: payload?.players || [],
+                goalies: payload?.goalies || [],
+                season: payload?.season || season,
+                availableSeasons: payload?.availableSeasons || []
+            }
+        };
+    } catch (error) {
+        console.log(error);
+        return {
+            props: {
+                players: [],
+                goalies: [],
+                season,
+                availableSeasons: []
+            }
+        };
     }
 }

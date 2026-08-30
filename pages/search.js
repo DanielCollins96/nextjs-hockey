@@ -138,20 +138,18 @@ export default function SearchPage({ query, players, teams }) {
 export async function getServerSideProps(context) {
   const { q = '' } = context.query
   const query = String(q || '').trim()
-  const protocol = context.req.headers['x-forwarded-proto'] || 'http'
-  const host = context.req.headers.host
 
   let players = []
   let teams = []
 
   if (query) {
-    const response = await fetch(
-      `${protocol}://${host}/api/search?q=${encodeURIComponent(query)}&limit=25`
-    )
-    if (response.ok) {
-      const payload = await response.json()
+    try {
+      const { loadSearch } = await import('../lib/search-data')
+      const payload = await loadSearch(query, 25)
       players = payload?.players || []
       teams = payload?.teams || []
+    } catch (error) {
+      console.log(error)
     }
   }
 
