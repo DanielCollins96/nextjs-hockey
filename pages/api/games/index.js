@@ -106,14 +106,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid date" });
       }
 
-      const readModel = await fetchGameDateReadModel(formattedDate);
-
-      if (readModel) {
-        games = readModel.games || [];
+      if (readModelsEnabled()) {
+        const readModel = await fetchGameDateReadModel(formattedDate);
+        games = readModel?.games || [];
         res.setHeader('X-Data-Source', 's3-read-model');
       } else {
         const { getGamesByDate } = await import("../../../lib/queries");
-        games = await getGamesByDate(date);
+        games = await getGamesByDate(formattedDate);
         res.setHeader('X-Data-Source', 'postgres');
       }
     } else {
