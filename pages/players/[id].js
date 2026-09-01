@@ -785,42 +785,36 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
 
 export async function getServerSideProps({ params, res }) {
     const id = extractEntityId(params.id);
+    const payload = await loadPlayer(id);
+    const person = payload?.player?.[0] || null;
 
-    try {
-        const payload = await loadPlayer(id);
-        const person = payload?.player?.[0] || null;
-
-        if (payload.notFound || !person) {
-            return { notFound: true };
-        }
-
-        const canonicalPath = playerUrl(person.player_name, id);
-        if (params.id !== canonicalPath.split('/').pop()) {
-            return {
-                redirect: {
-                    destination: canonicalPath,
-                    permanent: false,
-                },
-            };
-        }
-
-        setPageCache(res, PAGE_CACHE.hourly);
-        return {
-            props: {
-                playerId: id,
-                stats: [],
-                person,
-                awards: [],
-                contracts: [],
-                currentContract: null,
-                canonicalPath,
-                hydrateDetails: true,
-            },
-        };
-    } catch (error) {
-        console.log(error);
+    if (payload.notFound || !person) {
         return { notFound: true };
     }
+
+    const canonicalPath = playerUrl(person.player_name, id);
+    if (params.id !== canonicalPath.split('/').pop()) {
+        return {
+            redirect: {
+                destination: canonicalPath,
+                permanent: false,
+            },
+        };
+    }
+
+    setPageCache(res, PAGE_CACHE.hourly);
+    return {
+        props: {
+            playerId: id,
+            stats: [],
+            person,
+            awards: [],
+            contracts: [],
+            currentContract: null,
+            canonicalPath,
+            hydrateDetails: true,
+        },
+    };
 }
 
 export default Players;

@@ -299,44 +299,28 @@ export async function getServerSideProps(context) {
         return { notFound: true };
     }
 
-    try {
-        const { loadSeason } = await import('../../lib/season-data');
-        const payload = await loadSeason(season);
+    const { loadSeason } = await import('../../lib/season-data');
+    const payload = await loadSeason(season);
 
-        if (payload.notFound || payload.error) {
-            return { notFound: true };
-        }
-
-        const availableSeasons = payload?.availableSeasons || [];
-        const resolvedSeason = payload?.season || season;
-        const seasonKnown = availableSeasons.some((value) => Number(value) === Number(resolvedSeason));
-
-        if (hasYearQuery && availableSeasons.length && !seasonKnown) {
-            return { notFound: true };
-        }
-
-        setPageCache(context.res, PAGE_CACHE.hourly);
-        return {
-            props: {
-                players: payload?.players || [],
-                goalies: payload?.goalies || [],
-                season: resolvedSeason,
-                availableSeasons,
-            }
-        };
-    } catch (error) {
-        console.log(error);
-        if (hasYearQuery) {
-            return { notFound: true };
-        }
-        setPageCache(context.res, PAGE_CACHE.error);
-        return {
-            props: {
-                players: [],
-                goalies: [],
-                season,
-                availableSeasons: []
-            }
-        };
+    if (payload.notFound || payload.error) {
+        return { notFound: true };
     }
+
+    const availableSeasons = payload?.availableSeasons || [];
+    const resolvedSeason = payload?.season || season;
+    const seasonKnown = availableSeasons.some((value) => Number(value) === Number(resolvedSeason));
+
+    if (hasYearQuery && availableSeasons.length && !seasonKnown) {
+        return { notFound: true };
+    }
+
+    setPageCache(context.res, PAGE_CACHE.hourly);
+    return {
+        props: {
+            players: payload?.players || [],
+            goalies: payload?.goalies || [],
+            season: resolvedSeason,
+            availableSeasons,
+        }
+    };
 }

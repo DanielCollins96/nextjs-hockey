@@ -1335,18 +1335,16 @@ function hasTeamIdentity(team) {
 
 export async function getServerSideProps({params, query, res}) {
   const id = extractEntityId(params.id);
+  const requestedSeason = Array.isArray(query?.season) ? query.season[0] : query?.season;
+  const payload = await loadTeam(id, {
+    contractSeason: requestedSeason,
+    rosterSeason: requestedSeason || "latest",
+  });
 
-  try {
-    const requestedSeason = Array.isArray(query?.season) ? query.season[0] : query?.season;
-    const payload = await loadTeam(id, {
-      contractSeason: requestedSeason,
-      rosterSeason: requestedSeason || "latest",
-    });
-
-    const teamInfo = payload?.team || null;
-    if (payload.notFound || !hasTeamIdentity(teamInfo)) {
-      return { notFound: true };
-    }
+  const teamInfo = payload?.team || null;
+  if (payload.notFound || !hasTeamIdentity(teamInfo)) {
+    return { notFound: true };
+  }
 
     const skaters = payload?.skaters || [];
     const goalies = payload?.goalies || [];
@@ -1372,23 +1370,19 @@ export async function getServerSideProps({params, query, res}) {
       ? normalizeSeasonId(requestedSeason)
       : seasonIds[0] || null;
 
-    setPageCache(res, PAGE_CACHE.hourly);
-    return {
-      props: {
-        seasons: seasonMap,
-        seasonIds,
-        abbreviation: teamInfo?.abbreviation || null,
-        fullName: teamInfo?.fullName || teamInfo?.name || null,
-        teamRecords,
-        teamContracts,
-        initialContractSeason,
-        playoffSeasonIds: [...new Set(playoffSeasons.map(normalizeSeasonId).filter(Boolean))],
-        teamId: id,
-        canonicalPath,
-      },
-    };
-  } catch (error) {
-    console.log(error);
-    return { notFound: true };
-  }
+  setPageCache(res, PAGE_CACHE.hourly);
+  return {
+    props: {
+      seasons: seasonMap,
+      seasonIds,
+      abbreviation: teamInfo?.abbreviation || null,
+      fullName: teamInfo?.fullName || teamInfo?.name || null,
+      teamRecords,
+      teamContracts,
+      initialContractSeason,
+      playoffSeasonIds: [...new Set(playoffSeasons.map(normalizeSeasonId).filter(Boolean))],
+      teamId: id,
+      canonicalPath,
+    },
+  };
 }

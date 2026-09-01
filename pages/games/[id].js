@@ -389,25 +389,20 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
 }
 
 export async function getServerSideProps({ params, res }) {
-  try {
-    const { loadGame } = await import('../../lib/game-data');
-    const payload = await loadGame(params.id);
+  const { loadGame } = await import('../../lib/game-data');
+  const payload = await loadGame(params.id);
 
-    if (payload.notFound || !payload.game) {
-      return { notFound: true };
-    }
-
-    setPageCache(res, PAGE_CACHE.live);
-    return {
-      props: {
-        game: payload.game,
-        goals: payload.goals || [],
-        penalties: payload.penalties || [],
-        threeStars: payload.threeStars || [],
-      },
-    };
-  } catch (error) {
-    console.log(error);
+  if (payload.notFound || !payload.game) {
     return { notFound: true };
   }
+
+  setPageCache(res, PAGE_CACHE.live);
+  return {
+    props: {
+      game: payload.game,
+      goals: payload.goals || [],
+      penalties: payload.penalties || [],
+      threeStars: payload.threeStars || [],
+    },
+  };
 }

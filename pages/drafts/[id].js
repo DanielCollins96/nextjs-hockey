@@ -261,38 +261,32 @@ export default function Drafts({id,draft,draftYears}) {
 export async function getServerSideProps({ params, res }) {
     const {id} = params
 
-    let draft = []
-    let draftYears = []
+    const { loadDraft, loadDraftYears } = await import('../../lib/draft-data')
+    const [draftResult, yearsResult] = await Promise.allSettled([
+      loadDraft(id),
+      loadDraftYears(),
+    ])
 
-    try {
-      const { loadDraft, loadDraftYears } = await import('../../lib/draft-data')
-      const [draftResult, yearsResult] = await Promise.allSettled([
-        loadDraft(id),
-        loadDraftYears(),
-      ])
+    if (draftResult.status !== 'fulfilled') {
+      throw draftResult.reason
+    }
 
-      if (draftResult.status !== 'fulfilled' || draftResult.value?.notFound) {
-        if (draftResult.status !== 'fulfilled') {
-          console.log(draftResult.reason)
-        }
-        return { notFound: true }
-      }
-
-      draft = draftResult.value?.draft || []
-      if (!draft.length) {
-        return { notFound: true }
-      }
-
-      if (yearsResult.status === 'fulfilled') {
-        draftYears = yearsResult.value?.years || []
-      } else {
-        console.log(yearsResult.reason)
-      }
-
-      setPageCache(res, PAGE_CACHE.stable)
-    } catch (error) {
-      console.log(error)
+    if (draftResult.value?.notFound) {
       return { notFound: true }
+    }
+
+    let draft = draftResult.value?.draft || []
+    if (!draft.length) {
+      return { notFound: true }
+    }
+
+    let draftYears = []
+    if (yearsResult.status === 'fulfilled') {
+      draftYears = yearsResult.value?.years || []
+      setPageCache(res, PAGE_CACHE.stable)
+    } else {
+      console.log(yearsResult.reason)
+      setPageCache(res, PAGE_CACHE.error)
     }
 
     draft = draft.reduce((acc, player) => {
