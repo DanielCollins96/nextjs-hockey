@@ -13,6 +13,9 @@ import { getContractSeasonRows } from "../../lib/contracts";
 import { formatCurrency, formatSeason, formatSeasonStartYear, formatShortSeason, toNumber } from "../../lib/format";
 import { extractEntityId, playerUrl, teamUrl } from "../../lib/routes";
 import { normalizeSeasonId } from "../../lib/season";
+import { loadTeam } from "../../lib/team-data";
+import { buildTeamSeasonMap } from "../../lib/team-season";
+import { PAGE_CACHE, setPageCache } from "../../lib/http-cache";
 import {
   CartesianGrid,
   LineChart,
@@ -49,6 +52,7 @@ export default function TeamPage({
   teamRecords,
   teamContracts = [],
   initialContractSeason,
+  playoffSeasonIds = [],
   teamId,
   canonicalPath,
 }) {
@@ -65,7 +69,9 @@ export default function TeamPage({
 
   const [seasonId, setSeasonId] = useState(() => getValidSeasonId(querySeason));
   const [currentIndex, setCurrentIndex] = useState(seasonIds.indexOf(seasonId));
+  const [seasonsById, setSeasonsById] = useState(seasons);
   const [seasonData, setSeasonData] = useState(seasons[seasonId]);
+  const [rosterLoading, setRosterLoading] = useState(false);
   const [rosterSearch, setRosterSearch] = useState("");
   const [sidePanelTab, setSidePanelTab] = useState("stats");
   const [hiddenTeamChartSeries, setHiddenTeamChartSeries] = useState({});
@@ -74,14 +80,61 @@ export default function TeamPage({
   );
 
   useEffect(() => {
-    if (seasonId && seasons[seasonId]) {
-      setSeasonData(seasons[seasonId]);
+    setSeasonsById(seasons);
+    setTeamContractsBySeason(
+      initialContractSeason ? {[initialContractSeason]: teamContracts || []} : {}
+    );
+  }, [teamId, seasons, initialContractSeason, teamContracts]);
+
+  useEffect(() => {
+    if (seasonId && seasonsById[seasonId]) {
+      setSeasonData(seasonsById[seasonId]);
       setCurrentIndex(seasonIds.indexOf(seasonId));
+      setRosterLoading(false);
     } else {
       setSeasonData(null);
-      setCurrentIndex(-1);
+      setCurrentIndex(seasonIds.indexOf(seasonId));
     }
-  }, [seasons, seasonId, seasonIds]);
+  }, [seasonsById, seasonId, seasonIds]);
+
+  useEffect(() => {
+    if (!router.isReady || !teamId || !seasonId || seasonsById[seasonId]) return undefined;
+
+    let ignore = false;
+    const controller = new AbortController();
+    setRosterLoading(true);
+
+    fetch(`/api/teams/${encodeURIComponent(teamId)}?season=${encodeURIComponent(seasonId)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (ignore || !payload) return;
+        const nextSeasons = buildTeamSeasonMap(
+          payload.skaters || [],
+          payload.goalies || [],
+          payload.playoffSeasons || []
+        );
+        setSeasonsById((current) => ({...current, ...nextSeasons}));
+        setTeamContractsBySeason((current) => ({
+          ...current,
+          [seasonId]: payload.teamContracts || [],
+        }));
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") {
+          console.warn(`Unable to load ${seasonId} team roster`, error);
+        }
+      })
+      .finally(() => {
+        if (!ignore) setRosterLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [router.isReady, seasonId, seasonsById, teamId]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -95,7 +148,9 @@ export default function TeamPage({
   }, [getValidSeasonId, querySeason, router.isReady]);
 
   useEffect(() => {
-    if (!router.isReady || !teamId || !seasonId || Object.prototype.hasOwnProperty.call(teamContractsBySeason, seasonId)) return;
+    if (!router.isReady || !teamId || !seasonId) return;
+    if (Object.prototype.hasOwnProperty.call(teamContractsBySeason, seasonId)) return;
+    if (!seasonsById[seasonId]) return;
 
     let ignore = false;
     const controller = new AbortController();
@@ -122,7 +177,7 @@ export default function TeamPage({
       ignore = true;
       controller.abort();
     };
-  }, [router.isReady, seasonId, teamContractsBySeason, teamId]);
+  }, [router.isReady, seasonId, seasonsById, teamContractsBySeason, teamId]);
 
   const selectSeason = useCallback(
     (nextSeasonId) => {
@@ -951,7 +1006,7 @@ export default function TeamPage({
                         return (
                           <option key={szn} value={szn}>
                             {szn}{" "}
-                            {seasons && seasons[szn].madePlayoffs ? "(P)" : ""}
+                            {playoffSeasonIds.includes(szn) || seasonsById?.[szn]?.madePlayoffs ? "(P)" : ""}
                           </option>
                         );
                       })}
@@ -982,6 +1037,9 @@ export default function TeamPage({
               />
             </div>
 
+            {rosterLoading && !seasonData ? (
+              <p className="px-2 py-3 text-sm text-slate-500 dark:text-slate-400">Loading roster...</p>
+            ) : null}
             {seasonData && seasonData?.skaters && (
               <ReactTable
                 data={filteredSkaters}
@@ -1280,47 +1338,30 @@ export default function TeamPage({
   );
 }
 
-export async function getServerSideProps({params, req, query}) {
+function hasTeamIdentity(team) {
+  return Boolean(team?.fullName || team?.name || team?.abbreviation);
+}
+
+export async function getServerSideProps({params, query, res}) {
   const id = extractEntityId(params.id);
-  const protocol = req.headers["x-forwarded-proto"] || "http";
-  const host = req.headers.host;
+  const requestedSeason = Array.isArray(query?.season) ? query.season[0] : query?.season;
+  const payload = await loadTeam(id, {
+    contractSeason: requestedSeason,
+    rosterSeason: requestedSeason || "latest",
+  });
 
-  try {
-    const requestedSeason = Array.isArray(query?.season) ? query.season[0] : query?.season;
-    const teamApiUrl = new URL(`${protocol}://${host}/api/teams/${id}`);
-    if (requestedSeason) {
-      teamApiUrl.searchParams.set("contractSeason", requestedSeason);
-    }
+  const teamInfo = payload?.team || null;
+  if (payload.notFound || !hasTeamIdentity(teamInfo)) {
+    return { notFound: true };
+  }
 
-    const response = await fetch(teamApiUrl.toString());
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return { notFound: true };
-      }
-      return {
-        props: {
-          seasons: {},
-          seasonIds: [],
-          abbreviation: null,
-          fullName: null,
-          teamRecords: [],
-          teamContracts: [],
-          initialContractSeason: null,
-          teamId: id,
-          canonicalPath: teamUrl(null, id),
-        },
-      };
-    }
-
-    const payload = await response.json();
-    const teamInfo = payload?.team || null;
     const skaters = payload?.skaters || [];
     const goalies = payload?.goalies || [];
     const teamRecords = payload?.teamRecords || [];
     const teamContracts = payload?.teamContracts || [];
     const playoffSeasons = payload?.playoffSeasons || [];
-    const teamName = teamInfo?.fullName || teamInfo?.name || teamInfo?.abbreviation || "";
+    const seasonIds = payload?.seasonIds || [];
+    const teamName = teamInfo.fullName || teamInfo.name || teamInfo.abbreviation || "";
     const canonicalPath = teamUrl(teamName, id);
     if (params.id !== canonicalPath.split('/').pop()) {
       return {
@@ -1333,66 +1374,24 @@ export async function getServerSideProps({params, req, query}) {
       };
     }
 
-    const combinePlayersBySeason = (allSkaters, allGoalies) => {
-      const seasonMap = {};
+    const seasonMap = buildTeamSeasonMap(skaters, goalies, playoffSeasons);
+    const initialContractSeason = requestedSeason && seasonIds.includes(normalizeSeasonId(requestedSeason))
+      ? normalizeSeasonId(requestedSeason)
+      : seasonIds[0] || null;
 
-      allSkaters.forEach((skater) => {
-        const season = normalizeSeasonId(skater.season);
-        if (!seasonMap[season]) {
-          seasonMap[season] = {skaters: [], goalies: []};
-        }
-        seasonMap[season].skaters.push(skater);
-      });
-
-      allGoalies.forEach((goalie) => {
-        const season = normalizeSeasonId(goalie.season);
-        if (!seasonMap[season]) {
-          seasonMap[season] = {skaters: [], goalies: []};
-        }
-        seasonMap[season].goalies.push(goalie);
-      });
-
-      return seasonMap;
-    };
-
-    const seasonMap = combinePlayersBySeason(skaters, goalies);
-    const seasons = Object.keys(seasonMap).sort((a, b) => b.localeCompare(a));
-    const initialContractSeason = requestedSeason && seasons.includes(requestedSeason)
-      ? requestedSeason
-      : seasons[0] || null;
-    const playoffSeasonIds = new Set(playoffSeasons.map(normalizeSeasonId));
-
-    seasons.forEach((season) => {
-      seasonMap[season].madePlayoffs = playoffSeasonIds.has(season);
-    });
-
-    return {
-      props: {
-        seasons: seasonMap,
-        seasonIds: seasons,
-        abbreviation: teamInfo?.abbreviation || null,
-        fullName: teamInfo?.fullName || teamInfo?.name || null,
-        teamRecords,
-        teamContracts,
-        initialContractSeason,
-        teamId: id,
-        canonicalPath,
-      },
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      props: {
-        seasons: {},
-        seasonIds: [],
-        abbreviation: null,
-        fullName: null,
-        teamRecords: [],
-        teamContracts: [],
-        initialContractSeason: null,
-        teamId: id,
-        canonicalPath: teamUrl(null, id),
-      },
-    };
-  }
+  setPageCache(res, PAGE_CACHE.hourly);
+  return {
+    props: {
+      seasons: seasonMap,
+      seasonIds,
+      abbreviation: teamInfo?.abbreviation || null,
+      fullName: teamInfo?.fullName || teamInfo?.name || null,
+      teamRecords,
+      teamContracts,
+      initialContractSeason,
+      playoffSeasonIds: [...new Set(playoffSeasons.map(normalizeSeasonId).filter(Boolean))],
+      teamId: id,
+      canonicalPath,
+    },
+  };
 }

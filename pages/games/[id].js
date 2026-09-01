@@ -4,6 +4,7 @@ import Image from 'next/image';
 import SEO from '../../components/SEO';
 import ThreadMessageBoard from '../../components/ThreadMessageBoard';
 import { playerUrl, teamUrl } from '../../lib/routes';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 function formatDate(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -387,33 +388,21 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
   );
 }
 
-export async function getServerSideProps({ params, req }) {
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers.host;
+export async function getServerSideProps({ params, res }) {
+  const { loadGame } = await import('../../lib/game-data');
+  const payload = await loadGame(params.id);
 
-  const response = await fetch(`${protocol}://${host}/api/games/${params.id}`);
-  const payload = response.ok ? await response.json() : {};
-  const game = payload?.game || null;
-  const goals = payload?.goals || [];
-  const penalties = payload?.penalties || [];
-  const threeStars = payload?.threeStars || [];
-
-  // Serialize Date objects to strings for JSON
-  if (game) {
-    if (game.gameDate instanceof Date) {
-      game.gameDate = game.gameDate.toISOString().split('T')[0];
-    }
-    if (game.startTimeUTC instanceof Date) {
-      game.startTimeUTC = game.startTimeUTC.toISOString();
-    }
+  if (payload.notFound || !payload.game) {
+    return { notFound: true };
   }
 
+  setPageCache(res, PAGE_CACHE.live);
   return {
     props: {
-      game,
-      goals,
-      penalties,
-      threeStars,
+      game: payload.game,
+      goals: payload.goals || [],
+      penalties: payload.penalties || [],
+      threeStars: payload.threeStars || [],
     },
   };
 }

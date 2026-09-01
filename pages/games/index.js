@@ -8,6 +8,7 @@ import { UseAuth } from '../../contexts/Auth';
 import * as queries from '../../src/graphql/queries';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
 import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload, FaRegCommentDots } from 'react-icons/fa';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 function formatDateShort(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -615,27 +616,34 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   );
 }
 
-export async function getServerSideProps({ query, req }) {
+export async function getServerSideProps({ query, res }) {
   const selectedDate = query.date || new Date().toISOString().split('T')[0];
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers.host;
-  const response = await fetch(`${protocol}://${host}/api/games?date=${selectedDate}`);
-  const payload = response.ok ? await response.json() : {};
-  const games = payload?.games || [];
-  const dateBounds = payload?.dateBounds || null;
 
-  // Serialize Date objects to strings for JSON
-  const serializedGames = games.map(game => ({
-    ...game,
-    gameDate: game.gameDate instanceof Date ? game.gameDate.toISOString().split('T')[0] : game.gameDate,
-    startTimeUTC: game.startTimeUTC instanceof Date ? game.startTimeUTC.toISOString() : game.startTimeUTC,
-  }));
+  try {
+    const { loadGames } = await import('../../lib/game-data');
+    const payload = await loadGames({ date: selectedDate });
 
-  return {
-    props: {
-      games: serializedGames,
-      selectedDate,
-      dateBounds,
-    },
-  };
+    if (payload?.error) {
+      return { notFound: true };
+    }
+
+    setPageCache(res, PAGE_CACHE.live);
+    return {
+      props: {
+        games: payload?.games || [],
+        selectedDate,
+        dateBounds: payload?.dateBounds || null,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching games:', error);
+    setPageCache(res, PAGE_CACHE.error);
+    return {
+      props: {
+        games: [],
+        selectedDate,
+        dateBounds: null,
+      },
+    };
+  }
 }

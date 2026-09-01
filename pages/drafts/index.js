@@ -1,6 +1,7 @@
 import React from 'react'
 import DraftList from '../../components/DraftList'
 import SEO from '../../components/SEO'
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 
 
@@ -17,20 +18,25 @@ export default function Drafts({draftYears}) {
   )
 }
 
-export async function getServerSideProps({ req }) {
-  const protocol = req.headers['x-forwarded-proto'] || 'http'
-  const host = req.headers.host
+export async function getServerSideProps({ res }) {
+  try {
+    const { loadDraftYears } = await import('../../lib/draft-data')
+    const payload = await loadDraftYears()
+    const draftYears = payload?.years || []
 
-  let draftYears = []
-  const response = await fetch(`${protocol}://${host}/api/drafts`)
-  if (response.ok) {
-    const payload = await response.json()
-    draftYears = payload?.years || []
-  }
-
-  return {
-    props: {
-      draftYears,
+    setPageCache(res, PAGE_CACHE.stable)
+    return {
+      props: {
+        draftYears,
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    setPageCache(res, PAGE_CACHE.error)
+    return {
+      props: {
+        draftYears: [],
+      }
     }
   }
 }

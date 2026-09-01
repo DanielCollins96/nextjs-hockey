@@ -5,6 +5,7 @@ import { MdOutlineChevronLeft, MdOutlineChevronRight } from 'react-icons/md';
 import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 import { playerUrl, teamUrl } from '../../lib/routes';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 export default function Seasons({players, goalies, season, availableSeasons}) {
     const router = useRouter();
@@ -291,19 +292,35 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
 
 export async function getServerSideProps(context) {
     const { year } = context.query;
-    const season = year ? parseInt(year) : 20252026;
-    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
-    const host = context.req.headers.host;
+    const hasYearQuery = year != null && String(year).trim() !== '';
+    const season = hasYearQuery ? parseInt(year, 10) : null;
 
-    const response = await fetch(`${protocol}://${host}/api/seasons?year=${season}`);
-    const payload = response.ok ? await response.json() : {};
+    if (hasYearQuery && Number.isNaN(season)) {
+        return { notFound: true };
+    }
 
+    const { loadSeason } = await import('../../lib/season-data');
+    const payload = await loadSeason(season);
+
+    if (payload.notFound || payload.error) {
+        return { notFound: true };
+    }
+
+    const availableSeasons = payload?.availableSeasons || [];
+    const resolvedSeason = payload?.season || season;
+    const seasonKnown = availableSeasons.some((value) => Number(value) === Number(resolvedSeason));
+
+    if (hasYearQuery && availableSeasons.length && !seasonKnown) {
+        return { notFound: true };
+    }
+
+    setPageCache(context.res, PAGE_CACHE.hourly);
     return {
         props: {
             players: payload?.players || [],
             goalies: payload?.goalies || [],
-            season: payload?.season || season,
-            availableSeasons: payload?.availableSeasons || []
+            season: resolvedSeason,
+            availableSeasons,
         }
-    }
+    };
 }

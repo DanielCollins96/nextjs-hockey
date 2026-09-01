@@ -6,6 +6,7 @@ import DraftList from '../../components/DraftList'
 import { useRouter } from 'next/router'
 import { FaDownload } from 'react-icons/fa'
 import { playerUrl, teamUrl } from '../../lib/routes'
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 
 export default function Drafts({id,draft,draftYears}) {
@@ -257,41 +258,44 @@ export default function Drafts({id,draft,draftYears}) {
   )
 }
 
-export async function getServerSideProps({ params, req }) {
+export async function getServerSideProps({ params, res }) {
     const {id} = params
-    const protocol = req.headers['x-forwarded-proto'] || 'http'
-    const host = req.headers.host
 
-    let draft = []
-    let draftYears = []
-    const [response, yearsResponse] = await Promise.all([
-      fetch(`${protocol}://${host}/api/drafts/${id}`),
-      fetch(`${protocol}://${host}/api/drafts`),
+    const { loadDraft, loadDraftYears } = await import('../../lib/draft-data')
+    const [draftResult, yearsResult] = await Promise.allSettled([
+      loadDraft(id),
+      loadDraftYears(),
     ])
 
-    if (response.status === 404) {
+    if (draftResult.status !== 'fulfilled') {
+      throw draftResult.reason
+    }
+
+    if (draftResult.value?.notFound) {
       return { notFound: true }
     }
 
-    if (response.ok) {
-      const payload = await response.json()
-      draft = payload?.draft || []
+    let draft = draftResult.value?.draft || []
+    if (!draft.length) {
+      return { notFound: true }
     }
 
-    if (yearsResponse.ok) {
-      const payload = await yearsResponse.json()
-      draftYears = payload?.years || []
+    let draftYears = []
+    if (yearsResult.status === 'fulfilled') {
+      draftYears = yearsResult.value?.years || []
+      setPageCache(res, PAGE_CACHE.stable)
+    } else {
+      console.log(yearsResult.reason)
+      setPageCache(res, PAGE_CACHE.error)
     }
 
-    if (draft) {
-      draft = draft.reduce((acc, player) => {
-        if (!acc[player.round]) {
-          acc[player.round] = []
-        }
-        acc[player.round].push(player)
-        return acc
-      },{})
-    }
+    draft = draft.reduce((acc, player) => {
+      if (!acc[player.round]) {
+        acc[player.round] = []
+      }
+      acc[player.round].push(player)
+      return acc
+    },{})
 
     return {
       props: {

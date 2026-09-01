@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query';
 import TeamBox from '../../components/TeamBox';
 import SEO from '../../components/SEO';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 
 export default function Teams({rosters}) {
@@ -96,26 +97,25 @@ export default function Teams({rosters}) {
     )
 }
 
-export async function getServerSideProps({ req }) {
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const host = req.headers.host;
-
+export async function getServerSideProps({ res }) {
     try {
-        const response = await fetch(`${protocol}://${host}/api/teams/rosters`);
-        const payload = response.ok ? await response.json() : {};
-        const validRosters = payload?.rosters || [];
+        const { getTeamRosters } = await import('../../lib/team-rosters');
+        const { rosters } = await getTeamRosters();
+        const validRosters = rosters || [];
 
         if (!validRosters.length) {
             throw new Error('No valid rosters were fetched successfully');
         }
 
+        setPageCache(res, PAGE_CACHE.hourly)
         return {
             props: {
                 rosters: validRosters
             }
         };
     } catch (error) {
-        console.error('Error in getStaticProps:', error);
+        console.error('Error in getServerSideProps:', error);
+        setPageCache(res, PAGE_CACHE.error)
         return {
             props: {
                 rosters: []

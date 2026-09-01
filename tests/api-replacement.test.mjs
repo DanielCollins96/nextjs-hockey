@@ -156,7 +156,7 @@ test('games APIs return expected shape and cache headers', async (t) => {
   assert.ok(detailPayload.game && typeof detailPayload.game === 'object', 'game should be an object');
 });
 
-test('public pages use API paths and avoid direct query imports', async () => {
+test('public pages load data through shared helpers, not HTTP self-fetch or direct queries', async () => {
   const pagePaths = [
     '../pages/index.js',
     '../pages/players/index.js',
@@ -168,11 +168,9 @@ test('public pages use API paths and avoid direct query imports', async () => {
     '../pages/games/index.js',
     '../pages/games/[id].js',
     '../pages/seasons/index.js',
+    '../pages/search.js',
     '../pages/sitemap.xml.js',
   ];
-  const pagesExpectedToCallApi = pagePaths.filter(
-    (pagePath) => pagePath !== '../pages/index.js'
-  );
 
   for (const pagePath of pagePaths) {
     const content = await readFile(new URL(pagePath, import.meta.url), 'utf8');
@@ -181,10 +179,15 @@ test('public pages use API paths and avoid direct query imports', async () => {
       /from\s*["'][\.\/]+lib\/queries["']/,
       `${pagePath} should not import direct DB queries`
     );
-  }
-
-  for (const pagePath of pagesExpectedToCallApi) {
-    const content = await readFile(new URL(pagePath, import.meta.url), 'utf8');
-    assert.match(content, /\/api\//, `${pagePath} should call at least one API path`);
+    assert.doesNotMatch(
+      content,
+      /x-forwarded-proto/,
+      `${pagePath} should not rebuild API URLs from the request Host`
+    );
+    assert.doesNotMatch(
+      content,
+      /req\.headers\.host/,
+      `${pagePath} should not rebuild API URLs from the request Host`
+    );
   }
 });

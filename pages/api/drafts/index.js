@@ -1,29 +1,15 @@
-import { fetchReadModel, readModelPaths, unwrapReadModel } from "../../../lib/read-models";
+import { loadDraftYears } from "../../../lib/draft-data";
 
 export default async function handler(req, res) {
     try {
-        const readModel = await fetchReadModel(readModelPaths.draftYears())
+        const result = await loadDraftYears()
 
-        if (readModel) {
-            const years = unwrapReadModel(readModel, 'years') || []
-
-            res.setHeader('X-Data-Source', 's3-read-model')
-            res.setHeader(
-                'Cache-Control',
-                'public, s-maxage=86400, stale-while-revalidate=172800'
-            )
-
-            return res.status(200).json({ years })
-        }
-
-        const { getAllDraftYears } = await import("../../../lib/queries")
-        const years = await getAllDraftYears()
-        res.setHeader('X-Data-Source', 'postgres')
+        res.setHeader('X-Data-Source', result.source)
         res.setHeader(
             'Cache-Control',
             'public, s-maxage=86400, stale-while-revalidate=172800'
         )
-        res.status(200).json({ years })
+        res.status(200).json({ years: result.years })
     } catch (error) {
         console.log(error)
         res.status(500).json({ error_message: 'Internal Server Error' })

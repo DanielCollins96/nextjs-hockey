@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import SEO from '../components/SEO'
+import { PAGE_CACHE, setPageCache } from '../lib/http-cache'
 
 export default function SearchPage({ query, players, teams }) {
   const hasQuery = query.trim().length > 0
@@ -138,21 +139,23 @@ export default function SearchPage({ query, players, teams }) {
 export async function getServerSideProps(context) {
   const { q = '' } = context.query
   const query = String(q || '').trim()
-  const protocol = context.req.headers['x-forwarded-proto'] || 'http'
-  const host = context.req.headers.host
 
   let players = []
   let teams = []
 
   if (query) {
-    const response = await fetch(
-      `${protocol}://${host}/api/search?q=${encodeURIComponent(query)}&limit=25`
-    )
-    if (response.ok) {
-      const payload = await response.json()
+    try {
+      const { loadSearch } = await import('../lib/search-data')
+      const payload = await loadSearch(query, 25)
       players = payload?.players || []
       teams = payload?.teams || []
+      setPageCache(context.res, PAGE_CACHE.search)
+    } catch (error) {
+      console.log(error)
+      setPageCache(context.res, PAGE_CACHE.error)
     }
+  } else {
+    setPageCache(context.res, PAGE_CACHE.search)
   }
 
   return {

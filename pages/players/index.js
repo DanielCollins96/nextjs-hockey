@@ -5,6 +5,7 @@ import ReactTable from '../../components/PaginatedTable';
 import SEO from '../../components/SEO';
 import { FaDownload } from 'react-icons/fa';
 import { playerUrl, teamUrl } from '../../lib/routes';
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 export default function PlayersIndex({ players, searchTerm }) {
     const router = useRouter();
@@ -272,17 +273,21 @@ export default function PlayersIndex({ players, searchTerm }) {
 
 export async function getServerSideProps(context) {
     const { q } = context.query;
-    const protocol = context.req.headers['x-forwarded-proto'] || 'http';
-    const host = context.req.headers.host;
     const searchTerm = q || '';
 
     let players = [];
     if (searchTerm) {
-        const response = await fetch(`${protocol}://${host}/api/players?q=${encodeURIComponent(searchTerm)}&limit=100`);
-        if (response.ok) {
-            const payload = await response.json();
+        try {
+            const { searchPlayersList } = await import('../../lib/player-data');
+            const payload = await searchPlayersList(searchTerm, 100);
             players = payload?.players || [];
+            setPageCache(context.res, PAGE_CACHE.search);
+        } catch (error) {
+            console.log(error);
+            setPageCache(context.res, PAGE_CACHE.error);
         }
+    } else {
+        setPageCache(context.res, PAGE_CACHE.hourly);
     }
 
     return {

@@ -1,4 +1,7 @@
 import { playerUrl, teamUrl } from '../lib/routes';
+import { loadSitemapPlayers } from '../lib/player-data';
+import { loadTeamIds } from '../lib/team-data';
+import { loadDraftYears } from '../lib/draft-data';
 
 const SITE_URL = 'https://www.hocke.ca';
 
@@ -92,21 +95,14 @@ function generateSiteMap({ playerIds, draftYears, teamIds }) {
 </urlset>`;
 }
 
-export async function getServerSideProps({ res, req }) {
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers.host;
-
-  const [playersResponse, draftsResponse, teamsResponse] = await Promise.all([
-    fetch(`${protocol}://${host}/api/players/ids`),
-    fetch(`${protocol}://${host}/api/drafts`),
-    fetch(`${protocol}://${host}/api/teams/ids`),
+export async function getServerSideProps({ res }) {
+  const [playersPayload, draftsPayload, teamsPayload] = await Promise.all([
+    loadSitemapPlayers().catch(() => ({})),
+    loadDraftYears().catch(() => ({})),
+    loadTeamIds().catch(() => ({})),
   ]);
 
-  const playersPayload = playersResponse.ok ? await playersResponse.json() : {};
-  const draftsPayload = draftsResponse.ok ? await draftsResponse.json() : {};
-  const teamsPayload = teamsResponse.ok ? await teamsResponse.json() : {};
-
-  const playerIds = playersPayload?.playerIds || [];
+  const playerIds = playersPayload?.players || [];
   const draftYears = draftsPayload?.years || [];
   const teamIds = teamsPayload?.teamIds || [];
 
