@@ -5,7 +5,7 @@ import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 import { formatCurrency, formatSeason, formatShortSeason, toNumber } from '../../lib/format';
 import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
-import { loadPlayer } from '../../lib/player-data';
+import { loadPlayerProfile } from '../../lib/player-data';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 const numericColumnMeta = {
@@ -213,11 +213,19 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
 
     useEffect(() => {
         if (!hydrateDetails || !id) {
+            setStats(Array.isArray(initialStats) ? initialStats : []);
+            setAwards(Array.isArray(initialAwards) ? initialAwards : []);
+            setContracts(Array.isArray(initialContracts) ? initialContracts : []);
+            setCurrentContract(initialCurrentContract || null);
             setDetailsLoading(false);
             return undefined;
         }
 
         const controller = new AbortController();
+        setStats([]);
+        setAwards([]);
+        setContracts([]);
+        setCurrentContract(null);
         setDetailsLoading(true);
 
         fetch(`/api/players/${encodeURIComponent(id)}`, { signal: controller.signal })
@@ -239,7 +247,7 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
             });
 
         return () => controller.abort();
-    }, [hydrateDetails, id]);
+    }, [hydrateDetails, id, initialAwards, initialContracts, initialCurrentContract, initialStats]);
 
     const contractRows = useMemo(() => (Array.isArray(contracts) ? contracts : []), [contracts]);
     const position = person?.position || '';
@@ -785,7 +793,7 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
 
 export async function getServerSideProps({ params, res }) {
     const id = extractEntityId(params.id);
-    const payload = await loadPlayer(id);
+    const payload = await loadPlayerProfile(id);
     const person = payload?.player?.[0] || null;
 
     if (payload.notFound || !person) {

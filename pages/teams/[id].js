@@ -81,7 +81,10 @@ export default function TeamPage({
 
   useEffect(() => {
     setSeasonsById(seasons);
-  }, [teamId, seasons]);
+    setTeamContractsBySeason(
+      initialContractSeason ? {[initialContractSeason]: teamContracts || []} : {}
+    );
+  }, [teamId, seasons, initialContractSeason, teamContracts]);
 
   useEffect(() => {
     if (seasonId && seasonsById[seasonId]) {
@@ -113,6 +116,10 @@ export default function TeamPage({
           payload.playoffSeasons || []
         );
         setSeasonsById((current) => ({...current, ...nextSeasons}));
+        setTeamContractsBySeason((current) => ({
+          ...current,
+          [seasonId]: payload.teamContracts || [],
+        }));
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
@@ -141,7 +148,9 @@ export default function TeamPage({
   }, [getValidSeasonId, querySeason, router.isReady]);
 
   useEffect(() => {
-    if (!router.isReady || !teamId || !seasonId || Object.prototype.hasOwnProperty.call(teamContractsBySeason, seasonId)) return;
+    if (!router.isReady || !teamId || !seasonId) return;
+    if (Object.prototype.hasOwnProperty.call(teamContractsBySeason, seasonId)) return;
+    if (!seasonsById[seasonId]) return;
 
     let ignore = false;
     const controller = new AbortController();
@@ -168,7 +177,7 @@ export default function TeamPage({
       ignore = true;
       controller.abort();
     };
-  }, [router.isReady, seasonId, teamContractsBySeason, teamId]);
+  }, [router.isReady, seasonId, seasonsById, teamContractsBySeason, teamId]);
 
   const selectSeason = useCallback(
     (nextSeasonId) => {

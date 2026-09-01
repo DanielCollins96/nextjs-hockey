@@ -293,7 +293,7 @@ export default function Seasons({players, goalies, season, availableSeasons}) {
 export async function getServerSideProps(context) {
     const { year } = context.query;
     const hasYearQuery = year != null && String(year).trim() !== '';
-    const season = hasYearQuery ? parseInt(year, 10) : 20252026;
+    const season = hasYearQuery ? parseInt(year, 10) : null;
 
     if (hasYearQuery && Number.isNaN(season)) {
         return { notFound: true };
