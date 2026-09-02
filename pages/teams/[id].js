@@ -987,7 +987,7 @@ export default function TeamPage({
       </div>
       <div className="team-content-grid">
         {seasons && (
-          <div className="roster-card min-w-0 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-0.5 flex flex-col items-start">
+          <div className="roster-card min-w-0 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 p-0.5 flex flex-col items-stretch">
             <div className="flex flex-wrap items-center gap-2 pb-0.5">
               <div className="flex items-center gap-1">
                 <div>
@@ -1045,6 +1045,7 @@ export default function TeamPage({
                 data={filteredSkaters}
                 columns={roster_player_table_columns}
                 sortKey="P"
+                pinchToFit
                 modern
                 compact
               />
@@ -1054,6 +1055,7 @@ export default function TeamPage({
                 data={filteredGoalies}
                 columns={roster_goalie_table_columns}
                 sortKey="P"
+                pinchToFit
                 modern
                 compact
               />
@@ -1303,8 +1305,7 @@ export default function TeamPage({
         }
 
         .roster-card {
-          max-width: none;
-          width: max-content;
+          width: 100%;
         }
 
         .team-side-column {

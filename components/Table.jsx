@@ -5,9 +5,9 @@ import {
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, modern = false, compact = false, mobileCollapsedColumns = []}) {
+export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, pinchToFit = false, modern = false, compact = false, mobileCollapsedColumns = []}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
@@ -16,6 +16,9 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
   const [expandedColumns, setExpandedColumns] = useState({})
   const [isMobile, setIsMobile] = useState(false)
   const [mobileExpanded, setMobileExpanded] = useState(false)
+  const [tableScale, setTableScale] = useState(1)
+  const pinchStartRef = useRef(null)
+  const lastTableTapRef = useRef(0)
 
   useEffect(() => {
     if (mobileCollapsedColumns.length === 0) return undefined
@@ -54,6 +57,63 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
     return "max-w-0 overflow-hidden text-ellipsis"
   }
 
+  const handleTableTouchStart = (event) => {
+    if (pinchToFit && event.touches.length === 1 && tableScale < 1) {
+      const now = Date.now()
+
+      if (now - lastTableTapRef.current < 300) {
+        event.preventDefault()
+        setTableScale(1)
+        lastTableTapRef.current = 0
+        return
+      }
+
+      lastTableTapRef.current = now
+    }
+
+    if (!pinchToFit || event.touches.length !== 2) return
+
+    const [firstTouch, secondTouch] = event.touches
+    if (!firstTouch || !secondTouch) return
+    const tableWidth = event.currentTarget.querySelector("table")?.offsetWidth || 0
+    const minimumScale = tableWidth
+      ? Math.min(1, event.currentTarget.clientWidth / tableWidth)
+      : 0.56
+    pinchStartRef.current = {
+      distance: Math.hypot(
+        secondTouch.clientX - firstTouch.clientX,
+        secondTouch.clientY - firstTouch.clientY
+      ),
+      scale: tableScale,
+      minimumScale,
+    }
+  }
+
+  const handleTableTouchMove = (event) => {
+    if (!pinchStartRef.current || event.touches.length !== 2) return
+
+    const [firstTouch, secondTouch] = event.touches
+    if (!firstTouch || !secondTouch) return
+    const distance = Math.hypot(
+      secondTouch.clientX - firstTouch.clientX,
+      secondTouch.clientY - firstTouch.clientY
+    )
+    const nextScale = Math.min(
+      1,
+      Math.max(
+        pinchStartRef.current.minimumScale,
+        (distance / pinchStartRef.current.distance) * pinchStartRef.current.scale
+      )
+    )
+
+    event.preventDefault()
+    setTableScale(nextScale)
+  }
+
+  const handleTableTouchEnd = (event) => {
+    if (event.touches.length < 2) pinchStartRef.current = null
+  }
+
   const table = useReactTable(
     {
       columns,
@@ -84,14 +144,21 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
       </div>
     )}
     <div
-      className={`relative overflow-x-auto max-w-full ${
+      className={`relative max-w-full ${tableScale < 1 ? "overflow-hidden" : "overflow-x-auto"} ${
         mobileFit || compact
           ? "pb-1"
           : "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       } ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}
+      onTouchStart={handleTableTouchStart}
+      onTouchMove={handleTableTouchMove}
+      onTouchEnd={handleTableTouchEnd}
+      onTouchCancel={handleTableTouchEnd}
     >
+      <div
+        style={tableScale < 1 ? {width: `${100 / tableScale}%`, zoom: tableScale} : undefined}
+      >
       <table
-        className={modern ? `${compact ? "w-max text-sm" : "min-w-[58rem] w-full text-sm"} ${mobileFit ? "mobile-fit-table table-auto" : "table-fixed"} border-collapse` : `${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
+        className={modern ? `${compact ? "w-max text-sm table-auto" : "min-w-[58rem] w-full text-sm"} ${mobileFit ? "mobile-fit-table table-auto" : compact ? "" : "table-fixed"} border-collapse` : `${mobileFit ? "w-max m-0" : "m-1"} border border-black dark:border-gray-600 px-1`}
       >
         {modern && (
           <colgroup>
@@ -211,6 +278,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
         ))}
       </tfoot>
       </table>
+      </div>
     </div>
     </div>
   );
