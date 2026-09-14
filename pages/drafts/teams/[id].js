@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ReactTable from '../../../components/Table'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -11,6 +11,10 @@ import { PAGE_CACHE, setPageCache } from '../../../lib/http-cache'
 export default function DraftByTeam({ team, draft, draftTeams }) {
   const router = useRouter()
   const [year, setYear] = useState('all')
+
+  useEffect(() => {
+    setYear('all')
+  }, [team.id])
 
   const years = Object.keys(draft)
     .map(Number)
