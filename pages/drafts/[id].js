@@ -5,7 +5,7 @@ import SEO from '../../components/SEO'
 import DraftList from '../../components/DraftList'
 import { useRouter } from 'next/router'
 import { FaDownload } from 'react-icons/fa'
-import { playerUrl, teamUrl } from '../../lib/routes'
+import { draftTeamUrl, playerUrl } from '../../lib/routes'
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 
@@ -103,7 +103,7 @@ export default function Drafts({id,draft,draftYears}) {
       header: 'Team',
       accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
-        href={teamUrl(row.original.teamAbbrev, row.original.draftedByTeamId || row.original.teamId)}
+        href={draftTeamUrl(row.original.teamAbbrev, row.original.draftedByTeamId || row.original.teamId)}
         className=" hover:text-blue-700 visited:text-purple-800">{row.original.teamAbbrev}</Link>),
       size: 72,
     },

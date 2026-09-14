@@ -1,11 +1,11 @@
-import { playerUrl, teamUrl } from '../lib/routes';
+import { draftTeamUrl, playerUrl, teamUrl } from '../lib/routes';
 import { loadSitemapPlayers } from '../lib/player-data';
 import { loadTeamIds } from '../lib/team-data';
-import { loadDraftYears } from '../lib/draft-data';
+import { loadDraftYears, loadDraftTeams } from '../lib/draft-data';
 
 const SITE_URL = 'https://www.hocke.ca';
 
-function generateSiteMap({ playerIds, draftYears, teamIds }) {
+function generateSiteMap({ playerIds, draftYears, draftTeams, teamIds }) {
   const today = new Date().toISOString().split('T')[0];
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -92,23 +92,38 @@ function generateSiteMap({ playerIds, draftYears, teamIds }) {
   </url>`
     )
     .join('')}
+
+  <!-- Draft by team pages -->
+  ${draftTeams
+    .map(
+      (team) => `
+  <url>
+    <loc>${SITE_URL}${draftTeamUrl(team.name || team.abbreviation, team.id)}</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>`
+    )
+    .join('')}
 </urlset>`;
 }
 
 export async function getServerSideProps({ res }) {
-  const [playersPayload, draftsPayload, teamsPayload] = await Promise.all([
+  const [playersPayload, draftsPayload, draftTeamsPayload, teamsPayload] = await Promise.all([
     loadSitemapPlayers().catch(() => ({})),
     loadDraftYears().catch(() => ({})),
+    loadDraftTeams().catch(() => ({})),
     loadTeamIds().catch(() => ({})),
   ]);
 
   const playerIds = playersPayload?.players || [];
   const draftYears = draftsPayload?.years || [];
+  const draftTeams = draftTeamsPayload?.teams || [];
   const teamIds = teamsPayload?.teamIds || [];
 
   const sitemap = generateSiteMap({
     playerIds: playerIds || [],
     draftYears: draftYears || [],
+    draftTeams: draftTeams || [],
     teamIds: teamIds || [],
   });
 

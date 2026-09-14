@@ -53,7 +53,7 @@ export default function DraftList({drafts, currentYear, compact = false}) {
         </h1>
         {!compact && (
           <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-            Browse every NHL draft class by year, then drill into rounds, picks, teams, and player career totals.
+            Browse every NHL draft class by year, then drill into rounds, picks, and player career totals. Switch to By team to see a franchise&apos;s full draft history.
           </p>
         )}
       </div>
