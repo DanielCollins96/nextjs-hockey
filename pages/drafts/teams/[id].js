@@ -132,7 +132,6 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
         ) : (
           props.row.original.playerName
         ),
-      size: 210,
     },
     {
       header: 'Pos',
@@ -308,7 +307,7 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
             </div>
           </div>
 
-          <div className="p-2">
+          <div>
             {selectedPlayers.length > 0 && (
               <ReactTable
                 columns={columns}
@@ -318,6 +317,7 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                 sortKey={year === 'all' ? 'draftYear' : 'overallPick'}
                 sortDesc={year === 'all'}
                 modern
+                compact
               />
             )}
           </div>
