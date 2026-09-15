@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Cloudflare Pages sets CF_PAGES=1. Do not enable this on Vercel:
+  // getServerSideProps and /api routes cannot be statically exported.
+  ...(process.env.CF_PAGES === "1" ? { output: "export" } : {}),
   outputFileTracingRoot: __dirname,
   images: {
     unoptimized: true,
