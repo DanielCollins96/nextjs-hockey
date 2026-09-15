@@ -12,17 +12,18 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
   const router = useRouter()
   const [year, setYear] = useState('all')
 
-  useEffect(() => {
-    setYear('all')
-  }, [team.id])
-
   const years = Object.keys(draft)
     .map(Number)
     .sort((a, b) => b - a)
     .map(String)
 
+  useEffect(() => {
+    setYear('all')
+  }, [team.id])
+
+  const selectedYear = year !== 'all' && draft[year] ? year : 'all'
   const allPlayers = years.flatMap((draftYear) => draft[draftYear] || [])
-  const selectedPlayers = year === 'all' ? allPlayers : draft[year] || []
+  const selectedPlayers = selectedYear === 'all' ? allPlayers : draft[selectedYear] || []
 
   const teamName = team?.name || team?.abbreviation || 'Team'
   const teamAbbrev = team?.abbreviation || ''
@@ -57,9 +58,9 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     const filename =
-      year === 'all'
+      selectedYear === 'all'
         ? `${teamAbbrev || team.id}-nhl-draft-history.csv`
-        : `${teamAbbrev || team.id}-${year}-nhl-draft.csv`
+        : `${teamAbbrev || team.id}-${selectedYear}-nhl-draft.csv`
 
     link.href = url
     link.download = filename
@@ -257,7 +258,7 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                 </select>
                 <div className="hidden rounded-md bg-slate-100 px-2.5 py-1.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:block">
                   <span className="font-semibold">
-                    {year === 'all' ? 'All years' : year}
+                    {selectedYear === 'all' ? 'All years' : selectedYear}
                   </span>
                 </div>
               </div>
@@ -268,11 +269,11 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                 <div className="inline-flex gap-2 sm:flex-wrap">
                   <button
                     type="button"
-                    aria-pressed={year === 'all'}
+                    aria-pressed={selectedYear === 'all'}
                     className={[
                       'min-h-9 min-w-24 rounded-md px-3 py-1.5 text-sm font-semibold transition',
                       'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900',
-                      year === 'all'
+                      selectedYear === 'all'
                         ? 'bg-blue-600 text-white shadow-sm dark:bg-blue-500'
                         : 'border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-slate-700',
                     ].join(' ')}
@@ -283,11 +284,11 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                   {years.map((draftYear) => (
                     <button
                       type="button"
-                      aria-pressed={year === draftYear}
+                      aria-pressed={selectedYear === draftYear}
                       className={[
                         'min-h-9 min-w-14 rounded-md px-3 py-1.5 text-sm font-semibold transition',
                         'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900',
-                        year === draftYear
+                        selectedYear === draftYear
                           ? 'bg-blue-600 text-white shadow-sm dark:bg-blue-500'
                           : 'border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-slate-700',
                       ].join(' ')}
@@ -318,8 +319,8 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                 data={selectedPlayers}
                 pageSize={50}
                 rowClassName={getRowClassName}
-                sortKey={year === 'all' ? 'draftYear' : 'overallPick'}
-                sortDesc={year === 'all'}
+                sortKey={selectedYear === 'all' ? 'draftYear' : 'overallPick'}
+                sortDesc={selectedYear === 'all'}
                 modern
                 compact
               />
