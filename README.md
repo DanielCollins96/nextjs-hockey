@@ -68,6 +68,7 @@ Public pages now load data through API routes instead of importing DB query func
 
 - `GET /api/drafts` - Draft year list
 - `GET /api/drafts/:id` - Draft picks for a specific year
+- `GET /api/drafts/teams/:id` - Draft picks for a franchise
 - `GET /api/players/ids` - Player IDs (for sitemap)
 - `GET /api/teams/ids` - Team IDs (for sitemap)
 
