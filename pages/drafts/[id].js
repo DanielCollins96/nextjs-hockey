@@ -5,7 +5,7 @@ import SEO from '../../components/SEO'
 import DraftList from '../../components/DraftList'
 import { useRouter } from 'next/router'
 import { FaDownload } from 'react-icons/fa'
-import { playerUrl, teamUrl } from '../../lib/routes'
+import { draftTeamUrl, playerUrl } from '../../lib/routes'
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 
@@ -103,7 +103,7 @@ export default function Drafts({id,draft,draftYears}) {
       header: 'Team',
       accessorFn: d => d['teamAbbrev'],
       cell: ({row}) => (<Link
-        href={teamUrl(row.original.teamAbbrev, row.original.draftedByTeamId || row.original.teamId)}
+        href={draftTeamUrl(row.original.teamAbbrev, row.original.draftedByTeamId || row.original.teamId)}
         className=" hover:text-blue-700 visited:text-purple-800">{row.original.teamAbbrev}</Link>),
       size: 72,
     },
@@ -111,7 +111,6 @@ export default function Drafts({id,draft,draftYears}) {
       header: 'Player',
       accessorFn: d => d['playerName'],
       cell: props => props.row.original?.playerId ? (<Link className='whitespace-nowrap' href={playerUrl(props.row.original.playerName, props.row.original.playerId)}>{props.row.original.playerName}</Link>) : (props.row.original.playerName),
-      size: 210,
     },
     {
       header: 'Pos',
@@ -248,9 +247,9 @@ export default function Drafts({id,draft,draftYears}) {
             </div>
           </div>
 
-          <div className="p-2">
-            {draft && round === 'all' && <ReactTable columns={columns} data={allPlayers} pageSize={50} rowClassName={getRowClassName} sortKey="overallPick" sortDesc={false} modern /> }
-            {draft && round !== 'all' && draft[round] && <ReactTable columns={columns} data={draft[round]} pageSize={40} sortKey="overallPick" sortDesc={false} modern /> }
+          <div>
+            {draft && round === 'all' && <ReactTable columns={columns} data={allPlayers} pageSize={50} rowClassName={getRowClassName} sortKey="overallPick" sortDesc={false} modern compact /> }
+            {draft && round !== 'all' && draft[round] && <ReactTable columns={columns} data={draft[round]} pageSize={40} sortKey="overallPick" sortDesc={false} modern compact /> }
           </div>
         </section>
       </div>

@@ -46,6 +46,8 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
 
   const getColumnWidth = (column) => {
     const meta = column.columnDef.meta || {}
+    if (compact && !meta.truncate && !expandedColumns[column.id]) return undefined
+
     const width = expandedColumns[column.id] ? meta.expandedSize : column.columnDef.size
 
     return width ? `${width}px` : undefined
@@ -235,7 +237,7 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
                   <td
                     className={
                       modern
-                        ? `border-b border-r border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 last:border-r-0 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
+                        ? `border-b border-r border-slate-200 ${compact ? "px-1.5 py-0.5" : "px-2"} text-slate-800 last:border-r-0 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
                         : `${mobileFit ? "px-1 text-xs sm:text-sm" : "px-1 text-sm"} border-black dark:border-gray-600 border dark:text-gray-200 whitespace-nowrap`
                     }
                     key={cell.id}
