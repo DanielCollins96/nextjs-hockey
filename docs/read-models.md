@@ -87,7 +87,7 @@ CLOUDFRONT_DISTRIBUTION_ID="<cloudfront-distribution-id>" \
 CLOUDFRONT_INVALIDATION_MODE=wildcard
 ```
 
-Use `wildcard` after a broad publish. Use `none` for normal short-cache updates unless you need immediate edge refresh.
+Use `wildcard` after a broad publish (`/*`, one billed path). Use `none` for normal short-cache updates unless you need immediate edge refresh. Per-object invalidation is not supported.
 
 ## Incremental Publishes
 
