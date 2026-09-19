@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import SEO from '../../components/SEO';
 import { ClickableImage } from '../../components/ImageModal';
-import { formatCurrency, formatSeason, toNumber } from '../../lib/format';
+import { toNumber } from '../../lib/format';
 import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
 import { loadPlayer } from '../../lib/player-data';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
@@ -84,6 +84,19 @@ const hasDraftData = (data) => {
     if (s === '[null]' || s === 'null' || s === '') return false;
     if (Array.isArray(data) && data.filter(Boolean).length === 0) return false;
     return true;
+};
+
+const getCurrentTeam = (rows) => {
+    if (!rows?.length) return null;
+
+    return [...rows].sort((a, b) => {
+        const seasonA = Number(a?.season) || 0;
+        const seasonB = Number(b?.season) || 0;
+        if (seasonB !== seasonA) return seasonB - seasonA;
+        const gamesA = toNumber(getFirstValue(a, regularStatKeys.games)) || 0;
+        const gamesB = toNumber(getFirstValue(b, regularStatKeys.games)) || 0;
+        return gamesB - gamesA;
+    })[0];
 };
 
 const PlayerSelector = ({ onSelect, excludeId }) => {
@@ -173,30 +186,8 @@ const PlayerComparison = ({ player1Data, player2Data }) => {
 
     const nhlRows1 = stats1.filter((row) => isNHLDataRow(row));
     const nhlRows2 = stats2.filter((row) => isNHLDataRow(row));
-
-    const currentTeam1 = useMemo(() => {
-        if (nhlRows1.length === 0) return null;
-        return [...nhlRows1].sort((a, b) => {
-            const seasonA = Number(a?.season) || 0;
-            const seasonB = Number(b?.season) || 0;
-            if (seasonB !== seasonA) return seasonB - seasonA;
-            const gamesA = toNumber(getFirstValue(a, regularStatKeys.games)) || 0;
-            const gamesB = toNumber(getFirstValue(b, regularStatKeys.games)) || 0;
-            return gamesB - gamesA;
-        })[0];
-    }, [nhlRows1]);
-
-    const currentTeam2 = useMemo(() => {
-        if (nhlRows2.length === 0) return null;
-        return [...nhlRows2].sort((a, b) => {
-            const seasonA = Number(a?.season) || 0;
-            const seasonB = Number(b?.season) || 0;
-            if (seasonB !== seasonA) return seasonB - seasonA;
-            const gamesA = toNumber(getFirstValue(a, regularStatKeys.games)) || 0;
-            const gamesB = toNumber(getFirstValue(b, regularStatKeys.games)) || 0;
-            return gamesB - gamesA;
-        })[0];
-    }, [nhlRows2]);
+    const currentTeam1 = getCurrentTeam(nhlRows1);
+    const currentTeam2 = getCurrentTeam(nhlRows2);
 
     const getCareerStats = (rows, isGoalie) => {
         if (isGoalie) {
