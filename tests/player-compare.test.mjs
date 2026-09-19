@@ -6,12 +6,14 @@ import {
   careerCompareRows,
   compareQueryIds,
   compareWinner,
+  compareWinners,
   mergeNhlSeasons,
   normalizeCompareSlugs,
   seasonCellValue,
   seasonCompareColumns,
   shortPlayerName,
   sortSearchPlayers,
+  uniquePlayerIds,
 } from '../lib/player-compare.js';
 import {
   careerTotals,
@@ -62,6 +64,15 @@ test('compare URLs follow the existing player slug style', () => {
     comparePlayersUrl('Connor McDavid', 8478402, 'Auston Matthews', 8479318),
     '/players/compare/connor-mcdavid-8478402/auston-matthews-8479318'
   );
+  assert.equal(
+    comparePlayersUrl([
+      { name: 'Connor McDavid', id: 8478402 },
+      { name: 'Auston Matthews', id: 8479318 },
+      { name: 'Leon Draisaitl', id: 8477934 },
+      { name: 'Nathan MacKinnon', id: 8477492 },
+    ]),
+    '/players/compare/connor-mcdavid-8478402/auston-matthews-8479318/leon-draisaitl-8477934/nathan-mackinnon-8477492'
+  );
   assert.equal(compareStartUrl('Connor McDavid', 8478402), '/players/compare/connor-mcdavid-8478402');
   assert.equal(extractEntityId('connor-mcdavid-8478402'), '8478402');
   assert.equal(shortPlayerName('Connor McDavid'), 'McDavid');
@@ -73,16 +84,31 @@ test('normalizeCompareSlugs and query aliases extract player ids', () => {
     { slug: 'connor-mcdavid-8478402', id: '8478402' },
     { slug: 'auston-matthews-8479318', id: '8479318' },
   ]);
-  assert.deepEqual(compareQueryIds({ a: '8478402', b: '8479318' }), {
-    left: '8478402',
-    right: '8479318',
-  });
+  assert.equal(
+    normalizeCompareSlugs(['a-1', 'b-2', 'c-3', 'd-4', 'e-5']).map((item) => item.id).join(','),
+    '1,2,3,4'
+  );
+  assert.deepEqual(compareQueryIds({ a: '8478402', b: '8479318' }), ['8478402', '8479318']);
+  assert.deepEqual(compareQueryIds({ players: '8478402,8479318,8477934' }), [
+    '8478402',
+    '8479318',
+    '8477934',
+  ]);
+  assert.deepEqual(uniquePlayerIds(['8478402', '8478402', '8479318']), ['8478402', '8479318']);
   assert.equal(
     canonicalComparePath(
       { player_name: 'Connor McDavid', playerId: 8478402 },
       { player_name: 'Auston Matthews', playerId: 8479318 }
     ),
     '/players/compare/connor-mcdavid-8478402/auston-matthews-8479318'
+  );
+  assert.equal(
+    canonicalComparePath([
+      { player_name: 'Connor McDavid', playerId: 8478402 },
+      { player_name: 'Auston Matthews', playerId: 8479318 },
+      { player_name: 'Leon Draisaitl', playerId: 8477934 },
+    ]),
+    '/players/compare/connor-mcdavid-8478402/auston-matthews-8479318/leon-draisaitl-8477934'
   );
   assert.equal(
     canonicalComparePath(null, { player_name: 'Auston Matthews', playerId: 8479318 }),
@@ -148,6 +174,8 @@ test('compareWinner highlights higher counting stats and lower GAA', () => {
   assert.equal(compareWinner(100, 100), 'tie');
   assert.equal(compareWinner(2.1, 2.4, { lowerIsBetter: true }), 'left');
   assert.equal(compareWinner(null, 10), null);
+  assert.deepEqual(compareWinners([132, 107, 132]), [true, false, true]);
+  assert.deepEqual(compareWinners([2.5, 2.1, 2.9], { lowerIsBetter: true }), [false, true, false]);
 });
 
 test('same-position compare uses matching columns; mixed positions stay separate', () => {

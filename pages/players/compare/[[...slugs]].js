@@ -7,18 +7,22 @@ import { PAGE_CACHE, setPageCache } from "../../../lib/http-cache";
 import {
   canonicalComparePath,
   compareQueryIds,
+  MAX_COMPARE_PLAYERS,
   normalizeCompareSlugs,
   samePlayerRedirect,
+  uniquePlayerIds,
 } from "../../../lib/player-compare";
 import { loadPlayerProfile } from "../../../lib/player-data";
 import { careerTotals, isGoaliePosition } from "../../../lib/player-stats";
-import { comparePlayersUrl, compareStartUrl, playerUrl } from "../../../lib/routes";
+import { comparePlayersUrl, playerUrl } from "../../../lib/routes";
 import { usePlayerDetails } from "../../../lib/usePlayerDetails";
 
 function buildSide(person, details) {
-  const isGoalie = isGoaliePosition(person?.position);
+  const resolved = details.person || person;
+  if (!resolved) return null;
+  const isGoalie = isGoaliePosition(resolved.position);
   return {
-    person: details.person || person,
+    person: resolved,
     stats: details.stats,
     awards: details.awards,
     contracts: details.contracts,
@@ -28,86 +32,69 @@ function buildSide(person, details) {
   };
 }
 
-export default function PlayerComparePage({
-  leftPerson,
-  rightPerson,
-  leftId,
-  rightId,
-  canonicalPath,
-}) {
+function toPlayerRef(player) {
+  if (!player) return null;
+  return {
+    name: player.name || player.player_name,
+    id: player.id || player.playerId,
+  };
+}
+
+export default function PlayerComparePage({ people, ids, canonicalPath }) {
   const router = useRouter();
-  const leftDetails = usePlayerDetails(leftId, leftPerson);
-  const rightDetails = usePlayerDetails(rightId, rightPerson);
+  const slot0 = usePlayerDetails(ids[0] || null, people[0] || null);
+  const slot1 = usePlayerDetails(ids[1] || null, people[1] || null);
+  const slot2 = usePlayerDetails(ids[2] || null, people[2] || null);
+  const slot3 = usePlayerDetails(ids[3] || null, people[3] || null);
 
-  const left = useMemo(
-    () => buildSide(leftPerson, leftDetails),
-    [leftDetails, leftPerson]
+  const players = useMemo(
+    () => [slot0, slot1, slot2, slot3]
+      .map((details, index) => buildSide(people[index] || null, details))
+      .filter(Boolean),
+    [people, slot0, slot1, slot2, slot3]
   );
-  const right = useMemo(
-    () => buildSide(rightPerson, rightDetails),
-    [rightDetails, rightPerson]
-  );
 
-  const leftName = left.person?.player_name || "Player";
-  const rightName = right.person?.player_name || "another player";
-  const hasBoth = Boolean(left.person && right.person);
+  const names = players.map((side) => side.person.player_name || "Player");
+  const titleNames = names.join(" vs ");
+  const hasMatchup = players.length >= 2;
 
-  const goToCompare = (nextLeft, nextRight) => {
-    if (nextLeft && nextRight) {
-      router.push(
-        comparePlayersUrl(
-          nextLeft.name || nextLeft.player_name,
-          nextLeft.id || nextLeft.playerId,
-          nextRight.name || nextRight.player_name,
-          nextRight.id || nextRight.playerId
-        )
-      );
-      return;
-    }
-
-    const remaining = nextLeft || nextRight;
-    if (remaining) {
-      router.push(
-        compareStartUrl(
-          remaining.name || remaining.player_name,
-          remaining.id || remaining.playerId
-        )
-      );
-    }
+  const goToPlayers = (nextPlayers) => {
+    const refs = nextPlayers.map(toPlayerRef).filter(Boolean);
+    router.push(comparePlayersUrl(refs));
   };
 
   return (
     <div className="bg-white text-slate-950 dark:bg-gray-900 dark:text-slate-100">
       <SEO
         title={
-          hasBoth
-            ? `${leftName} vs ${rightName} Comparison`
-            : left.person
-              ? `Compare ${leftName}`
+          hasMatchup
+            ? `${titleNames} Comparison`
+            : players[0]
+              ? `Compare ${names[0]}`
               : "Compare NHL Players"
         }
         description={
-          hasBoth
-            ? `Side-by-side NHL comparison of ${leftName} and ${rightName}, including bio, career totals, and season stats.`
-            : "Search two NHL players and compare bio, career totals, and season statistics."
+          hasMatchup
+            ? `Side-by-side NHL comparison of ${titleNames}, including bio, career totals, and season stats.`
+            : "Search two to four NHL players and compare bio, career totals, and season statistics."
         }
         path={canonicalPath}
       />
 
-      <main className="mx-auto max-w-6xl px-2 py-3 sm:px-3">
+      <main className="mx-auto max-w-7xl px-2 py-3 sm:px-3">
         <div className="mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             <Link href="/players" className="text-blue-700 hover:underline dark:text-blue-300">
               Players
             </Link>
-            {left.person && (
+            {players[0] && (
               <>
                 <span className="px-1.5">/</span>
                 <Link
-                  href={playerUrl(left.person.player_name, left.person.playerId)}
+                  href={playerUrl(players[0].person.player_name, players[0].person.playerId)}
                   className="text-blue-700 hover:underline dark:text-blue-300"
                 >
-                  {leftName}
+                  {names[0]}
                 </Link>
               </>
             )}
@@ -115,45 +102,35 @@ export default function PlayerComparePage({
             Compare
           </p>
           <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
-            {hasBoth ? `${leftName} vs ${rightName}` : "Compare Players"}
+            {hasMatchup ? titleNames : "Compare Players"}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
-            <p>Search by name, then share this page URL to keep the matchup.</p>
-            {hasBoth && (
+            <p>
+              Search up to {MAX_COMPARE_PLAYERS} players, then share this page URL to keep the matchup.
+            </p>
+            {hasMatchup && (
               <button
                 type="button"
-                onClick={() =>
-                  goToCompare(
-                    { name: rightName, id: right.person.playerId },
-                    { name: leftName, id: left.person.playerId }
-                  )
-                }
+                onClick={() => goToPlayers([...players].reverse())}
                 className="font-semibold text-blue-700 hover:underline dark:text-blue-300"
               >
-                Swap sides
+                Reverse order
               </button>
             )}
           </div>
         </div>
 
         <PlayerCompareView
-          left={left}
-          right={right}
-          onSelectLeft={(player) =>
-            goToCompare(player, right.person && {
-              name: right.person.player_name,
-              id: right.person.playerId,
-            })
-          }
-          onSelectRight={(player) =>
-            goToCompare(
-              left.person && {
-                name: left.person.player_name,
-                id: left.person.playerId,
-              },
-              player
-            )
-          }
+          players={players}
+          onChangePlayer={(index, player) => {
+            const next = players.map((side) => side.person);
+            next[index] = player;
+            goToPlayers(next);
+          }}
+          onAddPlayer={(player) => goToPlayers([...players.map((side) => side.person), player])}
+          onRemovePlayer={(index) => {
+            goToPlayers(players.filter((_, playerIndex) => playerIndex !== index).map((side) => side.person));
+          }}
         />
       </main>
     </div>
@@ -169,17 +146,13 @@ async function loadComparePerson(id) {
 
 export async function getServerSideProps({ params, query, res }) {
   const slugs = normalizeCompareSlugs(params.slugs);
-  const queryIds = compareQueryIds(query);
+  const ids = uniquePlayerIds([
+    ...slugs.map((item) => item.id),
+    ...compareQueryIds(query),
+  ]);
 
-  let leftId = slugs[0]?.id || queryIds.left;
-  let rightId = slugs[1]?.id || queryIds.right;
-  if (!leftId && rightId) {
-    leftId = rightId;
-    rightId = null;
-  }
-
-  if (leftId && rightId && String(leftId) === String(rightId)) {
-    const person = await loadComparePerson(leftId);
+  if (slugs.length >= 2 && ids.length === 1) {
+    const person = await loadComparePerson(ids[0]);
     if (!person) return { notFound: true };
     return {
       redirect: {
@@ -189,22 +162,20 @@ export async function getServerSideProps({ params, query, res }) {
     };
   }
 
-  const [leftPerson, rightPerson] = await Promise.all([
-    loadComparePerson(leftId),
-    loadComparePerson(rightId),
-  ]);
+  const people = await Promise.all(ids.map((id) => loadComparePerson(id)));
+  if (ids.some((id, index) => id && !people[index])) {
+    return { notFound: true };
+  }
 
-  if (leftId && !leftPerson) return { notFound: true };
-  if (rightId && !rightPerson) return { notFound: true };
-
-  const canonicalPath = canonicalComparePath(leftPerson, rightPerson);
+  const validPeople = people.filter(Boolean);
+  const canonicalPath = canonicalComparePath(validPeople);
   const incomingPath =
     slugs.length === 0
       ? "/players/compare"
       : `/players/compare/${slugs.map((item) => item.slug).join("/")}`;
 
   if (
-    (leftPerson || rightPerson) &&
+    validPeople.length > 0 &&
     decodeURIComponent(incomingPath) !== decodeURIComponent(canonicalPath)
   ) {
     return {
@@ -218,10 +189,8 @@ export async function getServerSideProps({ params, query, res }) {
   setPageCache(res, PAGE_CACHE.hourly);
   return {
     props: {
-      leftPerson,
-      rightPerson,
-      leftId: leftPerson?.playerId ? String(leftPerson.playerId) : null,
-      rightId: rightPerson?.playerId ? String(rightPerson.playerId) : null,
+      people: validPeople,
+      ids: validPeople.map((person) => String(person.playerId)),
       canonicalPath,
     },
   };
