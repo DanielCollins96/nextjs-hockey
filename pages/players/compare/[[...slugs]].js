@@ -112,7 +112,7 @@ export default function PlayerComparePage({ people, ids, canonicalPath, initialA
             {hasMatchup && (
               <button
                 type="button"
-                onClick={() => goToPlayers([...players].reverse())}
+                onClick={() => goToPlayers(players.map((side) => side.person).reverse())}
                 className="font-semibold text-blue-700 hover:underline dark:text-blue-300"
               >
                 Reverse order
