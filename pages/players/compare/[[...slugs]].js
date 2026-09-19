@@ -34,9 +34,10 @@ function buildSide(person, details) {
 
 function toPlayerRef(player) {
   if (!player) return null;
+  const source = player.person || player;
   return {
-    name: player.name || player.player_name,
-    id: player.id || player.playerId,
+    name: source.name || source.player_name,
+    id: source.id || source.playerId,
   };
 }
 
