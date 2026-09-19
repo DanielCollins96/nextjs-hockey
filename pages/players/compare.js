@@ -485,6 +485,30 @@ export default function ComparePlayersPage({ player1Data, player2Data, missingPl
         );
     }
 
+    if (!player1Data && player2Data) {
+        return (
+            <div className="bg-white text-slate-950 dark:bg-gray-900 dark:text-slate-100 min-h-screen">
+                <main className="mx-auto max-w-7xl px-2 py-8 sm:px-3">
+                    <div className="mb-4">
+                        <Link href="/players" className="text-blue-600 hover:underline dark:text-blue-400">
+                            ← Back to Players
+                        </Link>
+                    </div>
+                    <h1 className="text-2xl font-bold mb-4 text-center sm:text-3xl">Compare Players</h1>
+                    <div className="text-center py-8">
+                        <p className="text-lg mb-4">First player could not be loaded</p>
+                        <Link
+                            href="/players"
+                            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Browse Players
+                        </Link>
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
     return <PlayerComparison player1Data={player1Data} player2Data={player2Data} />;
 }
 
