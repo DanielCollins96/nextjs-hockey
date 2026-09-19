@@ -9,7 +9,9 @@ import {
   majorityPosition,
   MAX_COMPARE_PLAYERS,
   mergeNhlSeasons,
+  mergeNhlSeasonsByAge,
   playerHeadshotUrl,
+  playersMissingAge,
   seasonCellValue,
   seasonCompareColumns,
 } from "../lib/player-compare";
@@ -194,7 +196,8 @@ function CompareTable({ players, rows, numeric = false, loading = false }) {
           })}
         </div>
         {rows.map((row) => {
-          const winners = numeric && !loading
+          const rowIsNumeric = row.numeric ?? numeric;
+          const winners = rowIsNumeric && !loading
             ? compareWinners(row.values, { lowerIsBetter: row.lowerIsBetter })
             : players.map(() => false);
 
@@ -210,13 +213,13 @@ function CompareTable({ players, rows, numeric = false, loading = false }) {
               {row.values.map((value, index) => (
                 <div
                   key={`${row.label}-${players[index].person.playerId}`}
-                  className={`min-w-0 text-center ${numeric ? `text-lg tabular-nums ${winnerClass(winners[index])}` : "text-sm text-slate-800 dark:text-slate-100"}`}
+                  className={`min-w-0 text-center ${rowIsNumeric ? `text-lg tabular-nums ${winnerClass(winners[index])}` : "text-sm text-slate-800 dark:text-slate-100"}`}
                 >
-                  {loading && numeric
+                  {loading && rowIsNumeric
                     ? "—"
                     : row.render
                       ? row.render(value, index)
-                      : numeric
+                      : rowIsNumeric
                         ? formatStatValue(value, row.digits || 0)
                         : value}
                 </div>
@@ -229,8 +232,38 @@ function CompareTable({ players, rows, numeric = false, loading = false }) {
   );
 }
 
+function AlignToggle({ align, onAlignChange }) {
+  return (
+    <div className="inline-flex rounded-md border border-slate-300 p-0.5 dark:border-slate-600" role="group" aria-label="Compare seasons by">
+      {[
+        { id: "season", label: "By season" },
+        { id: "age", label: "By age" },
+      ].map((option) => {
+        const active = align === option.id;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onAlignChange?.(option.id)}
+            className={`rounded px-3 py-1 text-sm font-semibold ${
+              active
+                ? "bg-blue-600 text-white"
+                : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+            }`}
+            aria-pressed={active}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function PlayerCompareView({
   players = [],
+  align = "season",
+  onAlignChange,
   onChangePlayer,
   onAddPlayer,
   onRemovePlayer,
@@ -247,7 +280,15 @@ export default function PlayerCompareView({
   const allGoalies = sameType && goalieFlags[0];
   const careerRows = sameType ? careerCompareRows(allGoalies) : [];
   const seasonColumns = sameType ? seasonCompareColumns(allGoalies) : [];
-  const seasons = sameType ? mergeNhlSeasons(selected.map((side) => side.stats)) : [];
+  const seasonRows = sameType ? mergeNhlSeasons(selected.map((side) => side.stats)) : [];
+  const ageRows = sameType
+    ? mergeNhlSeasonsByAge(
+      selected.map((side) => side.stats),
+      selected.map((side) => side.person?.birthdate || side.person?.birthDate)
+    )
+    : [];
+  const alignedRows = align === "age" ? ageRows : seasonRows;
+  const missingAgePlayers = align === "age" ? playersMissingAge(selected, ageRows) : [];
   const loading = selected.some((side) => side.loading);
   const cardCount = selected.length + (showEmptySlot ? emptySlots : 0);
 
@@ -394,28 +435,52 @@ export default function PlayerCompareView({
 
       {sameType && (
         <section>
-          <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">NHL Season by Season</h2>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-slate-950 dark:text-white">
+              {align === "age" ? "NHL Seasons by Age" : "NHL Season by Season"}
+            </h2>
+            <AlignToggle align={align} onAlignChange={onAlignChange} />
+          </div>
+          {align === "age" && missingAgePlayers.length > 0 && (
+            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+              Age is unavailable for {missingAgePlayers.map((side) => side.person.player_name).join(", ")}; their columns stay blank in this view.
+            </p>
+          )}
           {loading ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">Loading season stats...</p>
-          ) : seasons.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">No NHL seasons to compare.</p>
+          ) : alignedRows.length === 0 ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {align === "age"
+                ? "No age-aligned NHL seasons to compare. Birthdate or season age is missing."
+                : "No NHL seasons to compare."}
+            </p>
           ) : (
             <div className="space-y-3">
-              {seasons.map((season) => (
+              {alignedRows.map((entry) => (
                 <div
-                  key={season.season}
+                  key={align === "age" ? `age-${entry.age}` : entry.season}
                   className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950"
                 >
-                  <p className="mb-2 font-bold">{formatSeason(season.season)}</p>
+                  <p className="mb-2 font-bold">
+                    {align === "age" ? entry.label : formatSeason(entry.season)}
+                  </p>
                   <CompareTable
                     players={selected}
-                    numeric
-                    rows={seasonColumns.map((column) => ({
-                      label: column.label,
-                      values: season.rows.map((row) => seasonCellValue(row, column)),
-                      digits: column.digits || 0,
-                      lowerIsBetter: column.lowerIsBetter,
-                    }))}
+                    rows={[
+                      ...(align === "age"
+                        ? [{
+                          label: "Season",
+                          values: entry.rows.map((row) => (row ? formatSeason(row.season) : "-")),
+                        }]
+                        : []),
+                      ...seasonColumns.map((column) => ({
+                        label: column.label,
+                        values: entry.rows.map((row) => seasonCellValue(row, column)),
+                        digits: column.digits || 0,
+                        lowerIsBetter: column.lowerIsBetter,
+                        numeric: true,
+                      })),
+                    ]}
                   />
                 </div>
               ))}

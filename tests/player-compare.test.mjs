@@ -8,6 +8,7 @@ import {
   compareWinner,
   compareWinners,
   mergeNhlSeasons,
+  mergeNhlSeasonsByAge,
   normalizeCompareSlugs,
   seasonCellValue,
   seasonCompareColumns,
@@ -22,8 +23,9 @@ import {
   formatWeight,
   isGoaliePosition,
   nhlSeasonsByYear,
+  seasonAge,
 } from '../lib/player-stats.js';
-import { comparePlayersUrl, compareStartUrl, extractEntityId } from '../lib/routes.js';
+import { compareHref, comparePlayersUrl, compareStartUrl, extractEntityId } from '../lib/routes.js';
 
 const nhlRow = (overrides) => ({
   season: 20232024,
@@ -240,4 +242,46 @@ test('awardCounts groups trophies and format helpers match player-page style', (
     '2015, EDM (1st overall)'
   );
   assert.equal(formatDraft({ draft_seasons: [] }), 'Undrafted');
+});
+
+test('seasonAge prefers row age and falls back to birthdate plus season year', () => {
+  assert.equal(seasonAge({ age: 27, season: 20232024 }), 27);
+  assert.equal(seasonAge({ season: 20232024 }, '1997-01-13'), 27);
+  assert.equal(seasonAge({ season: 20232024 }, null), null);
+});
+
+test('mergeNhlSeasonsByAge aligns different calendar years at the same age', () => {
+  const rows = mergeNhlSeasonsByAge(
+    [
+      [nhlRow({ season: 20192020, age: 22, 'stat.points': 97 })],
+      [nhlRow({ season: 20172018, age: 22, 'stat.points': 70, 'team.name': 'Edmonton Oilers' })],
+      [nhlRow({ season: 20232024, age: 26 })],
+    ],
+    ['1997-01-13', '1995-10-27', '1997-09-17']
+  );
+
+  const age22 = rows.find((entry) => entry.age === 22);
+  assert.ok(age22);
+  assert.equal(age22.rows[0]['stat.points'], 97);
+  assert.equal(age22.rows[1]['stat.points'], 70);
+  assert.equal(age22.rows[2], null);
+
+  const fromBirthdate = mergeNhlSeasonsByAge(
+    [[nhlRow({ age: null, season: 20232024 })]],
+    ['1997-01-13']
+  );
+  assert.equal(fromBirthdate[0].age, 27);
+
+  const missingAge = mergeNhlSeasonsByAge([[nhlRow({ age: null, season: 20232024 })]], [null]);
+  assert.equal(missingAge.length, 0);
+});
+
+test('compareHref keeps the age alignment query on shareable URLs', () => {
+  assert.equal(
+    compareHref([
+      { name: 'Connor McDavid', id: 8478402 },
+      { name: 'Auston Matthews', id: 8479318 },
+    ], 'age'),
+    '/players/compare/connor-mcdavid-8478402/auston-matthews-8479318?align=age'
+  );
 });

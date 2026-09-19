@@ -14,7 +14,7 @@ import {
 } from "../../../lib/player-compare";
 import { loadPlayerProfile } from "../../../lib/player-data";
 import { careerTotals, isGoaliePosition } from "../../../lib/player-stats";
-import { comparePlayersUrl, playerUrl } from "../../../lib/routes";
+import { compareHref, playerUrl } from "../../../lib/routes";
 import { usePlayerDetails } from "../../../lib/usePlayerDetails";
 
 function buildSide(person, details) {
@@ -40,8 +40,9 @@ function toPlayerRef(player) {
   };
 }
 
-export default function PlayerComparePage({ people, ids, canonicalPath }) {
+export default function PlayerComparePage({ people, ids, canonicalPath, initialAlign }) {
   const router = useRouter();
+  const align = (router.isReady ? router.query.align : initialAlign) === "age" ? "age" : "season";
   const slot0 = usePlayerDetails(ids[0] || null, people[0] || null);
   const slot1 = usePlayerDetails(ids[1] || null, people[1] || null);
   const slot2 = usePlayerDetails(ids[2] || null, people[2] || null);
@@ -58,9 +59,9 @@ export default function PlayerComparePage({ people, ids, canonicalPath }) {
   const titleNames = names.join(" vs ");
   const hasMatchup = players.length >= 2;
 
-  const goToPlayers = (nextPlayers) => {
+  const goToPlayers = (nextPlayers, nextAlign = align) => {
     const refs = nextPlayers.map(toPlayerRef).filter(Boolean);
-    router.push(comparePlayersUrl(refs));
+    router.push(compareHref(refs, nextAlign));
   };
 
   return (
@@ -122,6 +123,8 @@ export default function PlayerComparePage({ people, ids, canonicalPath }) {
 
         <PlayerCompareView
           players={players}
+          align={align}
+          onAlignChange={(nextAlign) => goToPlayers(players.map((side) => side.person), nextAlign)}
           onChangePlayer={(index, player) => {
             const next = players.map((side) => side.person);
             next[index] = player;
@@ -168,6 +171,7 @@ export async function getServerSideProps({ params, query, res }) {
   }
 
   const validPeople = people.filter(Boolean);
+  const align = query.align === "age" ? "age" : "season";
   const canonicalPath = canonicalComparePath(validPeople);
   const incomingPath =
     slugs.length === 0
@@ -180,7 +184,7 @@ export async function getServerSideProps({ params, query, res }) {
   ) {
     return {
       redirect: {
-        destination: canonicalPath,
+        destination: align === "age" ? `${canonicalPath}?align=age` : canonicalPath,
         permanent: false,
       },
     };
@@ -192,6 +196,7 @@ export async function getServerSideProps({ params, query, res }) {
       people: validPeople,
       ids: validPeople.map((person) => String(person.playerId)),
       canonicalPath,
+      initialAlign: align,
     },
   };
 }
