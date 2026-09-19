@@ -10,6 +10,7 @@ import {
   playerHeadshotUrl,
   seasonCellValue,
   seasonCompareColumns,
+  shortPlayerName,
 } from "../lib/player-compare";
 import {
   currentTeamFromStats,
@@ -319,8 +320,8 @@ export default function PlayerCompareView({
           />
           <BioRow
             label="Awards"
-            left={<AwardsList awards={left?.awards} loading={left?.loading} />}
-            right={<AwardsList awards={right?.awards} loading={right?.loading} />}
+            left={<span className="line-clamp-3"><AwardsList awards={left?.awards} loading={left?.loading} /></span>}
+            right={<span className="line-clamp-3"><AwardsList awards={right?.awards} loading={right?.loading} /></span>}
           />
         </section>
       )}
@@ -350,8 +351,8 @@ export default function PlayerCompareView({
                       {seasonColumns.map((column) => (
                         <th key={`${column.key}-names`} className="px-2 py-1" colSpan={2}>
                           <div className="grid grid-cols-2 gap-1">
-                            <span className="truncate text-left">{leftPerson.player_name}</span>
-                            <span className="truncate text-right">{rightPerson.player_name}</span>
+                            <span className="truncate text-left">{shortPlayerName(leftPerson.player_name)}</span>
+                            <span className="truncate text-right">{shortPlayerName(rightPerson.player_name)}</span>
                           </div>
                         </th>
                       ))}

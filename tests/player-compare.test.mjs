@@ -10,6 +10,7 @@ import {
   normalizeCompareSlugs,
   seasonCellValue,
   seasonCompareColumns,
+  shortPlayerName,
   sortSearchPlayers,
 } from '../lib/player-compare.js';
 import {
@@ -63,6 +64,8 @@ test('compare URLs follow the existing player slug style', () => {
   );
   assert.equal(compareStartUrl('Connor McDavid', 8478402), '/players/compare/connor-mcdavid-8478402');
   assert.equal(extractEntityId('connor-mcdavid-8478402'), '8478402');
+  assert.equal(shortPlayerName('Connor McDavid'), 'McDavid');
+  assert.equal(shortPlayerName('Auston Matthews'), 'Matthews');
 });
 
 test('normalizeCompareSlugs and query aliases extract player ids', () => {
