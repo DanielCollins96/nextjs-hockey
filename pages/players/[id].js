@@ -675,6 +675,12 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                         <div>
                             <h2 className="text-lg font-bold text-slate-950 dark:text-white">Season Stats</h2>
                         </div>
+                        <Link
+                            href={`/players/compare?players=${id}`}
+                            className="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                        >
+                            Compare Player
+                        </Link>
                     </div>
                     {detailsLoading ? (
                         <p className="text-sm text-slate-500 dark:text-slate-400">Loading season stats...</p>
