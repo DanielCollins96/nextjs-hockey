@@ -23,6 +23,7 @@ import {
   formatWeight,
   isGoaliePosition,
   nhlSeasonsByYear,
+  formatStatValue,
   seasonAge,
 } from '../lib/player-stats.js';
 import { compareHref, comparePlayersUrl, compareStartUrl, extractEntityId } from '../lib/routes.js';
@@ -242,6 +243,14 @@ test('awardCounts groups trophies and format helpers match player-page style', (
     '2015, EDM (1st overall)'
   );
   assert.equal(formatDraft({ draft_seasons: [] }), 'Undrafted');
+});
+
+test('formatStatValue keeps missing values as dashes instead of zero', () => {
+  assert.equal(formatStatValue(null), '-');
+  assert.equal(formatStatValue(undefined), '-');
+  assert.equal(formatStatValue(''), '-');
+  assert.equal(formatStatValue(0), '0');
+  assert.equal(formatStatValue(0.918, 3), '0.918');
 });
 
 test('seasonAge prefers row age and falls back to birthdate plus season year', () => {
