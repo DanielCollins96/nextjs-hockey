@@ -24,6 +24,12 @@ function generateSiteMap({ playerIds, draftYears, draftTeams, teamIds }) {
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>${SITE_URL}/players/compare</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>${SITE_URL}/teams</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>

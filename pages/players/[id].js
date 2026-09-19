@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import PlayerSearchPicker from '../../components/PlayerSearchPicker';
 import ReactTable from '../../components/Table';
 import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 import { formatCurrency, formatSeason, formatShortSeason, toNumber } from '../../lib/format';
-import { extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
+import { comparePlayersUrl, extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
 import { loadPlayerProfile } from '../../lib/player-data';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
@@ -205,6 +207,8 @@ const contractCapHitColumn = {
 
 const Players = ({ playerId, stats: initialStats, person, awards: initialAwards, contracts: initialContracts, currentContract: initialCurrentContract, canonicalPath, hydrateDetails = false }) => {
     const id = playerId;
+    const router = useRouter();
+    const [compareOpen, setCompareOpen] = useState(false);
     const [stats, setStats] = useState(() => (Array.isArray(initialStats) ? initialStats : []));
     const [awards, setAwards] = useState(() => (Array.isArray(initialAwards) ? initialAwards : []));
     const [contracts, setContracts] = useState(() => (Array.isArray(initialContracts) ? initialContracts : []));
@@ -621,6 +625,37 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                                     <span>{person?.sweaterNumber ? `#${person.sweaterNumber}` : '#-'}</span>
                                     <span className="text-slate-400">|</span>
                                     <span>{handednessLabel}: {person?.shootsCatches || '-'}</span>
+                                </div>
+                                <div className="mt-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCompareOpen((open) => !open)}
+                                        aria-expanded={compareOpen}
+                                        className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+                                    >
+                                        Compare against…
+                                    </button>
+                                    {compareOpen && (
+                                        <div className="mt-2 max-w-md text-left">
+                                            <PlayerSearchPicker
+                                                autoFocus
+                                                excludeIds={[id]}
+                                                preferPosition={position}
+                                                placeholder="Search a player to compare..."
+                                                buttonLabel="Compare"
+                                                onSelect={(player) => {
+                                                    router.push(
+                                                        comparePlayersUrl(
+                                                            playerName,
+                                                            id,
+                                                            player.name,
+                                                            player.id
+                                                        )
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="mt-3 grid gap-x-5 gap-y-1 text-sm text-slate-700 dark:text-slate-300 sm:grid-cols-2">
                                     <p><span className="font-semibold text-slate-900 dark:text-white">Born:</span> {person?.birthdate || '-'}</p>

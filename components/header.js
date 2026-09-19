@@ -14,12 +14,19 @@ const Header = () => {
   const navItems = [
     {href: "/teams", label: "Teams"},
     {href: "/players", label: "Players"},
+    {href: "/players/compare", label: "Compare"},
     {href: "/seasons", label: "Seasons"},
     {href: "/drafts", label: "Drafts"},
     {href: "/games", label: "Games"},
   ];
   const isActivePath = (href) => {
     const currentPath = router.asPath.split("?")[0].split("#")[0];
+    if (href === "/players") {
+      return (
+        currentPath === "/players" ||
+        (currentPath.startsWith("/players/") && !currentPath.startsWith("/players/compare"))
+      );
+    }
     return currentPath === href || currentPath.startsWith(`${href}/`);
   };
   const getNavLinkClassName = (href) =>
