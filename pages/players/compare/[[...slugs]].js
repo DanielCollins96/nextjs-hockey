@@ -41,7 +41,7 @@ function toPlayerRef(player) {
   };
 }
 
-export default function PlayerComparePage({ people, ids, canonicalPath, initialAlign }) {
+export default function PlayerComparePage({ people = [], ids = [], canonicalPath, initialAlign }) {
   const router = useRouter();
   const align = (router.isReady ? router.query.align : initialAlign) === "age" ? "age" : "season";
   const slot0 = usePlayerDetails(ids[0] || null, people[0] || null);
@@ -62,7 +62,10 @@ export default function PlayerComparePage({ people, ids, canonicalPath, initialA
 
   const goToPlayers = (nextPlayers, nextAlign = align) => {
     const refs = nextPlayers.map(toPlayerRef).filter(Boolean);
-    router.push(compareHref(refs, nextAlign));
+    const samePlayers = refs.length === players.length && refs.every((ref, index) => (
+      String(ref.id) === String(players[index]?.person?.playerId)
+    ));
+    router.push(compareHref(refs, nextAlign), undefined, { shallow: samePlayers });
   };
 
   return (

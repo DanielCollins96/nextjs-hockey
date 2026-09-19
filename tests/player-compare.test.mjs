@@ -97,6 +97,7 @@ test('normalizeCompareSlugs and query aliases extract player ids', () => {
     '8479318',
     '8477934',
   ]);
+  assert.deepEqual(compareQueryIds({ p1: '8478402', p2: '8479318' }), ['8478402', '8479318']);
   assert.deepEqual(uniquePlayerIds(['8478402', '8478402', '8479318']), ['8478402', '8479318']);
   assert.equal(
     canonicalComparePath(
