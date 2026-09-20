@@ -25,6 +25,7 @@ import {
   isGoaliePosition,
 } from "../lib/player-stats";
 import { playerUrl, teamUrl } from "../lib/routes";
+import SimilarPlayers from "./SimilarPlayers";
 
 function formatCompareStat(value, row) {
   if (row?.format === "toi") return formatToi(value);
@@ -343,6 +344,34 @@ export default function PlayerCompareView({
           />
         ))}
       </div>
+
+      {selected.map((side) => (
+        <SimilarPlayers
+          key={`similar-${side.person.playerId}`}
+          playerId={side.person.playerId}
+          playerName={side.person.player_name}
+          excludeIds={excludeIds}
+          limit={6}
+          variant="chips"
+          actionLabel="Add"
+          onSelect={
+            canAdd
+              ? (player) =>
+                onAddPlayer?.({
+                  id: player.id,
+                  name: player.name,
+                  position: player.position,
+                  games: player.games,
+                  goals: player.goals,
+                  assists: player.assists,
+                  points: player.points,
+                  wins: player.wins,
+                  losses: player.losses,
+                })
+              : undefined
+          }
+        />
+      ))}
 
       {mixedPositions && (
         <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">

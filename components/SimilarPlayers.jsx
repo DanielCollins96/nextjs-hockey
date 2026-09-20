@@ -1,0 +1,286 @@
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { playerHeadshotUrl } from "../lib/player-compare";
+import { formatHeight, formatWeight } from "../lib/player-stats";
+import { comparePlayersUrl, playerUrl } from "../lib/routes";
+
+function similarPlayersState(playerId, initialPlayers) {
+  const hasInitial = Array.isArray(initialPlayers);
+  return {
+    loading: Boolean(playerId) && !hasInitial,
+    players: hasInitial ? initialPlayers : [],
+    source: hasInitial ? "ssr" : null,
+    group: null,
+  };
+}
+
+export function useSimilarPlayers(playerId, {
+  limit = 6,
+  excludeIds = [],
+  initialPlayers = null,
+} = {}) {
+  const hasInitial = Array.isArray(initialPlayers);
+  const initialKey = hasInitial ? initialPlayers.map((player) => String(player.id || player.playerId)).join(",") : "";
+  const [state, setState] = useState(() => similarPlayersState(playerId, initialPlayers));
+  const [seenPlayerId, setSeenPlayerId] = useState(playerId);
+  const excludeKey = (excludeIds || []).map(String).filter(Boolean).join(",");
+
+  if (playerId !== seenPlayerId) {
+    setSeenPlayerId(playerId);
+    setState(similarPlayersState(playerId, initialPlayers));
+  }
+
+  useEffect(() => {
+    if (!playerId) {
+      setState({ loading: false, players: [], source: null, group: null });
+      return undefined;
+    }
+
+    if (hasInitial) {
+      setState({
+        loading: false,
+        players: initialPlayers,
+        source: "ssr",
+        group: null,
+      });
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setState({ loading: true, players: [], source: null, group: null });
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (excludeKey) params.set("exclude", excludeKey);
+
+    fetch(`/api/players/similar/${encodeURIComponent(playerId)}?${params}`, {
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Similar players request failed");
+        }
+        return response.json();
+      })
+      .then((payload) => {
+        if (controller.signal.aborted) return;
+        if (!payload) {
+          throw new Error("Similar players request failed");
+        }
+        setState({
+          loading: false,
+          players: Array.isArray(payload.players) ? payload.players : [],
+          source: payload.source || null,
+          group: payload.group || null,
+        });
+      })
+      .catch((error) => {
+        if (error.name === "AbortError" || controller.signal.aborted) return;
+        setState({ loading: false, players: [], source: null, group: null });
+      });
+
+    return () => controller.abort();
+  }, [excludeKey, hasInitial, initialKey, initialPlayers, limit, playerId]);
+
+  return state;
+}
+
+function similarityLabel(player) {
+  const reasons = Array.isArray(player.reasons) ? player.reasons.filter(Boolean) : [];
+  if (reasons.length === 0) return `${player.similarity}% match`;
+  return `${player.similarity}% · ${reasons.join(", ")}`;
+}
+
+function playerSummary(player) {
+  if (String(player.position || "").toUpperCase() === "G") {
+    return `GP ${player.games ?? "-"} · W ${player.wins ?? 0}`;
+  }
+  return `GP ${player.games ?? "-"} · P ${player.points ?? 0}`;
+}
+
+function playerSize(player) {
+  const height = formatHeight(player);
+  const weight = formatWeight(player);
+  return [height !== "-" ? height : null, weight !== "-" ? weight : null].filter(Boolean).join(" · ");
+}
+
+function CompareAction({
+  player,
+  playerName,
+  playerId,
+  actionLabel,
+  selectable,
+  onSelect,
+  className = "",
+}) {
+  const classes = `inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 ${className}`;
+  if (selectable) {
+    return (
+      <button type="button" onClick={() => onSelect(player)} className={classes}>
+        {actionLabel}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      href={
+        playerName && playerId
+          ? comparePlayersUrl(playerName, playerId, player.name, player.id)
+          : player.href || playerUrl(player.name, player.id)
+      }
+      className={classes}
+    >
+      {actionLabel}
+    </Link>
+  );
+}
+
+function Headshot({ id, name, sizeClassName }) {
+  return (
+    <span className={`relative block shrink-0 overflow-hidden rounded-full border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 ${sizeClassName}`}>
+      <Image
+        src={playerHeadshotUrl(id)}
+        alt={`${name} headshot`}
+        fill
+        className="object-cover"
+        unoptimized
+      />
+    </span>
+  );
+}
+
+export default function SimilarPlayers({
+  playerId,
+  playerName,
+  excludeIds = [],
+  limit = 6,
+  onSelect,
+  actionLabel = "Compare",
+  variant = "cards",
+  layout = "panel",
+  heading,
+  initialPlayers = null,
+  className = "",
+}) {
+  const { loading, players, source } = useSimilarPlayers(playerId, {
+    limit,
+    excludeIds,
+    initialPlayers,
+  });
+
+  if (!playerId) return null;
+  if (!loading && (source === "none" || players.length === 0)) return null;
+
+  const isPage = layout === "page";
+  const title = heading || (isPage ? "Similar players" : playerName ? `Similar to ${playerName}` : "Similar player profiles");
+  const selectable = typeof onSelect === "function";
+
+  return (
+    <section
+      className={
+        isPage
+          ? `min-w-0 ${className}`
+          : `min-w-0 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950 ${className}`
+      }
+    >
+      <div className={isPage ? "mb-2" : "mb-2 flex flex-wrap items-baseline justify-between gap-2"}>
+        <h2
+          className={
+            isPage
+              ? "text-lg font-bold text-slate-950 dark:text-white"
+              : "text-sm font-bold text-slate-950 dark:text-white sm:text-base"
+          }
+        >
+          {title}
+        </h2>
+        {isPage ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Closest career profiles by scoring, size, and era.
+          </p>
+        ) : (
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Career profile match
+          </p>
+        )}
+      </div>
+      {loading && players.length === 0 ? (
+        <p className="text-sm text-slate-500 dark:text-slate-400">Finding similar players...</p>
+      ) : variant === "chips" ? (
+        <ul className="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-1">
+          {players.map((player) => {
+            const content = (
+              <>
+                <Headshot id={player.id} name={player.name} sizeClassName="h-8 w-8" />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {player.name}
+                  </span>
+                  <span className="block text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                    {similarityLabel(player)}
+                  </span>
+                </span>
+              </>
+            );
+            const chipClassName =
+              "flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-3 text-left hover:border-blue-400 hover:bg-blue-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-slate-800";
+
+            return (
+              <li key={player.id} className="shrink-0">
+                {selectable ? (
+                  <button type="button" onClick={() => onSelect(player)} className={chipClassName}>
+                    {content}
+                  </button>
+                ) : (
+                  <Link href={player.href || playerUrl(player.name, player.id)} className={chipClassName}>
+                    {content}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <ul className="grid w-full min-w-0 max-w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {players.map((player) => {
+            const size = playerSize(player);
+            return (
+              <li
+                key={player.id}
+                className="flex w-full min-w-0 max-w-full flex-col gap-2 overflow-hidden rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-3"
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <Headshot id={player.id} name={player.name} sizeClassName="h-11 w-11 sm:h-12 sm:w-12" />
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={player.href || playerUrl(player.name, player.id)}
+                      className="block truncate font-semibold text-slate-950 hover:underline dark:text-white"
+                    >
+                      {player.name}
+                    </Link>
+                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {player.position || "NHL"}
+                      {player.teamName ? ` · ${player.teamName}` : ""}
+                      {size ? ` · ${size}` : ""}
+                    </p>
+                    <p className="truncate text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                      {similarityLabel(player)} · {playerSummary(player)}
+                    </p>
+                  </div>
+                </div>
+                <CompareAction
+                  player={player}
+                  playerName={playerName}
+                  playerId={playerId}
+                  actionLabel={actionLabel}
+                  selectable={selectable}
+                  onSelect={onSelect}
+                  className="w-full sm:w-auto sm:shrink-0"
+                />
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
