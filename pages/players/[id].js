@@ -9,6 +9,7 @@ import SEO, { generatePlayerJsonLd } from '../../components/SEO';
 import { formatCurrency, formatSeason, formatShortSeason, toNumber } from '../../lib/format';
 import { comparePlayersUrl, extractEntityId, playerUrl, teamUrl } from '../../lib/routes';
 import { loadPlayerProfile } from '../../lib/player-data';
+import { findSimilarPlayersSafe } from '../../lib/player-similarity';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
 const numericColumnMeta = {
@@ -206,7 +207,7 @@ const contractCapHitColumn = {
     cell: (props) => <p className="text-right">{formatCurrency(props.getValue())}</p>,
 };
 
-const Players = ({ playerId, stats: initialStats, person, awards: initialAwards, contracts: initialContracts, currentContract: initialCurrentContract, canonicalPath, hydrateDetails = false }) => {
+const Players = ({ playerId, stats: initialStats, person, awards: initialAwards, contracts: initialContracts, currentContract: initialCurrentContract, similarPlayers = [], canonicalPath, hydrateDetails = false }) => {
     const id = playerId;
     const router = useRouter();
     const [compareOpen, setCompareOpen] = useState(false);
@@ -706,15 +707,6 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                     </div>
                 </section>
 
-                <SimilarPlayers
-                    className="mt-4"
-                    playerId={id}
-                    playerName={playerName}
-                    excludeIds={[id]}
-                    limit={6}
-                    actionLabel="Compare"
-                />
-
                 <section className="mt-4">
                     <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
                         <div>
@@ -831,6 +823,18 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                         </div>
                     </section>
                 )}
+
+                <SimilarPlayers
+                    className="mt-4"
+                    layout="page"
+                    playerId={id}
+                    playerName={playerName}
+                    excludeIds={[id]}
+                    limit={8}
+                    heading="Similar players"
+                    initialPlayers={similarPlayers}
+                    actionLabel="Compare"
+                />
             </main>
         </div>
     );
@@ -856,6 +860,11 @@ export async function getServerSideProps({ params, res }) {
     }
 
     setPageCache(res, PAGE_CACHE.hourly);
+    const similar = await findSimilarPlayersSafe(id, {
+        limit: 8,
+        excludeIds: [id],
+        profileOverride: person,
+    });
     return {
         props: {
             playerId: id,
@@ -864,6 +873,7 @@ export async function getServerSideProps({ params, res }) {
             awards: [],
             contracts: [],
             currentContract: null,
+            similarPlayers: similar.players || [],
             canonicalPath,
             hydrateDetails: true,
         },

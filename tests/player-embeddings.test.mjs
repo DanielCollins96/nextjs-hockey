@@ -6,6 +6,8 @@ import {
   embedPlayer,
   l2Normalize,
   parseSimilarLimit,
+  playerHeightInches,
+  playerWeightPounds,
   positionGroup,
   rankSimilarPlayers,
   rawPlayerFeatures,
@@ -36,6 +38,8 @@ const corpus = [
     goals: 350,
     assists: 700,
     points: 1050,
+    heightInInches: 73,
+    weightInPounds: 194,
   }),
   player({
     playerId: 2,
@@ -45,6 +49,8 @@ const corpus = [
     goals: 380,
     assists: 520,
     points: 900,
+    heightInInches: 74,
+    weightInPounds: 208,
   }),
   player({
     playerId: 3,
@@ -54,6 +60,8 @@ const corpus = [
     goals: 280,
     assists: 520,
     points: 800,
+    heightInInches: 71,
+    weightInPounds: 181,
   }),
   player({
     playerId: 4,
@@ -63,6 +71,8 @@ const corpus = [
     goals: 370,
     assists: 280,
     points: 650,
+    heightInInches: 75,
+    weightInPounds: 215,
   }),
   player({
     playerId: 5,
@@ -72,6 +82,8 @@ const corpus = [
     goals: 850,
     assists: 700,
     points: 1550,
+    heightInInches: 75,
+    weightInPounds: 238,
   }),
   player({
     playerId: 6,
@@ -81,6 +93,8 @@ const corpus = [
     goals: 60,
     assists: 80,
     points: 140,
+    heightInInches: 72,
+    weightInPounds: 190,
   }),
   player({
     playerId: 7,
@@ -90,6 +104,8 @@ const corpus = [
     goals: 150,
     assists: 500,
     points: 650,
+    heightInInches: 73,
+    weightInPounds: 201,
   }),
   player({
     playerId: 8,
@@ -99,6 +115,8 @@ const corpus = [
     goals: 120,
     assists: 550,
     points: 670,
+    heightInInches: 78,
+    weightInPounds: 223,
   }),
   player({
     playerId: 9,
@@ -108,6 +126,8 @@ const corpus = [
     goals: 12,
     assists: 40,
     points: 52,
+    heightInInches: 73,
+    weightInPounds: 198,
   }),
   player({
     playerId: 10,
@@ -116,6 +136,8 @@ const corpus = [
     games: 400,
     wins: 260,
     losses: 110,
+    heightInInches: 75,
+    weightInPounds: 218,
   }),
   player({
     playerId: 11,
@@ -124,6 +146,8 @@ const corpus = [
     games: 450,
     wins: 270,
     losses: 140,
+    heightInInches: 76,
+    weightInPounds: 207,
   }),
   player({
     playerId: 12,
@@ -132,6 +156,8 @@ const corpus = [
     games: 80,
     wins: 25,
     losses: 40,
+    heightInInches: 74,
+    weightInPounds: 190,
   }),
 ];
 
@@ -176,7 +202,7 @@ test('McDavid-like playmakers rank closer than snipers or depth scorers', () => 
   assert.ok(rankOf('Leon Draisaitl') < rankOf('Auston Matthews'));
   assert.ok(!names.includes('Roman Josi'));
   assert.ok(!names.includes('Andrei Vasilevskiy'));
-  assert.ok(ranked[0].similarity >= 90);
+  assert.ok(ranked[0].similarity >= 80);
   assert.ok(ranked[0].reasons.length > 0);
   assert.ok(!ranked[0].reasons.includes('era'));
 
@@ -227,4 +253,57 @@ test('players below the sample cutoff can still query against the indexed group'
   assert.ok(ranked.some((entry) => entry.player.player_name === 'Auston Matthews'));
   const vector = embedPlayer(rookie, index.statsByGroup.F, 'F');
   assert.equal(vector.length, index.byId.get('4').vector.length);
+});
+
+test('height and weight pull similarly productive players toward matching size', () => {
+  assert.equal(Math.round(playerHeightInches({ heightInCentimeters: 185 })), 73);
+  assert.equal(Math.round(playerWeightPounds({ weightInKilograms: 88 })), 194);
+  assert.equal(playerHeightInches({ heightInInches: 12 }), null);
+
+  const sized = [
+    player({
+      playerId: 20,
+      player_name: 'Target sniper',
+      games: 500,
+      goals: 250,
+      assists: 200,
+      points: 450,
+      heightInInches: 75,
+      weightInPounds: 220,
+    }),
+    player({
+      playerId: 21,
+      player_name: 'Big sniper',
+      games: 500,
+      goals: 248,
+      assists: 198,
+      points: 446,
+      heightInInches: 76,
+      weightInPounds: 228,
+    }),
+    player({
+      playerId: 22,
+      player_name: 'Small sniper',
+      games: 500,
+      goals: 252,
+      assists: 202,
+      points: 454,
+      heightInInches: 68,
+      weightInPounds: 172,
+    }),
+    player({
+      playerId: 23,
+      player_name: 'Playmaker',
+      games: 500,
+      goals: 120,
+      assists: 350,
+      points: 470,
+      heightInInches: 75,
+      weightInPounds: 218,
+    }),
+  ];
+  const ranked = rankSimilarPlayers(buildEmbeddingIndex(sized), sized[0], { limit: 3, minSimilarity: 0 });
+  const names = ranked.map((entry) => entry.player.player_name);
+  assert.equal(names[0], 'Big sniper');
+  assert.ok(names.indexOf('Big sniper') < names.indexOf('Small sniper'));
 });

@@ -195,7 +195,7 @@ Current app path, no ETL change required:
 2. Otherwise build vectors in memory from the player-search index (`indexes/player-search.json` or the `a–z` buckets).
 3. Fall back to `readmodel.player_search` via `getPlayerSimilarityCorpus()`.
 
-The in-app embedding is z-scored, L2-normalized, and ranked with cosine similarity. Features are per-game rates, scoring mix, career volume, and era, so a 50-game sniper can still match other snipers. Matches below 60% similarity are omitted.
+The in-app embedding is z-scored, L2-normalized, and ranked with cosine similarity. Features are per-game rates, scoring mix, height, weight, career volume, and era. Matches below 60% similarity are omitted.
 
 ### Backend follow-ups
 
@@ -216,6 +216,8 @@ Publish a dedicated corpus after each ETL run so compare/player pages do not sca
       "points": 1050,
       "wins": 0,
       "losses": 0,
+      "heightInInches": 73,
+      "weightInPounds": 194,
       "last_season": 20252026
     }
   ]

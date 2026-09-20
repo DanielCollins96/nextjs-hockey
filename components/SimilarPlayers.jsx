@@ -2,13 +2,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { playerHeadshotUrl } from "../lib/player-compare";
+import { formatHeight, formatWeight } from "../lib/player-stats";
 import { comparePlayersUrl, playerUrl } from "../lib/routes";
 
-export function useSimilarPlayers(playerId, { limit = 6, excludeIds = [] } = {}) {
+export function useSimilarPlayers(playerId, {
+  limit = 6,
+  excludeIds = [],
+  initialPlayers = null,
+} = {}) {
+  const hasInitial = Array.isArray(initialPlayers) && initialPlayers.length > 0;
+  const initialKey = hasInitial ? initialPlayers.map((player) => String(player.id || player.playerId)).join(",") : "";
   const [state, setState] = useState({
-    loading: Boolean(playerId),
-    players: [],
-    source: null,
+    loading: Boolean(playerId) && !hasInitial,
+    players: hasInitial ? initialPlayers : [],
+    source: hasInitial ? "ssr" : null,
     group: null,
   });
   const excludeKey = (excludeIds || []).map(String).filter(Boolean).join(",");
@@ -16,6 +23,16 @@ export function useSimilarPlayers(playerId, { limit = 6, excludeIds = [] } = {})
   useEffect(() => {
     if (!playerId) {
       setState({ loading: false, players: [], source: null, group: null });
+      return undefined;
+    }
+
+    if (hasInitial) {
+      setState({
+        loading: false,
+        players: initialPlayers,
+        source: "ssr",
+        group: null,
+      });
       return undefined;
     }
 
@@ -51,7 +68,7 @@ export function useSimilarPlayers(playerId, { limit = 6, excludeIds = [] } = {})
       });
 
     return () => controller.abort();
-  }, [excludeKey, limit, playerId]);
+  }, [excludeKey, hasInitial, initialKey, initialPlayers, limit, playerId]);
 
   return state;
 }
@@ -67,6 +84,12 @@ function playerSummary(player) {
     return `GP ${player.games ?? "-"} · W ${player.wins ?? 0}`;
   }
   return `GP ${player.games ?? "-"} · P ${player.points ?? 0}`;
+}
+
+function playerSize(player) {
+  const height = formatHeight(player);
+  const weight = formatWeight(player);
+  return [height !== "-" ? height : null, weight !== "-" ? weight : null].filter(Boolean).join(" · ");
 }
 
 function Headshot({ id, name, sizeClassName }) {
@@ -91,26 +114,51 @@ export default function SimilarPlayers({
   onSelect,
   actionLabel = "Compare",
   variant = "cards",
+  layout = "panel",
   heading,
+  initialPlayers = null,
   className = "",
 }) {
-  const { loading, players, source } = useSimilarPlayers(playerId, { limit, excludeIds });
+  const { loading, players, source } = useSimilarPlayers(playerId, {
+    limit,
+    excludeIds,
+    initialPlayers,
+  });
 
   if (!playerId) return null;
   if (!loading && (source === "none" || players.length === 0)) return null;
 
-  const title = heading || (playerName ? `Similar to ${playerName}` : "Similar player profiles");
+  const isPage = layout === "page";
+  const title = heading || (isPage ? "Similar players" : playerName ? `Similar to ${playerName}` : "Similar player profiles");
   const selectable = typeof onSelect === "function";
 
   return (
-    <section className={`rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950 ${className}`}>
-      <div className="mb-2 flex items-baseline justify-between gap-2">
-        <h2 className="text-sm font-bold text-slate-950 dark:text-white sm:text-base">
+    <section
+      className={
+        isPage
+          ? className
+          : `rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950 ${className}`
+      }
+    >
+      <div className={isPage ? "mb-2" : "mb-2 flex items-baseline justify-between gap-2"}>
+        <h2
+          className={
+            isPage
+              ? "text-lg font-bold text-slate-950 dark:text-white"
+              : "text-sm font-bold text-slate-950 dark:text-white sm:text-base"
+          }
+        >
           {title}
         </h2>
-        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-          Career profile match
-        </p>
+        {isPage ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Closest career profiles by scoring, size, and era.
+          </p>
+        ) : (
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Career profile match
+          </p>
+        )}
       </div>
       {loading && players.length === 0 ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">Finding similar players...</p>
@@ -150,49 +198,53 @@ export default function SimilarPlayers({
         </ul>
       ) : (
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {players.map((player) => (
-            <li
-              key={player.id}
-              className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900"
-            >
-              <Headshot id={player.id} name={player.name} sizeClassName="h-12 w-12" />
-              <div className="min-w-0 flex-1">
-                <Link
-                  href={player.href || playerUrl(player.name, player.id)}
-                  className="block truncate font-semibold text-slate-950 hover:underline dark:text-white"
-                >
-                  {player.name}
-                </Link>
-                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                  {player.position || "NHL"}
-                  {player.teamName ? ` · ${player.teamName}` : ""}
-                </p>
-                <p className="truncate text-xs tabular-nums text-slate-500 dark:text-slate-400">
-                  {similarityLabel(player)} · {playerSummary(player)}
-                </p>
-              </div>
-              {selectable ? (
-                <button
-                  type="button"
-                  onClick={() => onSelect(player)}
-                  className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-blue-700"
-                >
-                  {actionLabel}
-                </button>
-              ) : (
-                <Link
-                  href={
-                    playerName && playerId
-                      ? comparePlayersUrl(playerName, playerId, player.name, player.id)
-                      : player.href || playerUrl(player.name, player.id)
-                  }
-                  className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-blue-700"
-                >
-                  {actionLabel}
-                </Link>
-              )}
-            </li>
-          ))}
+          {players.map((player) => {
+            const size = playerSize(player);
+            return (
+              <li
+                key={player.id}
+                className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900"
+              >
+                <Headshot id={player.id} name={player.name} sizeClassName="h-12 w-12" />
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={player.href || playerUrl(player.name, player.id)}
+                    className="block truncate font-semibold text-slate-950 hover:underline dark:text-white"
+                  >
+                    {player.name}
+                  </Link>
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    {player.position || "NHL"}
+                    {player.teamName ? ` · ${player.teamName}` : ""}
+                    {size ? ` · ${size}` : ""}
+                  </p>
+                  <p className="truncate text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                    {similarityLabel(player)} · {playerSummary(player)}
+                  </p>
+                </div>
+                {selectable ? (
+                  <button
+                    type="button"
+                    onClick={() => onSelect(player)}
+                    className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-blue-700"
+                  >
+                    {actionLabel}
+                  </button>
+                ) : (
+                  <Link
+                    href={
+                      playerName && playerId
+                        ? comparePlayersUrl(playerName, playerId, player.name, player.id)
+                        : player.href || playerUrl(player.name, player.id)
+                    }
+                    className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-blue-700"
+                  >
+                    {actionLabel}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
