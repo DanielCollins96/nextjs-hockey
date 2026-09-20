@@ -368,7 +368,7 @@ export default function PlayerCompareView({
               { label: "Height", values: selected.map((side) => formatHeight(side.person)) },
               { label: "Weight", values: selected.map((side) => formatWeight(side.person)) },
               {
-                label: selected.some((side) => isGoaliePosition(side.person.position)) ? "Hand" : "Shoots",
+                label: "Shoots / Catches",
                 values: selected.map((side) => side.person.shootsCatches || "-"),
               },
               {
