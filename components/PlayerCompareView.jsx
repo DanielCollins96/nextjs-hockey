@@ -20,10 +20,16 @@ import {
   formatDraft,
   formatHeight,
   formatStatValue,
+  formatToi,
   formatWeight,
   isGoaliePosition,
 } from "../lib/player-stats";
 import { playerUrl, teamUrl } from "../lib/routes";
+
+function formatCompareStat(value, row) {
+  if (row?.format === "toi") return formatToi(value);
+  return formatStatValue(value, row?.digits || 0);
+}
 
 function winnerClass(isWinner) {
   if (isWinner) return "font-bold text-emerald-700 dark:text-emerald-300";
@@ -240,7 +246,7 @@ function CompareTable({ players, rows, numeric = false, loading = false }) {
                     : row.render
                       ? row.render(value, index)
                       : rowIsNumeric
-                        ? formatStatValue(value, row.digits || 0)
+                        ? formatCompareStat(value, row)
                         : value}
                 </div>
               ))}
@@ -388,6 +394,7 @@ export default function PlayerCompareView({
               label: row.label,
               values: selected.map((side) => side.totals?.[row.key]),
               digits: row.digits || 0,
+              format: row.format,
               lowerIsBetter: row.lowerIsBetter,
             }))}
           />
@@ -415,7 +422,7 @@ export default function PlayerCompareView({
                       {row.label}
                     </span>
                     <span className="text-lg font-semibold tabular-nums text-slate-900 dark:text-white">
-                      {side.loading ? "—" : formatStatValue(side.totals?.[row.key], row.digits || 0)}
+                      {side.loading ? "—" : formatCompareStat(side.totals?.[row.key], row)}
                     </span>
                   </div>
                 ))}
@@ -495,6 +502,7 @@ export default function PlayerCompareView({
                         label: column.label,
                         values: entry.rows.map((row) => seasonCellValue(row, column)),
                         digits: column.digits || 0,
+                        format: column.format,
                         lowerIsBetter: column.lowerIsBetter,
                         numeric: true,
                       })),
