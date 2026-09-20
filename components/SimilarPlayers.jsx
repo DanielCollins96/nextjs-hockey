@@ -5,20 +5,31 @@ import { playerHeadshotUrl } from "../lib/player-compare";
 import { formatHeight, formatWeight } from "../lib/player-stats";
 import { comparePlayersUrl, playerUrl } from "../lib/routes";
 
+function similarPlayersState(playerId, initialPlayers) {
+  const hasInitial = Array.isArray(initialPlayers);
+  return {
+    loading: Boolean(playerId) && !hasInitial,
+    players: hasInitial ? initialPlayers : [],
+    source: hasInitial ? "ssr" : null,
+    group: null,
+  };
+}
+
 export function useSimilarPlayers(playerId, {
   limit = 6,
   excludeIds = [],
   initialPlayers = null,
 } = {}) {
-  const hasInitial = Array.isArray(initialPlayers) && initialPlayers.length > 0;
+  const hasInitial = Array.isArray(initialPlayers);
   const initialKey = hasInitial ? initialPlayers.map((player) => String(player.id || player.playerId)).join(",") : "";
-  const [state, setState] = useState({
-    loading: Boolean(playerId) && !hasInitial,
-    players: hasInitial ? initialPlayers : [],
-    source: hasInitial ? "ssr" : null,
-    group: null,
-  });
+  const [state, setState] = useState(() => similarPlayersState(playerId, initialPlayers));
+  const [seenPlayerId, setSeenPlayerId] = useState(playerId);
   const excludeKey = (excludeIds || []).map(String).filter(Boolean).join(",");
+
+  if (playerId !== seenPlayerId) {
+    setSeenPlayerId(playerId);
+    setState(similarPlayersState(playerId, initialPlayers));
+  }
 
   useEffect(() => {
     if (!playerId) {
