@@ -27,6 +27,10 @@ export default async function handler(req, res) {
       excludeIds: parseExcludeIds(req.query.exclude),
     });
 
+    if (!result.source || result.source === "none") {
+      return res.status(500).json({ error_message: "Internal Server Error" });
+    }
+
     res.setHeader("X-Data-Source", result.source);
     res.setHeader("Cache-Control", PAGE_CACHE.hourly);
     return res.status(200).json({

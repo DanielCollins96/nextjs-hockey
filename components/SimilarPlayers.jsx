@@ -20,16 +20,24 @@ export function useSimilarPlayers(playerId, { limit = 6, excludeIds = [] } = {})
     }
 
     const controller = new AbortController();
-    setState((current) => ({ ...current, loading: true }));
+    setState({ loading: true, players: [], source: null, group: null });
     const params = new URLSearchParams({ limit: String(limit) });
     if (excludeKey) params.set("exclude", excludeKey);
 
     fetch(`/api/players/similar/${encodeURIComponent(playerId)}?${params}`, {
       signal: controller.signal,
     })
-      .then((response) => (response.ok ? response.json() : null))
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Similar players request failed");
+        }
+        return response.json();
+      })
       .then((payload) => {
-        if (!payload || controller.signal.aborted) return;
+        if (controller.signal.aborted) return;
+        if (!payload) {
+          throw new Error("Similar players request failed");
+        }
         setState({
           loading: false,
           players: Array.isArray(payload.players) ? payload.players : [],
@@ -38,9 +46,8 @@ export function useSimilarPlayers(playerId, { limit = 6, excludeIds = [] } = {})
         });
       })
       .catch((error) => {
-        if (error.name !== "AbortError") {
-          setState({ loading: false, players: [], source: null, group: null });
-        }
+        if (error.name === "AbortError" || controller.signal.aborted) return;
+        setState({ loading: false, players: [], source: null, group: null });
       });
 
     return () => controller.abort();
