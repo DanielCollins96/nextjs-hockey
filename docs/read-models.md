@@ -195,7 +195,7 @@ Current app path, no ETL change required:
 2. Otherwise build vectors in memory from the player-search index (`indexes/player-search.json` or the `a–z` buckets).
 3. Fall back to `readmodel.player_search` via `getPlayerSimilarityCorpus()`.
 
-The in-app embedding is z-scored, L2-normalized, and ranked with cosine similarity. Features are per-game rates, scoring mix, career volume, and era, so a 50-game sniper can still match other snipers.
+The in-app embedding is z-scored, L2-normalized, and ranked with cosine similarity. Features are per-game rates, scoring mix, career volume, and era, so a 50-game sniper can still match other snipers. Matches below 60% similarity are omitted.
 
 ### Backend follow-ups
 

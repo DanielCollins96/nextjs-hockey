@@ -167,7 +167,7 @@ test('vectors are L2-normalized and identical players have cosine 1', () => {
 
 test('McDavid-like playmakers rank closer than snipers or depth scorers', () => {
   const index = buildEmbeddingIndex(corpus);
-  const ranked = rankSimilarPlayers(index, corpus[0], { limit: 8 });
+  const ranked = rankSimilarPlayers(index, corpus[0], { limit: 8, minSimilarity: 0 });
   const names = ranked.map((entry) => entry.player.player_name);
   const rankOf = (name) => names.indexOf(name);
 
@@ -179,12 +179,18 @@ test('McDavid-like playmakers rank closer than snipers or depth scorers', () => 
   assert.ok(ranked[0].similarity >= 90);
   assert.ok(ranked[0].reasons.length > 0);
   assert.ok(!ranked[0].reasons.includes('era'));
+
+  const closeMatches = rankSimilarPlayers(index, corpus[0], { limit: 8 });
+  assert.deepEqual(closeMatches.map((entry) => entry.player.player_name), [
+    'Nikita Kucherov',
+    'Leon Draisaitl',
+  ]);
 });
 
 test('goal scorers cluster together and exclude the seed player', () => {
   const index = buildEmbeddingIndex(corpus);
   const matthews = corpus.find((item) => item.playerId === 4);
-  const ranked = rankSimilarPlayers(index, matthews, { limit: 8, excludeIds: [4] });
+  const ranked = rankSimilarPlayers(index, matthews, { limit: 8, excludeIds: [4], minSimilarity: 0 });
   const ids = ranked.map((entry) => entry.player.playerId);
 
   assert.ok(!ids.includes(4));
@@ -195,8 +201,8 @@ test('goal scorers cluster together and exclude the seed player', () => {
 
 test('defensemen and goalies only return the same position group', () => {
   const index = buildEmbeddingIndex(corpus);
-  const defense = rankSimilarPlayers(index, corpus.find((item) => item.playerId === 7), { limit: 5 });
-  const goalies = rankSimilarPlayers(index, corpus.find((item) => item.playerId === 10), { limit: 5 });
+  const defense = rankSimilarPlayers(index, corpus.find((item) => item.playerId === 7), { limit: 5, minSimilarity: 0 });
+  const goalies = rankSimilarPlayers(index, corpus.find((item) => item.playerId === 10), { limit: 5, minSimilarity: 0 });
 
   assert.ok(defense.length > 0);
   assert.ok(goalies.length > 0);
@@ -216,7 +222,7 @@ test('players below the sample cutoff can still query against the indexed group'
     assists: 8,
     points: 22,
   });
-  const ranked = rankSimilarPlayers(index, rookie, { limit: 3 });
+  const ranked = rankSimilarPlayers(index, rookie, { limit: 3, minSimilarity: 0 });
   assert.ok(ranked.length > 0);
   assert.ok(ranked.some((entry) => entry.player.player_name === 'Auston Matthews'));
   const vector = embedPlayer(rookie, index.statsByGroup.F, 'F');
