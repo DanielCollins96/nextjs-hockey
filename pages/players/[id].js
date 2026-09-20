@@ -609,7 +609,7 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                 jsonLd={jsonLd}
             />
 
-            <main className="mx-auto max-w-7xl px-2 py-3 sm:px-3">
+            <main className="mx-auto w-full min-w-0 max-w-7xl overflow-x-hidden px-2 py-3 sm:px-3">
                 <section className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
                         <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">

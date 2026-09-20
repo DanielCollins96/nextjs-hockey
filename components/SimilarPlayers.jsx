@@ -240,13 +240,13 @@ export default function SimilarPlayers({
           })}
         </ul>
       ) : (
-        <ul className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid w-full min-w-0 max-w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {players.map((player) => {
             const size = playerSize(player);
             return (
               <li
                 key={player.id}
-                className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-3"
+                className="flex w-full min-w-0 max-w-full flex-col gap-2 overflow-hidden rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-3"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <Headshot id={player.id} name={player.name} sizeClassName="h-11 w-11 sm:h-12 sm:w-12" />
