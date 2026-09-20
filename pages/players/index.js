@@ -222,6 +222,10 @@ export default function PlayersIndex({ players, searchTerm }) {
                         <Link href="/seasons" className="text-blue-600 dark:text-blue-400 hover:underline">
                             View Seasonal Stat Leaders
                         </Link>
+                        <span className="px-2 text-gray-400">·</span>
+                        <Link href="/players/compare" className="text-blue-600 dark:text-blue-400 hover:underline">
+                            Compare players
+                        </Link>
                     </p>
                 </div>
             </div>
