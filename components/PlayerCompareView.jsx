@@ -130,7 +130,7 @@ function TeamValue({ team }) {
     return (
       <Link
         href={teamUrl(team["team.name"], team["team.id"])}
-        className="text-blue-700 hover:underline dark:text-blue-300"
+        className="break-words leading-snug text-blue-700 hover:underline dark:text-blue-300"
       >
         {team["team.name"]}
       </Link>
@@ -146,7 +146,7 @@ function DraftValue({ person }) {
   if (label === "Undrafted" || !person.draft_seasons) return label;
 
   return (
-    <>
+    <span className="break-words leading-snug">
       <Link
         href={`/drafts/${person.draft_seasons}`}
         className="text-blue-700 hover:underline dark:text-blue-300"
@@ -157,7 +157,7 @@ function DraftValue({ person }) {
       </Link>
       {person.displayAbbrev ? `, ${person.displayAbbrev}` : ""}
       {person.ordinalPick ? ` (${person.ordinalPick} overall)` : ""}
-    </>
+    </span>
   );
 }
 
@@ -168,26 +168,38 @@ function AwardsList({ awards, loading }) {
   return rows.map((award) => `${award.name}${award.count > 1 ? ` (${award.count})` : ""}`).join(", ");
 }
 
+function compareTableTemplate(count) {
+  return `var(--compare-label) repeat(${count}, var(--compare-player))`;
+}
+
 function CompareTable({ players, rows, numeric = false, loading = false }) {
   const count = players.length;
-  const template = `minmax(5.5rem,7.5rem) repeat(${count}, minmax(7rem,1fr))`;
+  const compactFit = count <= 2;
+  const template = compareTableTemplate(count);
 
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-max">
+    <div className={compactFit ? "min-w-0" : "overflow-x-auto"}>
+      <div
+        className={[
+          compactFit ? "min-w-0" : "min-w-max",
+          "[--compare-label:minmax(3.4rem,4.4rem)] sm:[--compare-label:minmax(5.25rem,6.5rem)]",
+          compactFit
+            ? "[--compare-player:minmax(0,1fr)]"
+            : "[--compare-player:minmax(4.5rem,1fr)] sm:[--compare-player:minmax(5.75rem,1fr)]",
+        ].join(" ")}
+      >
         <div
-          className="grid items-end gap-2 border-b border-slate-200 pb-2 dark:border-slate-700"
+          className="grid items-end gap-x-1 border-b border-slate-200 pb-1.5 sm:gap-x-2 sm:pb-2 dark:border-slate-700"
           style={{ gridTemplateColumns: template }}
         >
           <div />
           {players.map((side) => {
             const name = side.person?.player_name || "Player";
             return (
-              <div key={side.person.playerId} className="min-w-0 text-center">
+              <div key={side.person.playerId} className="min-w-0 px-0.5 text-center">
                 <Link
                   href={playerUrl(name, side.person.playerId)}
-                  className="block truncate text-sm font-bold text-slate-950 hover:underline dark:text-white"
-                  title={name}
+                  className="block text-xs font-bold leading-snug text-balance break-words text-slate-950 hover:underline sm:text-sm dark:text-white"
                 >
                   {name}
                 </Link>
@@ -204,16 +216,24 @@ function CompareTable({ players, rows, numeric = false, loading = false }) {
           return (
             <div
               key={row.label}
-              className="grid items-center gap-2 border-t border-slate-200 py-2 first:border-t-0 dark:border-slate-700"
+              className="grid items-center gap-x-1 border-t border-slate-200 py-1.5 first:border-t-0 sm:gap-x-2 sm:py-2 dark:border-slate-700"
               style={{ gridTemplateColumns: template }}
             >
-              <div className="sticky left-0 z-10 bg-white text-xs font-semibold uppercase text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+              <div
+                className={`pr-1 text-[10px] font-semibold uppercase leading-tight text-slate-500 sm:text-xs dark:text-slate-400 ${
+                  compactFit ? "" : "sticky left-0 z-10 bg-white dark:bg-slate-950"
+                }`}
+              >
                 {row.label}
               </div>
               {row.values.map((value, index) => (
                 <div
                   key={`${row.label}-${players[index].person.playerId}`}
-                  className={`min-w-0 text-center ${rowIsNumeric ? `text-lg tabular-nums ${winnerClass(winners[index])}` : "text-sm text-slate-800 dark:text-slate-100"}`}
+                  className={`min-w-0 px-0.5 text-center break-words leading-snug ${
+                    rowIsNumeric
+                      ? `text-base tabular-nums sm:text-lg ${winnerClass(winners[index])}`
+                      : "text-xs text-slate-800 sm:text-sm dark:text-slate-100"
+                  }`}
                 >
                   {loading && rowIsNumeric
                     ? "—"
@@ -326,8 +346,8 @@ export default function PlayerCompareView({
       )}
 
       {selected.length >= 2 && (
-        <section className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
-          <h2 className="mb-3 text-lg font-bold text-slate-950 dark:text-white">Bio</h2>
+        <section className="rounded-lg border border-slate-200 bg-white p-2 sm:p-3 dark:border-slate-700 dark:bg-slate-950">
+          <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white sm:mb-3">Bio</h2>
           <CompareTable
             players={selected}
             rows={[
@@ -343,9 +363,7 @@ export default function PlayerCompareView({
               { label: "Weight", values: selected.map((side) => formatWeight(side.person)) },
               {
                 label: selected.some((side) => isGoaliePosition(side.person.position)) ? "Hand" : "Shoots",
-                values: selected.map((side) => (
-                  `${isGoaliePosition(side.person.position) ? "Catches" : "Shoots"} ${side.person.shootsCatches || "-"}`
-                )),
+                values: selected.map((side) => side.person.shootsCatches || "-"),
               },
               {
                 label: "Draft",
@@ -358,8 +376,8 @@ export default function PlayerCompareView({
       )}
 
       {sameType && (
-        <section className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
-          <h2 className="mb-3 text-lg font-bold text-slate-950 dark:text-white">
+        <section className="rounded-lg border border-slate-200 bg-white p-2 sm:p-3 dark:border-slate-700 dark:bg-slate-950">
+          <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white sm:mb-3">
             Career NHL {allGoalies ? "Goaltending" : "Scoring"}
           </h2>
           <CompareTable
@@ -408,8 +426,8 @@ export default function PlayerCompareView({
       )}
 
       {selected.length >= 2 && (
-        <section className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
-          <h2 className="mb-3 text-lg font-bold text-slate-950 dark:text-white">Contract & Awards</h2>
+        <section className="rounded-lg border border-slate-200 bg-white p-2 sm:p-3 dark:border-slate-700 dark:bg-slate-950">
+          <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white sm:mb-3">Contract & Awards</h2>
           <CompareTable
             players={selected}
             rows={[
@@ -459,9 +477,9 @@ export default function PlayerCompareView({
               {alignedRows.map((entry) => (
                 <div
                   key={align === "age" ? `age-${entry.age}` : entry.season}
-                  className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950"
+                  className="rounded-lg border border-slate-200 bg-white p-2 sm:p-3 dark:border-slate-700 dark:bg-slate-950"
                 >
-                  <p className="mb-2 font-bold">
+                  <p className="mb-1.5 font-bold sm:mb-2">
                     {align === "age" ? entry.label : formatSeason(entry.season)}
                   </p>
                   <CompareTable
