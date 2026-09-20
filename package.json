@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node --test tests/player-compare.test.mjs tests/serialize-dates.test.mjs",
+    "test:unit": "node --test tests/player-compare.test.mjs tests/serialize-dates.test.mjs tests/player-embeddings.test.mjs",
     "test:api-replacement": "node scripts/run-api-replacement-tests.mjs",
     "test:api-replacement:direct": "node --test tests/api-replacement.test.mjs"
   },

@@ -78,6 +78,10 @@ Public pages now load data through API routes instead of importing DB query func
 - `GET /api/games/:id`
 - Cache policy: `s-maxage=300, stale-while-revalidate=3600`
 
+### Hourly cache (`s-maxage=3600`)
+
+- `GET /api/players/similar/:id` - Players with the most similar career statistical profile
+
 ## Amplify Stuff
 
 ### Commands

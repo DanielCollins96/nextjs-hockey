@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import PlayerSearchPicker from '../../components/PlayerSearchPicker';
+import SimilarPlayers from '../../components/SimilarPlayers';
 import ReactTable from '../../components/Table';
 import { ClickableImage } from '../../components/ImageModal';
 import SEO, { generatePlayerJsonLd } from '../../components/SEO';
@@ -704,6 +705,15 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                         </div>
                     </div>
                 </section>
+
+                <SimilarPlayers
+                    className="mt-4"
+                    playerId={id}
+                    playerName={playerName}
+                    excludeIds={[id]}
+                    limit={6}
+                    actionLabel="Compare"
+                />
 
                 <section className="mt-4">
                     <div className="mb-2 flex flex-wrap items-end justify-between gap-2">

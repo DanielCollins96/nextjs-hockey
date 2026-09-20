@@ -112,6 +112,7 @@ export default function PlayerComparePage({ people = [], ids = [], canonicalPath
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
             <p>
               Search up to {MAX_COMPARE_PLAYERS} players, then share this page URL to keep the matchup.
+              Similar profile matches appear after you pick a player.
             </p>
             {hasMatchup && (
               <button
