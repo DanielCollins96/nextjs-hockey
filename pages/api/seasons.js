@@ -20,7 +20,10 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       players: result.players,
+      playoffPlayers: result.playoffPlayers || [],
       goalies: result.goalies,
+      playoffGoalies: result.playoffGoalies || [],
+      awards: result.awards || [],
       availableSeasons: result.availableSeasons,
       season: result.season
     })
