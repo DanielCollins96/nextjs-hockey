@@ -9,6 +9,11 @@ import * as queries from '../../src/graphql/queries';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
 import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload, FaRegCommentDots } from 'react-icons/fa';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
+import {
+  calendarDateString,
+  rememberViewerTimeZone,
+  viewerTimeZoneFromCookie,
+} from '../../lib/format';
 
 function formatDateShort(dateString) {
   const date = new Date(dateString + 'T12:00:00');
@@ -334,6 +339,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   const [viewMode, setViewMode] = useState('cards');
   const [showAllDates, setShowAllDates] = useState(!!dateRange);
   const [games, setGames] = useState(initialGames);
+  const [activeDate, setActiveDate] = useState(selectedDate);
   const [selectedTeam, setSelectedTeam] = useState('');
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(clampDate(dateRange?.start || selectedDate, dateBounds));
@@ -346,10 +352,41 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
       }
     : {};
 
-  // Sync games state when props change (on date navigation)
   useEffect(() => {
     setGames(initialGames);
-  }, [initialGames]);
+    setActiveDate(selectedDate);
+  }, [initialGames, selectedDate]);
+
+  useEffect(() => {
+    rememberViewerTimeZone();
+    if (!router.isReady || router.query.date) return;
+
+    const localDate = calendarDateString();
+    if (localDate === selectedDate) return;
+
+    let cancelled = false;
+    setLoading(true);
+
+    fetch(`/api/games?date=${localDate}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancelled) return;
+        setActiveDate(localDate);
+        setGames(data.games || []);
+        setStartDate(clampDate(dateRange?.start || localDate, dateBounds));
+        setEndDate(clampDate(dateRange?.end || localDate, dateBounds));
+      })
+      .catch((error) => {
+        console.error('Error loading local-date games:', error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dateBounds, dateRange, router.isReady, router.query.date, selectedDate]);
 
   const teamOptions = useMemo(() => {
     const teams = new Set();
@@ -422,9 +459,9 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   }, [filteredGames, user?.username]);
 
   const changeDate = (days) => {
-    const date = new Date(selectedDate + 'T12:00:00');
+    const date = new Date(`${activeDate}T12:00:00`);
     date.setDate(date.getDate() + days);
-    const newDate = clampDate(date.toISOString().split('T')[0], dateBounds);
+    const newDate = clampDate(calendarDateString(date), dateBounds);
     router.push(`/games?date=${newDate}`);
   };
 
@@ -452,7 +489,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
       setViewMode('table');
     } else {
       setShowAllDates(false);
-      router.push(`/games?date=${selectedDate}`);
+      router.push(`/games?date=${activeDate}`);
     }
   };
 
@@ -490,7 +527,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
             </button>
             <input
               type="date"
-              value={selectedDate}
+              value={activeDate}
               {...dateInputBounds}
               onChange={(e) => router.push(`/games?date=${clampDate(e.target.value, dateBounds)}`)}
               className="text-lg sm:text-xl font-bold dark:text-white text-center bg-transparent border-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 py-1 dark:[color-scheme:dark]"
@@ -581,7 +618,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
           </div>
 
           <button
-            onClick={() => exportToCSV(filteredGames, `nhl-games-${selectedTeam ? `${selectedTeam}-` : ''}${showAllDates ? `${startDate}-to-${endDate}` : selectedDate}.csv`)}
+            onClick={() => exportToCSV(filteredGames, `nhl-games-${selectedTeam ? `${selectedTeam}-` : ''}${showAllDates ? `${startDate}-to-${endDate}` : activeDate}.csv`)}
             className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
             aria-label="Export to CSV"
             title="Export to CSV"
@@ -616,8 +653,9 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   );
 }
 
-export async function getServerSideProps({ query, res }) {
-  const selectedDate = query.date || new Date().toISOString().split('T')[0];
+export async function getServerSideProps({ query, req, res }) {
+  const timeZone = viewerTimeZoneFromCookie(req.headers.cookie);
+  const selectedDate = query.date || calendarDateString(new Date(), timeZone);
 
   try {
     const { loadGames } = await import('../../lib/game-data');

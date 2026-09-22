@@ -7,6 +7,7 @@ import { FaChevronLeft, FaChevronRight, FaRegCommentDots } from "react-icons/fa"
 import { UseAuth } from "../contexts/Auth";
 import * as queries from "../src/graphql/queries";
 import { teamUrl } from "../lib/routes";
+import { calendarDateString, rememberViewerTimeZone } from "../lib/format";
 
 function formatDate(dateString) {
   const date = new Date(dateString + "T12:00:00");
@@ -16,13 +17,6 @@ function formatDate(dateString) {
 function formatDateForDisplay(dateString) {
   const date = new Date(dateString + "T12:00:00");
   return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-}
-
-function getLocalDateString(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function getGameStatus(game) {
@@ -160,7 +154,7 @@ function TeamLogo({ logo, abbrev }) {
 export default function GamesBanner() {
   const { user } = UseAuth();
   const [games, setGames] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
+  const [selectedDate, setSelectedDate] = useState(calendarDateString());
   const [loading, setLoading] = useState(true);
   const [commentCounts, setCommentCounts] = useState({});
   const [isBannerHovered, setIsBannerHovered] = useState(false);
@@ -168,6 +162,10 @@ export default function GamesBanner() {
   const [isDatePickerFocused, setIsDatePickerFocused] = useState(false);
   const scrollContainerRef = useRef(null);
   const dateInputRef = useRef(null);
+
+  useEffect(() => {
+    rememberViewerTimeZone();
+  }, []);
 
   useEffect(() => {
     async function fetchGames() {
@@ -248,7 +246,7 @@ export default function GamesBanner() {
   const changeDate = (days) => {
     const date = new Date(selectedDate + "T12:00:00");
     date.setDate(date.getDate() + days);
-    setSelectedDate(getLocalDateString(date));
+    setSelectedDate(calendarDateString(date));
   };
 
   return (
