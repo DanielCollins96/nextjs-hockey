@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     res.setHeader("X-Data-Source", result.source);
     res.setHeader(
       "Cache-Control",
-      "public, s-maxage=300, stale-while-revalidate=3600"
+      "public, max-age=300, s-maxage=300, stale-while-revalidate=3600"
     );
 
     res.status(200).json({ games: result.games, dateBounds: result.dateBounds });
