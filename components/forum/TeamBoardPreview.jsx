@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useQuery } from "react-query";
-import { loadBoardThreads, explainForumError } from "../../lib/forum-api";
+import { loadBoardThreads, loadThreadNumberMap, explainForumError } from "../../lib/forum-api";
+import { threadPath } from "../../lib/forum-numbers";
 import { teamBoardId } from "../../lib/forum-boards";
 import ForumTime from "./ForumTime";
 
@@ -11,6 +12,7 @@ export default function TeamBoardPreview({ abbreviation, teamName }) {
     () => loadBoardThreads(boardId),
     { enabled: Boolean(boardId) }
   );
+  const numbersQuery = useQuery("forum-thread-numbers", loadThreadNumberMap);
 
   if (!boardId) return null;
 
@@ -36,7 +38,7 @@ export default function TeamBoardPreview({ abbreviation, teamName }) {
       <ul className="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
         {threads.map((thread) => (
           <li key={thread.id} className="py-2">
-            <Link href={`/forum/t/${thread.id}`} className="font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
+            <Link href={threadPath({ ...thread, number: numbersQuery.data?.[thread.id] })} className="font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
               {thread.title}
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">

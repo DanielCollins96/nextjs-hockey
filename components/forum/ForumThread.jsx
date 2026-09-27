@@ -14,10 +14,12 @@ import {
   incrementThreadView,
   isForumOwner,
   loadThread,
+  loadThreadNumberMap,
   loadVote,
   nestReplies,
   toggleVote,
 } from "../../lib/forum-api";
+import { postNumbers, threadPath } from "../../lib/forum-numbers";
 import ConfirmDialog from "../ConfirmDialog";
 import DisplayNameForm from "./DisplayNameForm";
 import ForumBody from "./ForumBody";
@@ -42,9 +44,9 @@ function VoteButton({ active, score, disabled, onClick }) {
   );
 }
 
-function PostCard({ post, isThread, canDelete, vote, onVote, onDelete, onReply, voting, composer }) {
+function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelete, onReply, voting, composer }) {
   return (
-    <article className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+    <article id={`p-${postNumber}`} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-gray-900 dark:text-gray-100">{post.authorName || "Member"}</p>
@@ -53,6 +55,9 @@ function PostCard({ post, isThread, canDelete, vote, onVote, onDelete, onReply, 
             {isThread && post.viewCount ? ` · ${post.viewCount} views` : ""}
           </p>
         </div>
+        <a href={`#p-${postNumber}`} className="shrink-0 font-mono text-xs font-semibold tabular-nums text-gray-500 hover:text-blue-700 dark:text-gray-400 dark:hover:text-blue-300">
+          #{postNumber}
+        </a>
         {canDelete && (
           <button
             type="button"
@@ -85,11 +90,12 @@ function PostCard({ post, isThread, canDelete, vote, onVote, onDelete, onReply, 
   );
 }
 
-function ReplyTree({ reply, depth, replyingTo, identity, votes, onToggleReply, onSubmitReply, onVote, onDelete, votingId }) {
+function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, votes, onToggleReply, onSubmitReply, onVote, onDelete, votingId }) {
   return (
     <div className={depth > 0 ? "ml-4 border-l border-gray-200 pl-3 dark:border-gray-600" : ""}>
       <PostCard
         post={reply}
+        postNumber={postNumber}
         canDelete={isForumOwner(reply, identity.user)}
         vote={votes?.[reply.id]}
         voting={votingId === reply.id}
@@ -114,6 +120,8 @@ function ReplyTree({ reply, depth, replyingTo, identity, votes, onToggleReply, o
             <ReplyTree
               key={child.id}
               reply={child}
+              postNumber={numbers.get(child.id)}
+              numbers={numbers}
               depth={depth + 1}
               replyingTo={replyingTo}
               identity={identity}
@@ -150,6 +158,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const { refetch } = query;
   const thread = query.data?.thread || null;
   const replies = query.data?.replies || [];
+  const numbersQuery = useQuery("forum-thread-numbers", loadThreadNumberMap);
+  const threadNumber = thread ? numbersQuery.data?.[thread.id] : null;
+  const replyNumbers = postNumbers(replies);
 
   const voteQuery = useQuery(
     ["forum-votes", identity.user?.username, thread?.id, replies.map((reply) => reply.id).join(",")],
@@ -171,6 +182,16 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     viewed.current = false;
     creating.current = false;
   }, [resolvedId]);
+
+  useEffect(() => {
+    if (embedded || !thread || !threadNumber || !router.isReady) return undefined;
+    const canonical = threadPath({ ...thread, number: threadNumber });
+    const [current, hash] = router.asPath.split("#");
+    const path = current.split("?")[0];
+    if (path === canonical) return undefined;
+    router.replace(hash ? `${canonical}#${hash}` : canonical);
+    return undefined;
+  }, [embedded, router, thread, threadNumber]);
 
   useEffect(() => {
     if (!game || !identity.authorName || !identity.user || query.isLoading || thread || creating.current) return undefined;
@@ -267,18 +288,24 @@ export default function ForumThread({ threadId, game = null, embedded = false })
       {embedded && (
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{thread.title}</h2>
-          <Link href={`/forum/t/${thread.id}`} className="text-sm font-medium text-blue-700 hover:underline dark:text-blue-300">
+          <Link href={threadPath({ ...thread, number: threadNumber })} className="text-sm font-medium text-blue-700 hover:underline dark:text-blue-300">
             Open thread
           </Link>
         </div>
       )}
-      {!embedded && <h1 className="text-2xl font-bold text-gray-950 dark:text-white">{thread.title}</h1>}
+      {!embedded && (
+        <h1 className="break-words text-2xl font-bold text-gray-950 dark:text-white">
+          {thread.title}
+          {threadNumber ? <span className="ml-2 text-lg font-semibold tabular-nums text-gray-500 dark:text-gray-400"> #{threadNumber}</span> : null}
+        </h1>
+      )}
       <p className="text-sm text-gray-500 dark:text-gray-400">
         {thread.replyCount || 0} {(thread.replyCount || 0) === 1 ? "comment" : "comments"}
       </p>
       <PostCard
         post={thread}
         isThread
+        postNumber={1}
         canDelete={isForumOwner(thread, identity.user)}
         vote={voteQuery.data?.thread}
         voting={votingId === thread.id}
@@ -290,6 +317,8 @@ export default function ForumThread({ threadId, game = null, embedded = false })
           <ReplyTree
             key={reply.id}
             reply={reply}
+            postNumber={replyNumbers.get(reply.id)}
+            numbers={replyNumbers}
             depth={0}
             replyingTo={replyingTo}
             identity={identity}

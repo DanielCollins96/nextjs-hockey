@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { boardCommentCount } from "../../lib/forum-api";
+import { threadPath } from "../../lib/forum-numbers";
 import { FORUM_SECTIONS, gamesForTeam } from "../../lib/forum-boards";
 import ForumTime, { isRecent } from "./ForumTime";
 import GameThreadLinks from "./GameThreadLinks";
@@ -52,7 +53,7 @@ export default function BoardIndex({ boards, games = [] }) {
                       {board.lastPostTitle ? (
                         <>
                           {board.lastThreadId ? (
-                            <Link href={`/forum/t/${board.lastThreadId}`} className="block truncate text-sm font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
+                            <Link href={threadPath({ id: board.lastThreadId, number: board.lastThreadNumber, title: board.lastPostTitle })} className="block truncate text-sm font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
                               {board.lastPostTitle}
                             </Link>
                           ) : (

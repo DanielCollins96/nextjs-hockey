@@ -9,7 +9,7 @@ import { useForumIdentity } from "../../../components/forum/useForumIdentity";
 import GameThreadLinks from "../../../components/forum/GameThreadLinks";
 import { boardById } from "../../../lib/forum-boards";
 import { calendarDateString } from "../../../lib/format";
-import { createForumThread, explainForumError, loadBoardThreads } from "../../../lib/forum-api";
+import { createForumThread, explainForumError, loadBoardThreads, loadThreadNumberMap } from "../../../lib/forum-api";
 
 export default function ForumBoardPage() {
   const router = useRouter();
@@ -19,6 +19,7 @@ export default function ForumBoardPage() {
   const [extraThreads, setExtraThreads] = useState([]);
   const [cursor, setCursor] = useState(undefined);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [writing, setWriting] = useState(false);
 
   const today = calendarDateString();
   const query = useQuery(
@@ -26,6 +27,7 @@ export default function ForumBoardPage() {
     () => loadBoardThreads(slug),
     { enabled: Boolean(slug && definition) }
   );
+  const numbersQuery = useQuery("forum-thread-numbers", loadThreadNumberMap);
   const gamesQuery = useQuery(
     ["forum-games", today],
     async () => {
@@ -46,7 +48,10 @@ export default function ForumBoardPage() {
   }
 
   const board = query.data?.board || definition;
-  const threads = [...(query.data?.threads || []), ...extraThreads];
+  const threads = [...(query.data?.threads || []), ...extraThreads].map((thread) => ({
+    ...thread,
+    number: numbersQuery.data?.[thread.id],
+  }));
   const moreToken = cursor === undefined ? query.data?.nextToken : cursor;
 
   const loadMore = async () => {
@@ -76,23 +81,34 @@ export default function ForumBoardPage() {
       <GameThreadLinks games={gamesQuery.data} abbreviation={definition?.teamAbbrev} />
 
       <div className="mt-5">
-        <ForumComposer
-          identity={identity}
-          title="New thread"
-          showTitle
-          submitLabel="Create thread"
-          placeholder="Start the thread..."
-          onSubmit={async (draft) => {
-            const thread = await createForumThread({
-              boardSlug: definition.id,
-              title: draft.title,
-              body: draft.body,
-              authorName: draft.authorName,
-              authorId: draft.authorId,
-            });
-            if (thread?.id) router.push(`/forum/t/${thread.id}`);
-          }}
-        />
+        {writing ? (
+          <ForumComposer
+            identity={identity}
+            title="New thread"
+            showTitle
+            submitLabel="Create thread"
+            placeholder="Start the thread..."
+            onCancel={() => setWriting(false)}
+            onSubmit={async (draft) => {
+              const thread = await createForumThread({
+                boardSlug: definition.id,
+                title: draft.title,
+                body: draft.body,
+                authorName: draft.authorName,
+                authorId: draft.authorId,
+              });
+              if (thread?.id) router.push(`/forum/t/${thread.id}`);
+            }}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setWriting(true)}
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            New thread
+          </button>
+        )}
       </div>
 
       {query.isLoading && <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">Loading threads...</p>}

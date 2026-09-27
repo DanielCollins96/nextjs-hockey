@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useQuery } from "react-query";
-import { explainForumError, loadAuthorThreads } from "../../lib/forum-api";
+import { explainForumError, loadAuthorThreads, loadThreadNumberMap } from "../../lib/forum-api";
+import { threadPath } from "../../lib/forum-numbers";
 import { boardById } from "../../lib/forum-boards";
 import ForumTime from "./ForumTime";
 
@@ -10,6 +11,7 @@ export default function ProfileThreads({ username }) {
     () => loadAuthorThreads(username),
     { enabled: Boolean(username) }
   );
+  const numbersQuery = useQuery("forum-thread-numbers", loadThreadNumberMap);
 
   if (query.isLoading) {
     return <p className="text-sm text-gray-500 dark:text-gray-400">Loading forum threads...</p>;
@@ -27,7 +29,7 @@ export default function ProfileThreads({ username }) {
     <ul className="divide-y divide-gray-100 dark:divide-gray-700">
       {query.data.map((thread) => (
         <li key={thread.id} className="py-3">
-          <Link href={`/forum/t/${thread.id}`} className="font-semibold text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
+          <Link href={threadPath({ ...thread, number: numbersQuery.data?.[thread.id] })} className="font-semibold text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
             {thread.title}
           </Link>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

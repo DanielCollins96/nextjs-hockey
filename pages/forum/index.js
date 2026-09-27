@@ -34,7 +34,7 @@ export default function ForumHomePage() {
   }, [identity.user?.username, refetch]);
 
   return (
-    <div className="mx-auto max-w-5xl px-3 py-6">
+    <div className="mx-auto max-w-6xl px-3 py-6">
       <SEO
         title="Hockey Forum"
         description="NHL discussion boards for teams, trades, the draft, and game threads."
@@ -56,9 +56,11 @@ export default function ForumHomePage() {
         </div>
       )}
       {query.data && (
-        <div className="mt-6">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="order-2 min-w-0 lg:order-1">
+            <BoardIndex boards={query.data.boards} games={gamesQuery.data} />
+          </div>
           <HotStrip threads={query.data.hotThreads} />
-          <BoardIndex boards={query.data.boards} games={gamesQuery.data} />
         </div>
       )}
     </div>

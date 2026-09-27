@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { useQuery } from "react-query";
 import { loadRecentReplies } from "../../lib/forum-api";
+import { threadPath } from "../../lib/forum-numbers";
 import ForumBody from "./ForumBody";
 import ForumTime from "./ForumTime";
 
 const PREVIEW_REPLIES = 3;
 
 export default function BoardThread({ thread }) {
-  const href = `/forum/t/${thread.id}`;
+  const href = threadPath(thread);
   const replyCount = thread.replyCount || 0;
   const preview = useQuery(
     ["forum-thread-preview", thread.id],
@@ -20,9 +21,12 @@ export default function BoardThread({ thread }) {
   return (
     <article className="border-b border-gray-200 px-4 py-4 last:border-b-0 dark:border-gray-700">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <Link href={href} className="font-bold text-green-700 hover:underline dark:text-green-400">
+        <Link href={href} className="break-words font-bold text-green-700 hover:underline dark:text-green-400">
           {thread.title}
         </Link>
+        {thread.number ? (
+          <span className="text-xs font-semibold tabular-nums text-gray-500 dark:text-gray-400">#{thread.number}</span>
+        ) : null}
         <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{thread.authorName}</span>
         <span className="text-xs text-gray-500 dark:text-gray-400">
           <ForumTime value={thread.postedAt || thread.createdAt} />

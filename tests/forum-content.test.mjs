@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumImageUrl, isForumUploadKey, isForumVideoUrl } from "../lib/forum-content.js";
+import { FORUM_BODY_MAX, FORUM_TITLE_MAX, assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumImageUrl, isForumUploadKey, isForumVideoUrl, validateTitle } from "../lib/forum-content.js";
 
 test("https image and gif links are allowed", () => {
   assert.equal(isForumImageUrl("https://i.imgur.com/abc123.png"), true);
@@ -41,4 +41,12 @@ test("pages, data urls, and non-image files are rejected", () => {
   assert.equal(isForumImageUrl("http://i.imgur.com/abc123.png"), false);
   assert.equal(isForumImageUrl("data:image/gif;base64,R0lGOD"), false);
   assert.equal(isForumImageUrl("https://example.com/file.pdf"), false);
+});
+
+test("thread titles must be 3 to 80 characters", () => {
+  assert.equal(validateTitle("MEOW"), "MEOW");
+  assert.equal(FORUM_TITLE_MAX, 80);
+  assert.equal(FORUM_BODY_MAX, 10000);
+  assert.throws(() => validateTitle("a".repeat(81)), /80 characters/);
+  assert.throws(() => validateTitle("ab"), /3 to 80/);
 });

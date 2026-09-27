@@ -2,7 +2,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import DisplayNameForm from "./DisplayNameForm";
-import { htmlToText } from "../../lib/forum-content";
+import { FORUM_BODY_MAX, FORUM_TITLE_MAX, htmlToText } from "../../lib/forum-content";
 
 const ForumEditor = dynamic(() => import("./ForumEditor"), { ssr: false });
 
@@ -42,7 +42,8 @@ export default function ForumComposer({
     }
   };
 
-  const dirty = Boolean(draftTitle.trim() || htmlToText(body) || /<img\b|<video\b/i.test(body));
+  const bodyLength = htmlToText(body).length;
+  const dirty = Boolean(draftTitle.trim() || bodyLength || /<img\b|<video\b/i.test(body));
   const cancel = () => {
     setDraftTitle("");
     setBody("");
@@ -56,16 +57,24 @@ export default function ForumComposer({
     >
       <h2 className={embedded ? "text-sm font-semibold text-gray-900 dark:text-gray-100" : "text-lg font-semibold text-gray-900 dark:text-gray-100"}>{title}</h2>
       {showTitle && (
-        <input
-          value={draftTitle}
-          onChange={(event) => setDraftTitle(event.target.value)}
-          maxLength={120}
-          placeholder="Thread title"
-          className="mt-3 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-        />
+        <div className="mt-3">
+          <input
+            value={draftTitle}
+            onChange={(event) => setDraftTitle(event.target.value.slice(0, FORUM_TITLE_MAX))}
+            maxLength={FORUM_TITLE_MAX}
+            placeholder="Thread title"
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+          />
+          <p className="mt-1 text-right text-xs tabular-nums text-gray-500 dark:text-gray-400">
+            {draftTitle.length}/{FORUM_TITLE_MAX}
+          </p>
+        </div>
       )}
       <div className="mt-3">
         <ForumEditor value={body} onChange={setBody} placeholder={placeholder} />
+        <p className={`mt-1 text-right text-xs tabular-nums ${bodyLength > FORUM_BODY_MAX ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`}>
+          {bodyLength}/{FORUM_BODY_MAX}
+        </p>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button
