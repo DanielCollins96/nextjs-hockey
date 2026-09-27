@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FORUM_BODY_MAX, FORUM_TITLE_MAX, assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumImageUrl, isForumUploadKey, isForumVideoUrl, validateTitle } from "../lib/forum-content.js";
+import { FORUM_BODY_MAX, FORUM_DELETED_BODY, FORUM_TITLE_MAX, assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumDeleted, isForumImageUrl, isForumUploadKey, isForumVideoUrl, validateTitle } from "../lib/forum-content.js";
 
 test("https image and gif links are allowed", () => {
   assert.equal(isForumImageUrl("https://i.imgur.com/abc123.png"), true);
@@ -41,6 +41,12 @@ test("pages, data urls, and non-image files are rejected", () => {
   assert.equal(isForumImageUrl("http://i.imgur.com/abc123.png"), false);
   assert.equal(isForumImageUrl("data:image/gif;base64,R0lGOD"), false);
   assert.equal(isForumImageUrl("https://example.com/file.pdf"), false);
+});
+
+test("a deleted post is marked without matching ordinary text", () => {
+  assert.equal(isForumDeleted(FORUM_DELETED_BODY), true);
+  assert.equal(isForumDeleted("<p>Deleted</p>"), false);
+  assert.equal(isForumDeleted("<p>I deleted my take</p>"), false);
 });
 
 test("thread titles must be 3 to 80 characters", () => {

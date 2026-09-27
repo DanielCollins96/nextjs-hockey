@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { FaTrashAlt } from "react-icons/fa";
 import { useQuery } from "react-query";
 import toast from "react-hot-toast";
 
-import { boardById, gameThreadId } from "../../lib/forum-boards";
+import { boardById, gameThreadId, gameThreadTitle } from "../../lib/forum-boards";
 import {
   createForumReply,
   deleteOwnReply,
@@ -19,9 +20,9 @@ import {
   nestReplies,
   toggleVote,
 } from "../../lib/forum-api";
+import { isForumDeleted } from "../../lib/forum-content";
 import { postNumbers, threadPath } from "../../lib/forum-numbers";
 import ConfirmDialog from "../ConfirmDialog";
-import DisplayNameForm from "./DisplayNameForm";
 import ForumBody from "./ForumBody";
 import ForumComposer from "./ForumComposer";
 import ForumTime from "./ForumTime";
@@ -45,43 +46,56 @@ function VoteButton({ active, score, disabled, onClick }) {
 }
 
 function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelete, onReply, voting, composer }) {
+  const deleted = isForumDeleted(post.body);
   return (
     <article id={`p-${postNumber}`} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-gray-900 dark:text-gray-100">{post.authorName || "Member"}</p>
+          <p className={`font-semibold ${deleted ? "italic text-gray-500 dark:text-gray-400" : "text-gray-900 dark:text-gray-100"}`}>
+            {deleted ? "deleted" : (post.authorName || "Member")}
+          </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             <ForumTime value={post.postedAt || post.createdAt} />
             {isThread && post.viewCount ? ` · ${post.viewCount} views` : ""}
           </p>
         </div>
-        <a href={`#p-${postNumber}`} className="shrink-0 font-mono text-xs font-semibold tabular-nums text-gray-500 hover:text-blue-700 dark:text-gray-400 dark:hover:text-blue-300">
-          #{postNumber}
-        </a>
-        {canDelete && (
-          <button
-            type="button"
-            onClick={onDelete}
-            className="text-xs font-medium text-red-600 hover:underline dark:text-red-400"
-          >
-            Delete
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          <a href={`#p-${postNumber}`} className="font-mono text-xs font-semibold tabular-nums text-gray-500 hover:text-blue-700 dark:text-gray-400 dark:hover:text-blue-300">
+            #{postNumber}
+          </a>
+          {canDelete && !deleted && (
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label="Delete post"
+              title="Delete post"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+            >
+              <FaTrashAlt className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
-      <ForumBody html={post.body} />
-      <div className="mt-3 flex items-center gap-3">
-        <VoteButton active={vote?.value === 1} score={post.score} disabled={voting || !onVote} onClick={onVote} />
-        {onReply && (
-          <button
-            type="button"
-            onClick={onReply}
-            className="text-xs font-semibold text-blue-700 hover:underline dark:text-blue-300"
-          >
-            Reply
-          </button>
-        )}
-      </div>
-      {composer && (
+      {deleted ? (
+        <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">Deleted</p>
+      ) : (
+        <>
+          <ForumBody html={post.body} />
+          <div className="mt-3 flex items-center gap-3">
+            <VoteButton active={vote?.value === 1} score={post.score} disabled={voting || !onVote} onClick={onVote} />
+            {onReply && (
+              <button
+                type="button"
+                onClick={onReply}
+                className="text-xs font-semibold text-blue-700 hover:underline dark:text-blue-300"
+              >
+                Reply
+              </button>
+            )}
+          </div>
+        </>
+      )}
+      {!deleted && composer && (
         <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
           {composer}
         </div>
@@ -144,7 +158,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const identity = useForumIdentity();
   const resolvedId = game ? gameThreadId(game.id) : threadId;
   const viewed = useRef(false);
-  const creating = useRef(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [votingId, setVotingId] = useState(null);
@@ -180,7 +193,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
 
   useEffect(() => {
     viewed.current = false;
-    creating.current = false;
   }, [resolvedId]);
 
   useEffect(() => {
@@ -192,18 +204,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     router.replace(hash ? `${canonical}#${hash}` : canonical);
     return undefined;
   }, [embedded, router, thread, threadNumber]);
-
-  useEffect(() => {
-    if (!game || !identity.authorName || !identity.user || query.isLoading || thread || creating.current) return undefined;
-    creating.current = true;
-    ensureGameThread(game, {
-      authorName: identity.authorName,
-      authorId: identity.user.username,
-    })
-      .then(() => refetch())
-      .catch((error) => toast.error(explainForumError(error)));
-    return undefined;
-  }, [game, identity.authorName, identity.user, query.isLoading, refetch, thread]);
 
   useEffect(() => {
     if (!identity.user || !thread || viewed.current) return undefined;
@@ -238,13 +238,12 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     try {
       if (deleteTarget.kind === "thread") {
         await deleteOwnThread(thread);
-        toast.success("Thread deleted");
-        if (embedded) query.refetch();
-        else router.push(`/forum/b/${thread.boardSlug}`);
+        toast.success("Post deleted");
+        await query.refetch();
       } else {
         await deleteOwnReply(deleteTarget.reply, thread);
-        toast.success("Reply deleted");
-        query.refetch();
+        toast.success("Post deleted");
+        await query.refetch();
       }
       setDeleteTarget(null);
     } catch (error) {
@@ -262,14 +261,37 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     return <p className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">{explainForumError(query.error)}</p>;
   }
 
+  if (!thread && game) {
+    const title = gameThreadTitle(game);
+    return (
+      <div id="thread" className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300">No posts yet. The game thread is created with the first post.</p>
+        <ForumComposer
+          identity={identity}
+          title="Post"
+          submitLabel="Post"
+          placeholder="Write the first post..."
+          onSubmit={async (draft) => {
+            const created = await ensureGameThread(game);
+            if (!created?.id) throw new Error("Could not open the game thread.");
+            await createForumReply({
+              thread: created,
+              body: draft.body,
+              authorName: draft.authorName,
+              authorId: draft.authorId,
+            });
+            await query.refetch();
+          }}
+        />
+      </div>
+    );
+  }
+
   if (!thread) {
     return (
       <div id="thread" className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Game thread</h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">This game does not have a thread yet.</p>
-        <div className="mt-3">
-          <DisplayNameForm identity={identity} compact />
-        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-300">That thread does not exist.</p>
       </div>
     );
   }
@@ -287,15 +309,17 @@ export default function ForumThread({ threadId, game = null, embedded = false })
       )}
       {embedded && (
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{thread.title}</h2>
+          <h2 className={`text-xl font-bold ${isForumDeleted(thread.body) ? "italic text-gray-500 dark:text-gray-400" : "text-gray-900 dark:text-gray-100"}`}>
+            {isForumDeleted(thread.body) ? "Deleted" : thread.title}
+          </h2>
           <Link href={threadPath({ ...thread, number: threadNumber })} className="text-sm font-medium text-blue-700 hover:underline dark:text-blue-300">
             Open thread
           </Link>
         </div>
       )}
       {!embedded && (
-        <h1 className="break-words text-2xl font-bold text-gray-950 dark:text-white">
-          {thread.title}
+        <h1 className={`break-words text-2xl font-bold ${isForumDeleted(thread.body) ? "italic text-gray-500 dark:text-gray-400" : "text-gray-950 dark:text-white"}`}>
+          {isForumDeleted(thread.body) ? "Deleted" : thread.title}
           {threadNumber ? <span className="ml-2 text-lg font-semibold tabular-nums text-gray-500 dark:text-gray-400"> #{threadNumber}</span> : null}
         </h1>
       )}
@@ -355,8 +379,8 @@ export default function ForumThread({ threadId, game = null, embedded = false })
       />
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title={deleteTarget?.kind === "thread" ? "Delete thread" : "Delete reply"}
-        message="This cannot be undone."
+        title="Delete post"
+        message="The post stays in place and shows as deleted."
         confirmText="Delete"
         isLoading={deleting}
         onCancel={() => setDeleteTarget(null)}

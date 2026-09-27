@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isThreadNumber, postNumbers, threadIdForNumber, threadPath, threadNumbers } from "../lib/forum-numbers.js";
+import { isForumOwner, isThreadNumber, postNumbers, threadIdForNumber, threadPath, threadNumbers } from "../lib/forum-numbers.js";
+
+test("the author can delete a forum post even when the owner field is hidden", () => {
+  const user = { username: "fan@example.com" };
+  assert.equal(isForumOwner({ authorId: "fan@example.com", owner: null }, user), true);
+  assert.equal(isForumOwner({ authorId: "someone-else", owner: null }, user), false);
+  assert.equal(isForumOwner({ owner: "abc::fan@example.com" }, user), true);
+  assert.equal(isForumOwner({ authorId: "system", owner: "fan@example.com" }, user), false);
+});
 
 test("threads are numbered as integers from oldest to newest", () => {
   const numbers = threadNumbers([

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useQuery } from "react-query";
+import { isForumDeleted } from "../../lib/forum-content";
 import { loadRecentReplies } from "../../lib/forum-api";
 import { threadPath } from "../../lib/forum-numbers";
 import ForumBody from "./ForumBody";
@@ -15,7 +16,7 @@ export default function BoardThread({ thread }) {
     () => loadRecentReplies(thread.id, PREVIEW_REPLIES),
     { enabled: replyCount > 0 }
   );
-  const replies = preview.data || [];
+  const replies = (preview.data || []).slice(-PREVIEW_REPLIES);
   const omitted = Math.max(0, replyCount - replies.length);
 
   return (
@@ -35,7 +36,11 @@ export default function BoardThread({ thread }) {
         </span>
       </div>
       <div className="max-h-48 overflow-hidden">
-        <ForumBody html={thread.body} />
+        {isForumDeleted(thread.body) ? (
+          <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">Deleted</p>
+        ) : (
+          <ForumBody html={thread.body} />
+        )}
       </div>
       {omitted > 0 && (
         <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
@@ -48,22 +53,26 @@ export default function BoardThread({ thread }) {
       {replies.length > 0 && (
         <div className="mt-3 space-y-2 border-l-2 border-gray-200 pl-3 dark:border-gray-600">
           {replies.map((reply) => (
-            <div key={reply.id} className="rounded-md bg-gray-50 px-3 py-2 dark:bg-gray-900/50">
+            <div key={reply.id} className="max-h-32 overflow-hidden rounded-md bg-gray-50 px-3 py-2 dark:bg-gray-900/50">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                <span className="font-semibold text-gray-800 dark:text-gray-100">{reply.authorName}</span>
+                <span className={`font-semibold ${isForumDeleted(reply.body) ? "italic text-gray-500 dark:text-gray-400" : "text-gray-800 dark:text-gray-100"}`}>
+                  {isForumDeleted(reply.body) ? "deleted" : reply.authorName}
+                </span>
                 {" · "}
                 <ForumTime value={reply.postedAt || reply.createdAt} />
               </p>
-              <ForumBody html={reply.body} />
+              {isForumDeleted(reply.body) ? (
+                <p className="text-sm italic text-gray-500 dark:text-gray-400">Deleted</p>
+              ) : (
+                <ForumBody html={reply.body} />
+              )}
             </div>
           ))}
         </div>
       )}
-      {omitted === 0 && (
-        <Link href={href} className="mt-3 inline-block text-sm font-medium text-blue-700 hover:underline dark:text-blue-300">
-          View thread
-        </Link>
-      )}
+      <Link href={href} className="mt-3 inline-block text-sm font-medium text-blue-700 hover:underline dark:text-blue-300">
+        View thread
+      </Link>
     </article>
   );
 }
