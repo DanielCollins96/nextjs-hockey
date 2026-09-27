@@ -177,7 +177,10 @@ type ForumReply
 
 type ForumVote
   @model
-  @auth(rules: [{ allow: owner }]) {
+  @auth(rules: [
+    { allow: owner, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read, update] }
+  ]) {
   id: ID!
   targetId: ID!
   targetType: String!

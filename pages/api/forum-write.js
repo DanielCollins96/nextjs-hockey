@@ -47,9 +47,9 @@ export default async function handler(req, res) {
     }
     if (action === "voteTarget") {
       const activity = await voteTrustedTarget({
+        username: user.username,
         id: req.body.id,
-        boardSlug: req.body.boardSlug,
-        delta: req.body.delta,
+        targetType: req.body.targetType,
       });
       return res.status(200).json({ activity });
     }

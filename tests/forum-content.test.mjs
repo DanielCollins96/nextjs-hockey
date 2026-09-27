@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FORUM_BODY_MAX, FORUM_DELETED_BODY, FORUM_TITLE_MAX, assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumDeleted, isForumImageUrl, isForumUploadKey, isForumVideoUrl, validateTitle } from "../lib/forum-content.js";
+import { FORUM_BODY_MAX, FORUM_DELETED_BODY, FORUM_TITLE_MAX, assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumDeleted, isForumImageUrl, isForumUploadKey, isForumVideoUrl, requireForumBody, sanitizeForumHtml, validateTitle } from "../lib/forum-content.js";
 
 test("https image and gif links are allowed", () => {
   assert.equal(isForumImageUrl("https://i.imgur.com/abc123.png"), true);
@@ -55,4 +55,25 @@ test("thread titles must be 3 to 80 characters", () => {
   assert.equal(FORUM_BODY_MAX, 10000);
   assert.throws(() => validateTitle("a".repeat(81)), /80 characters/);
   assert.throws(() => validateTitle("ab"), /3 to 80/);
+});
+
+test("trusted creates can sanitize a post body in Node", async () => {
+  assert.equal(typeof window, "undefined");
+  const clean = await requireForumBody("<p>First line shift.</p>");
+  assert.match(clean, /First line shift/);
+  const withScript = await sanitizeForumHtml("<p>Keep me</p><script>alert(1)</script>");
+  assert.match(withScript, /Keep me/);
+  assert.doesNotMatch(withScript, /script/i);
+  await assert.rejects(() => requireForumBody("<script>alert(1)</script>"), /Write something/);
+});
+
+test("server sanitize keeps allowed media and drops the rest", async () => {
+  const image = await requireForumBody('<p><img src="https://i.imgur.com/abc123.png"></p>');
+  assert.match(image, /i\.imgur\.com\/abc123\.png/);
+  assert.match(image, /loading="lazy"/);
+  const upload = await requireForumBody('<p><img data-upload="forum/550e8400-e29b-41d4-a716-446655440000.gif" src="https://evil.example/x.gif"></p>');
+  assert.match(upload, /forum-uploads\.hocke\.invalid\/forum\/550e8400-e29b-41d4-a716-446655440000\.gif/);
+  const dropped = await sanitizeForumHtml('<p><img src="javascript:alert(1)"><a href="javascript:alert(1)">x</a></p>');
+  assert.doesNotMatch(dropped, /javascript/i);
+  assert.match(dropped, />x<\/a>/);
 });
