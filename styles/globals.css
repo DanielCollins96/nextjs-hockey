@@ -268,8 +268,8 @@
 
 .prose img,
 .prose video {
-  max-width: 125px;
-  max-height: 125px;
+  max-width: 150px;
+  max-height: 150px;
   width: auto;
   height: auto;
   margin: 0.5rem 0;
