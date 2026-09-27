@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumImageUrl, isForumUploadKey, isForumVideoUrl } from "../lib/forum-content.js";
+import { assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumImageUrl, isForumUploadKey, isForumVideoUrl } from "../lib/forum-content.js";
 
 test("https image and gif links are allowed", () => {
   assert.equal(isForumImageUrl("https://i.imgur.com/abc123.png"), true);
@@ -22,6 +22,12 @@ test("an expired upload link still points at the stored file", () => {
   assert.equal(forumUploadKeyFromStoredSrc(signed), "forum/dd9dd9c8-1a0d-4dd4-8cab-0f0c686025ec.png");
   assert.equal(forumUploadKeyFromStoredSrc(forumUploadSrc("forum/dd9dd9c8-1a0d-4dd4-8cab-0f0c686025ec.png")), "forum/dd9dd9c8-1a0d-4dd4-8cab-0f0c686025ec.png");
   assert.equal(forumUploadKeyFromStoredSrc("https://example.com/public/not-forum/file.png"), "");
+});
+test("a post cannot carry an unlimited number of uploads", () => {
+  const image = '<img src="https://forum-uploads.hocke.invalid/forum/550e8400-e29b-41d4-a716-446655440000.png" data-upload="forum/550e8400-e29b-41d4-a716-446655440000.png">';
+  assert.doesNotThrow(() => assertForumMediaLimits(image.repeat(4)));
+  assert.throws(() => assertForumMediaLimits(image.repeat(5)), /4 uploaded images/);
+  assert.throws(() => assertForumMediaLimits("<video src=\"https://example.com/a.mp4\"></video>".repeat(3)), /2 videos/);
 });
 test("funnyjunk hd clips are mp4 videos", () => {
   const clip = "https://anime3.funnyjunk.com/hdgifs/The+granola+tastes+like+glue_4fcc86_13410118-HD-AV1.mp4";

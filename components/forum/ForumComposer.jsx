@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import DisplayNameForm from "./DisplayNameForm";
+import { htmlToText } from "../../lib/forum-content";
 
 const ForumEditor = dynamic(() => import("./ForumEditor"), { ssr: false });
 
@@ -41,6 +42,13 @@ export default function ForumComposer({
     }
   };
 
+  const dirty = Boolean(draftTitle.trim() || htmlToText(body) || /<img\b|<video\b/i.test(body));
+  const cancel = () => {
+    setDraftTitle("");
+    setBody("");
+    onCancel?.();
+  };
+
   return (
     <form
       onSubmit={submit}
@@ -67,11 +75,12 @@ export default function ForumComposer({
         >
           {saving ? "Posting..." : submitLabel}
         </button>
-        {onCancel && (
+        {(onCancel || dirty) && (
           <button
             type="button"
-            onClick={onCancel}
-            className="text-sm font-medium text-gray-600 hover:underline dark:text-gray-300"
+            onClick={cancel}
+            disabled={saving}
+            className="text-sm font-medium text-gray-600 hover:underline disabled:opacity-70 dark:text-gray-300"
           >
             Cancel
           </button>

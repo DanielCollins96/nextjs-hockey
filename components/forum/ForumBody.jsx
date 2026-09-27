@@ -35,7 +35,7 @@ export default function ForumBody({ html }) {
   return (
     <>
       <div
-        className="prose prose-sm mt-2 max-w-none text-gray-800 dark:prose-invert dark:text-gray-100 [&_img]:max-h-96 [&_img]:cursor-zoom-in [&_video]:cursor-zoom-in"
+        className="prose prose-sm mt-2 max-w-none text-gray-800 dark:prose-invert dark:text-gray-100"
         onClick={openMedia}
         dangerouslySetInnerHTML={{ __html: safeHtml }}
       />

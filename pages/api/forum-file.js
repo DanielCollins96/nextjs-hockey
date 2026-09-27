@@ -1,5 +1,5 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { isForumUploadKey } from "../../lib/forum-content";
+import { FORUM_FILE_MAX_BYTES, isForumUploadKey } from "../../lib/forum-content";
 import awsExports from "../../aws-exports";
 
 const TYPES = {
@@ -18,6 +18,9 @@ export default async function handler(req, res) {
 
   const key = String(req.query.key || "");
   if (!isForumUploadKey(key)) return res.status(400).end();
+  const extension = key.split(".").pop().toLowerCase();
+  const contentType = TYPES[extension];
+  if (!contentType) return res.status(400).end();
 
   const client = new S3Client({ region: awsExports.aws_user_files_s3_bucket_region });
   try {
@@ -25,9 +28,13 @@ export default async function handler(req, res) {
       Bucket: awsExports.aws_user_files_s3_bucket,
       Key: `public/${key}`,
     }));
-    const extension = key.split(".").pop().toLowerCase();
-    res.setHeader("Content-Type", object.ContentType || TYPES[extension] || "application/octet-stream");
-    res.setHeader("Cache-Control", "public, max-age=86400");
+    if ((object.ContentLength || 0) > FORUM_FILE_MAX_BYTES) {
+      object.Body?.destroy?.();
+      return res.status(413).end();
+    }
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     const bytes = await object.Body.transformToByteArray();
     return res.status(200).send(Buffer.from(bytes));
   } catch {
