@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { boardCommentCount } from "../../lib/forum-api";
 import { FORUM_SECTIONS, gamesForTeam } from "../../lib/forum-boards";
 import ForumTime, { isRecent } from "./ForumTime";
 import GameThreadLinks from "./GameThreadLinks";
@@ -43,7 +44,7 @@ export default function BoardIndex({ boards, games = [] }) {
                       <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{board.description}</p>
                       <div className="mt-2 flex gap-3">
                         <Count label="threads" value={board.threadCount} />
-                        <Count label="posts" value={board.postCount} />
+                        <Count label="comments" value={boardCommentCount(board)} />
                       </div>
                       <GameThreadLinks games={teamGames} abbreviation={board.teamAbbrev} />
                     </div>

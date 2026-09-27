@@ -12,6 +12,8 @@ export default function ForumComposer({
   showTitle = false,
   submitLabel = "Post",
   placeholder,
+  onCancel,
+  embedded = false,
 }) {
   const [draftTitle, setDraftTitle] = useState("");
   const [body, setBody] = useState("");
@@ -40,8 +42,11 @@ export default function ForumComposer({
   };
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+    <form
+      onSubmit={submit}
+      className={embedded ? "" : "rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"}
+    >
+      <h2 className={embedded ? "text-sm font-semibold text-gray-900 dark:text-gray-100" : "text-lg font-semibold text-gray-900 dark:text-gray-100"}>{title}</h2>
       {showTitle && (
         <input
           value={draftTitle}
@@ -54,13 +59,24 @@ export default function ForumComposer({
       <div className="mt-3">
         <ForumEditor value={body} onChange={setBody} placeholder={placeholder} />
       </div>
-      <button
-        type="submit"
-        disabled={saving}
-        className="mt-3 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-70"
-      >
-        {saving ? "Posting..." : submitLabel}
-      </button>
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-70"
+        >
+          {saving ? "Posting..." : submitLabel}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-sm font-medium text-gray-600 hover:underline dark:text-gray-300"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

@@ -15,6 +15,7 @@ import {
   isForumOwner,
   loadThread,
   loadVote,
+  nestReplies,
   toggleVote,
 } from "../../lib/forum-api";
 import ConfirmDialog from "../ConfirmDialog";
@@ -41,7 +42,7 @@ function VoteButton({ active, score, disabled, onClick }) {
   );
 }
 
-function PostCard({ post, isThread, canDelete, vote, onVote, onDelete, voting }) {
+function PostCard({ post, isThread, canDelete, vote, onVote, onDelete, onReply, voting, composer }) {
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-start justify-between gap-3">
@@ -63,10 +64,70 @@ function PostCard({ post, isThread, canDelete, vote, onVote, onDelete, voting })
         )}
       </div>
       <ForumBody html={post.body} />
-      <div className="mt-3">
+      <div className="mt-3 flex items-center gap-3">
         <VoteButton active={vote?.value === 1} score={post.score} disabled={voting || !onVote} onClick={onVote} />
+        {onReply && (
+          <button
+            type="button"
+            onClick={onReply}
+            className="text-xs font-semibold text-blue-700 hover:underline dark:text-blue-300"
+          >
+            Reply
+          </button>
+        )}
       </div>
+      {composer && (
+        <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+          {composer}
+        </div>
+      )}
     </article>
+  );
+}
+
+function ReplyTree({ reply, depth, replyingTo, identity, votes, onToggleReply, onSubmitReply, onVote, onDelete, votingId }) {
+  return (
+    <div className={depth > 0 ? "ml-4 border-l border-gray-200 pl-3 dark:border-gray-600" : ""}>
+      <PostCard
+        post={reply}
+        canDelete={isForumOwner(reply, identity.user)}
+        vote={votes?.[reply.id]}
+        voting={votingId === reply.id}
+        onVote={identity.user ? () => onVote("reply", reply) : null}
+        onDelete={() => onDelete(reply)}
+        onReply={() => onToggleReply(reply.id)}
+        composer={replyingTo === reply.id ? (
+          <ForumComposer
+            embedded
+            identity={identity}
+            title={`Reply to ${reply.authorName}`}
+            submitLabel="Reply"
+            placeholder="Write a reply..."
+            onCancel={() => onToggleReply(null)}
+            onSubmit={(draft) => onSubmitReply(draft, reply.id)}
+          />
+        ) : null}
+      />
+      {reply.children?.length > 0 && (
+        <div className="mt-3 space-y-3">
+          {reply.children.map((child) => (
+            <ReplyTree
+              key={child.id}
+              reply={child}
+              depth={depth + 1}
+              replyingTo={replyingTo}
+              identity={identity}
+              votes={votes}
+              onToggleReply={onToggleReply}
+              onSubmitReply={onSubmitReply}
+              onVote={onVote}
+              onDelete={onDelete}
+              votingId={votingId}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -79,6 +140,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [votingId, setVotingId] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
 
   const query = useQuery(
     ["forum-thread", resolvedId],
@@ -211,6 +273,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         </div>
       )}
       {!embedded && <h1 className="text-2xl font-bold text-gray-950 dark:text-white">{thread.title}</h1>}
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        {thread.replyCount || 0} {(thread.replyCount || 0) === 1 ? "comment" : "comments"}
+      </p>
       <PostCard
         post={thread}
         isThread
@@ -221,21 +286,35 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         onDelete={() => setDeleteTarget({ kind: "thread" })}
       />
       <div className="space-y-3">
-        {replies.map((reply) => (
-          <PostCard
+        {nestReplies(replies).map((reply) => (
+          <ReplyTree
             key={reply.id}
-            post={reply}
-            canDelete={isForumOwner(reply, identity.user)}
-            vote={voteQuery.data?.replies?.[reply.id]}
-            voting={votingId === reply.id}
-            onVote={identity.user ? () => vote("reply", reply) : null}
-            onDelete={() => setDeleteTarget({ kind: "reply", reply })}
+            reply={reply}
+            depth={0}
+            replyingTo={replyingTo}
+            identity={identity}
+            votes={voteQuery.data?.replies}
+            votingId={votingId}
+            onToggleReply={(replyId) => setReplyingTo((current) => (replyId && current === replyId ? null : replyId))}
+            onVote={vote}
+            onDelete={(target) => setDeleteTarget({ kind: "reply", reply: target })}
+            onSubmitReply={async (draft, parentReplyId) => {
+              await createForumReply({
+                thread,
+                body: draft.body,
+                authorName: draft.authorName,
+                authorId: draft.authorId,
+                parentReplyId,
+              });
+              setReplyingTo(null);
+              await query.refetch();
+            }}
           />
         ))}
       </div>
       <ForumComposer
         identity={identity}
-        title="Reply"
+        title="Reply to thread"
         submitLabel="Reply"
         placeholder="Write a reply..."
         onSubmit={(draft) => createForumReply({

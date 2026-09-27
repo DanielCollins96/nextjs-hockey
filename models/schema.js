@@ -467,6 +467,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "parentReplyId": {
+                    "name": "parentReplyId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "score": {
                     "name": "score",
                     "isArray": false,
@@ -604,5 +611,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "016dae3adcad99e27343bdbc827aa99c"
+    "version": "67e2c21b426b196ac3309a65ed6181c4"
 };

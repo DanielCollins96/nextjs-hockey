@@ -20,7 +20,7 @@ export function useImageModal() {
   return { isOpen, imageSrc, imageAlt, openModal, closeModal };
 }
 
-export default function ImageModal({ isOpen, onClose, src, alt = "" }) {
+export default function ImageModal({ isOpen, onClose, src, alt = "", kind = "image" }) {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape") {
@@ -55,17 +55,33 @@ export default function ImageModal({ isOpen, onClose, src, alt = "" }) {
       </button>
 
       <div
-        className="relative w-[72vw] h-[62vh] sm:w-[80vw] sm:h-[75vh] max-w-3xl max-h-3xl cursor-default"
+        className={kind === "image"
+          ? "relative w-[72vw] h-[62vh] sm:w-[80vw] sm:h-[75vh] max-w-3xl max-h-3xl cursor-default"
+          : "cursor-default"}
         onClick={(e) => e.stopPropagation()}
       >
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="object-contain"
-          unoptimized
-          priority
-        />
+        {kind === "video" ? (
+          <video
+            src={src}
+            controls
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="max-h-[85vh] max-w-[92vw]"
+          />
+        ) : kind === "native" ? (
+          <img src={src} alt={alt} className="max-h-[85vh] max-w-[92vw] object-contain" />
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            className="object-contain"
+            unoptimized
+            priority
+          />
+        )}
       </div>
 
       {alt && (

@@ -140,6 +140,7 @@ type EagerForumReply = {
   readonly body: string;
   readonly authorName: string;
   readonly authorId: string;
+  readonly parentReplyId?: string | null;
   readonly score?: number | null;
   readonly postedAt: string;
 }
@@ -150,6 +151,7 @@ type LazyForumReply = {
   readonly body: string;
   readonly authorName: string;
   readonly authorId: string;
+  readonly parentReplyId?: string | null;
   readonly score?: number | null;
   readonly postedAt: string;
 }

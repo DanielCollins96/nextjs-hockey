@@ -514,6 +514,7 @@ export const repliesByThread = /* GraphQL */ `
         id
         threadId
         authorId
+        parentReplyId
         score
         postedAt
         _version
@@ -549,6 +550,7 @@ export const syncForumReplies = /* GraphQL */ `
         id
         threadId
         authorId
+        parentReplyId
         score
         postedAt
         _version
@@ -573,6 +575,7 @@ export const getForumReply = /* GraphQL */ `
       id
       threadId
       authorId
+      parentReplyId
       score
       postedAt
       _version
@@ -598,6 +601,7 @@ export const listForumReplys = /* GraphQL */ `
         id
         threadId
         authorId
+        parentReplyId
         score
         postedAt
         _version

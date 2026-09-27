@@ -48,6 +48,7 @@ const replyFields = `
   body
   authorName
   authorId
+  parentReplyId
   score
   postedAt
   owner

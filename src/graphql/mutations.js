@@ -301,6 +301,7 @@ export const createForumReply = /* GraphQL */ `
       id
       threadId
       authorId
+      parentReplyId
       score
       postedAt
       _version
@@ -324,6 +325,7 @@ export const updateForumReply = /* GraphQL */ `
       id
       threadId
       authorId
+      parentReplyId
       score
       postedAt
       _version
@@ -347,6 +349,7 @@ export const deleteForumReply = /* GraphQL */ `
       id
       threadId
       authorId
+      parentReplyId
       score
       postedAt
       _version

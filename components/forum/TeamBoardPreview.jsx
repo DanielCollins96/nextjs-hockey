@@ -40,7 +40,7 @@ export default function TeamBoardPreview({ abbreviation, teamName }) {
               {thread.title}
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {thread.replyCount || 0} replies · <ForumTime value={thread.lastActivityAt || thread.postedAt} />
+              {thread.replyCount || 0} {(thread.replyCount || 0) === 1 ? "comment" : "comments"} · <ForumTime value={thread.lastActivityAt || thread.postedAt} />
             </p>
           </li>
         ))}

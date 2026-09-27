@@ -26,6 +26,8 @@ export default function BoardThread({ thread }) {
         <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{thread.authorName}</span>
         <span className="text-xs text-gray-500 dark:text-gray-400">
           <ForumTime value={thread.postedAt || thread.createdAt} />
+          {" · "}
+          {replyCount} {replyCount === 1 ? "comment" : "comments"}
         </span>
       </div>
       <div className="max-h-48 overflow-hidden">
@@ -33,7 +35,7 @@ export default function BoardThread({ thread }) {
       </div>
       {omitted > 0 && (
         <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-          {omitted} {omitted === 1 ? "reply" : "replies"} omitted.{" "}
+          {omitted} {omitted === 1 ? "comment" : "comments"} omitted.{" "}
           <Link href={href} className="font-medium text-blue-700 hover:underline dark:text-blue-300">
             Click here to view.
           </Link>

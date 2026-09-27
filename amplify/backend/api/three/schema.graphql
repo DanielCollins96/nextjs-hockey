@@ -93,6 +93,7 @@ type ForumReply
     { allow: owner }
   ])
   authorId: String!
+  parentReplyId: ID
   score: Int
   postedAt: AWSDateTime!
 }
