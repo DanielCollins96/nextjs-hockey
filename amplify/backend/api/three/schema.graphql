@@ -37,83 +37,92 @@ type ForumThread
   @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update, delete] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read] }
+    { allow: owner, operations: [update] }
   ])
   @key(name: "byBoard", fields: ["boardSlug", "lastActivityAt"], queryField: "threadsByBoard")
   @key(name: "byFeed", fields: ["feed", "postedAt"], queryField: "threadsByFeed")
   @key(name: "byAuthor", fields: ["authorId", "postedAt"], queryField: "threadsByAuthor")
   @key(name: "byNumber", fields: ["number"], queryField: "threadsByNumber") {
   id: ID!
+  number: Int! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read] }
+  ])
   boardSlug: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   gameId: String @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   feed: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   authorId: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [read] }
-    { allow: owner, ownerField: "authorId", identityClaim: "cognito:username", operations: [create, read] }
-  ])
-  number: Int! @auth(rules: [
-    { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   title: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
+    { allow: owner, operations: [update] }
   ])
   body: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
+    { allow: owner, operations: [update] }
   ])
   authorName: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [read] }
-    { allow: owner, operations: [create, read, update] }
+    { allow: public, provider: apiKey, operations: [create] }
+    { allow: owner, operations: [update] }
   ])
   score: Int! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   replyCount: Int! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   viewCount: Int @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   postedAt: AWSDateTime! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   lastActivityAt: AWSDateTime! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   lastPostAuthor: String @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   lastPostExcerpt: String @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
 }
 
@@ -121,42 +130,48 @@ type ForumReply
   @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update, delete] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read] }
+    { allow: owner, operations: [update] }
   ])
   @key(name: "byThread", fields: ["threadId", "postedAt"], queryField: "repliesByThread") {
   id: ID!
   threadId: ID! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   body: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
+    { allow: owner, operations: [update] }
   ])
   authorName: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [read] }
-    { allow: owner, operations: [create, read, update] }
+    { allow: public, provider: apiKey, operations: [create] }
+    { allow: owner, operations: [update] }
   ])
   authorId: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [read] }
-    { allow: owner, ownerField: "authorId", identityClaim: "cognito:username", operations: [create, read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   parentReplyId: ID @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   score: Int @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
-    { allow: owner, operations: [update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
   postedAt: AWSDateTime! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create] }
   ])
 }
 
@@ -172,7 +187,8 @@ type ForumVote
 type ForumUsage
   @model(subscriptions: { level: off })
   @auth(rules: [
-    { allow: owner, operations: [create, read, delete] }
+    { allow: owner, ownerField: "userId", identityClaim: "cognito:username", operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read, delete] }
   ])
   @key(name: "byUserDay", fields: ["userId", "day"], queryField: "usageByUserDay") {
   id: ID!
@@ -184,7 +200,8 @@ type ForumUsage
 type ForumCounter
   @model(subscriptions: { level: off })
   @auth(rules: [
-    { allow: private, operations: [create, read, update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read, update] }
   ]) {
   id: ID!
   value: Int!
@@ -194,7 +211,8 @@ type ForumActivity
   @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
-    { allow: private, operations: [create, read, update] }
+    { allow: private, operations: [read] }
+    { allow: public, provider: apiKey, operations: [create, read, update] }
   ])
   @key(name: "byBoardActivity", fields: ["boardSlug", "lastActivityAt"], queryField: "activityByBoard") {
   id: ID!

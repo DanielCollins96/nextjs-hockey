@@ -276,6 +276,46 @@
 				}
 			}
 		},
+		"S3AuthDenyForumUploadPolicy": {
+			"DependsOn": [
+				"S3Bucket"
+			],
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "DenyForumPrefixUploads",
+				"Roles": [
+					{
+						"Ref": "authRoleName"
+					}
+				],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Deny",
+							"Action": [
+								"s3:PutObject",
+								"s3:DeleteObject"
+							],
+							"Resource": [
+								{
+									"Fn::Join": [
+										"",
+										[
+											"arn:aws:s3:::",
+											{
+												"Ref": "S3Bucket"
+											},
+											"/public/forum/*"
+										]
+									]
+								}
+							]
+						}
+					]
+				}
+			}
+		},
 		"S3AuthProtectedPolicy": {
 			"DependsOn": [
 				"S3Bucket"

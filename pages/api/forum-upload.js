@@ -1,6 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import awsExports from "../../aws-exports";
-import { forumS3Client, forumUserFromIdToken } from "../../lib/forum-aws";
+import { forumS3Client, forumVerifiedUser } from "../../lib/forum-aws";
 import {
   FORUM_UPLOAD_MAX_BYTES,
   FORUM_UPLOADS_PER_DAY,
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
   const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
   if (!token) return res.status(401).json({ error: "Log in to upload an image." });
 
-  const user = await forumUserFromIdToken(token).catch(() => null);
+  const user = await forumVerifiedUser(token).catch(() => null);
   if (!user) return res.status(401).json({ error: "Log in to upload an image." });
 
   const extension = forumUploadExtension({ type: String(req.headers["content-type"] || "").split(";")[0] });
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     const body = await readBody(req, FORUM_UPLOAD_MAX_BYTES);
     if (!body.length) throw new Error("That image is empty.");
     const key = `forum/${crypto.randomUUID()}.${extension}`;
-    const client = forumS3Client(user.credentials);
+    const client = forumS3Client();
     await client.send(new PutObjectCommand({
       Bucket: awsExports.aws_user_files_s3_bucket,
       Key: `public/${key}`,
