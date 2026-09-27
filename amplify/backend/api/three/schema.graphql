@@ -167,7 +167,7 @@ type ForumUsage
   @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: owner, ownerField: "userId", identityClaim: "cognito:username", operations: [read] }
-    { allow: public, provider: iam, operations: [create, read, delete] }
+    { allow: public, provider: iam, operations: [create, delete] }
   ])
   @key(name: "byUserDay", fields: ["userId", "day"], queryField: "usageByUserDay") {
   id: ID!
