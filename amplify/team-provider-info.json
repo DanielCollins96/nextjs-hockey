@@ -33,6 +33,10 @@
       },
       "storage": {
         "nhljsstorage": {}
+      },
+      "api": {
+        "restapithree": {},
+        "three": {}
       }
     }
   },

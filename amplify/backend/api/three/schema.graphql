@@ -34,17 +34,20 @@ type ForumBoard
 }
 
 type ForumThread
-  @model
+  @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read, update] }
     { allow: owner }
-  ]) {
+  ])
+  @key(name: "byBoard", fields: ["boardSlug", "lastActivityAt"], queryField: "threadsByBoard")
+  @key(name: "byFeed", fields: ["feed", "postedAt"], queryField: "threadsByFeed")
+  @key(name: "byAuthor", fields: ["authorId", "postedAt"], queryField: "threadsByAuthor") {
   id: ID!
-  boardSlug: String! @index(name: "byBoard", sortKeyFields: ["lastActivityAt"], queryField: "threadsByBoard")
-  gameId: String @index(name: "byGame", queryField: "threadsByGame")
-  feed: String! @index(name: "byFeed", sortKeyFields: ["postedAt"], queryField: "threadsByFeed")
-  authorId: String! @index(name: "byAuthor", sortKeyFields: ["postedAt"], queryField: "threadsByAuthor")
+  boardSlug: String!
+  gameId: String
+  feed: String!
+  authorId: String!
   title: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read] }
@@ -70,14 +73,15 @@ type ForumThread
 }
 
 type ForumReply
-  @model
+  @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read, update] }
     { allow: owner }
-  ]) {
+  ])
+  @key(name: "byThread", fields: ["threadId", "postedAt"], queryField: "repliesByThread") {
   id: ID!
-  threadId: ID! @index(name: "byThread", sortKeyFields: ["postedAt"], queryField: "repliesByThread")
+  threadId: ID!
   body: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read] }

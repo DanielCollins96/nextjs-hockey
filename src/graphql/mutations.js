@@ -17,6 +17,7 @@ export const createPost = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -36,6 +37,7 @@ export const updatePost = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -55,6 +57,7 @@ export const deletePost = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -73,6 +76,7 @@ export const createComment = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -91,6 +95,7 @@ export const updateComment = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -109,6 +114,310 @@ export const deleteComment = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
+    }
+  }
+`;
+export const createForumBoard = /* GraphQL */ `
+  mutation CreateForumBoard(
+    $input: CreateForumBoardInput!
+    $condition: ModelForumBoardConditionInput
+  ) {
+    createForumBoard(input: $input, condition: $condition) {
+      id
+      slug
+      title
+      description
+      section
+      teamAbbrev
+      sortOrder
+      threadCount
+      postCount
+      lastPostTitle
+      lastPostAuthor
+      lastPostAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateForumBoard = /* GraphQL */ `
+  mutation UpdateForumBoard(
+    $input: UpdateForumBoardInput!
+    $condition: ModelForumBoardConditionInput
+  ) {
+    updateForumBoard(input: $input, condition: $condition) {
+      id
+      slug
+      title
+      description
+      section
+      teamAbbrev
+      sortOrder
+      threadCount
+      postCount
+      lastPostTitle
+      lastPostAuthor
+      lastPostAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteForumBoard = /* GraphQL */ `
+  mutation DeleteForumBoard(
+    $input: DeleteForumBoardInput!
+    $condition: ModelForumBoardConditionInput
+  ) {
+    deleteForumBoard(input: $input, condition: $condition) {
+      id
+      slug
+      title
+      description
+      section
+      teamAbbrev
+      sortOrder
+      threadCount
+      postCount
+      lastPostTitle
+      lastPostAuthor
+      lastPostAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const createForumThread = /* GraphQL */ `
+  mutation CreateForumThread(
+    $input: CreateForumThreadInput!
+    $condition: ModelForumThreadConditionInput
+  ) {
+    createForumThread(input: $input, condition: $condition) {
+      id
+      boardSlug
+      gameId
+      feed
+      authorId
+      score
+      replyCount
+      viewCount
+      postedAt
+      lastActivityAt
+      lastPostAuthor
+      lastPostExcerpt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      title
+      body
+      authorName
+      __typename
+    }
+  }
+`;
+export const updateForumThread = /* GraphQL */ `
+  mutation UpdateForumThread(
+    $input: UpdateForumThreadInput!
+    $condition: ModelForumThreadConditionInput
+  ) {
+    updateForumThread(input: $input, condition: $condition) {
+      id
+      boardSlug
+      gameId
+      feed
+      authorId
+      score
+      replyCount
+      viewCount
+      postedAt
+      lastActivityAt
+      lastPostAuthor
+      lastPostExcerpt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      title
+      body
+      authorName
+      __typename
+    }
+  }
+`;
+export const deleteForumThread = /* GraphQL */ `
+  mutation DeleteForumThread(
+    $input: DeleteForumThreadInput!
+    $condition: ModelForumThreadConditionInput
+  ) {
+    deleteForumThread(input: $input, condition: $condition) {
+      id
+      boardSlug
+      gameId
+      feed
+      authorId
+      score
+      replyCount
+      viewCount
+      postedAt
+      lastActivityAt
+      lastPostAuthor
+      lastPostExcerpt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      title
+      body
+      authorName
+      __typename
+    }
+  }
+`;
+export const createForumReply = /* GraphQL */ `
+  mutation CreateForumReply(
+    $input: CreateForumReplyInput!
+    $condition: ModelForumReplyConditionInput
+  ) {
+    createForumReply(input: $input, condition: $condition) {
+      id
+      threadId
+      authorId
+      score
+      postedAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      body
+      authorName
+      __typename
+    }
+  }
+`;
+export const updateForumReply = /* GraphQL */ `
+  mutation UpdateForumReply(
+    $input: UpdateForumReplyInput!
+    $condition: ModelForumReplyConditionInput
+  ) {
+    updateForumReply(input: $input, condition: $condition) {
+      id
+      threadId
+      authorId
+      score
+      postedAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      body
+      authorName
+      __typename
+    }
+  }
+`;
+export const deleteForumReply = /* GraphQL */ `
+  mutation DeleteForumReply(
+    $input: DeleteForumReplyInput!
+    $condition: ModelForumReplyConditionInput
+  ) {
+    deleteForumReply(input: $input, condition: $condition) {
+      id
+      threadId
+      authorId
+      score
+      postedAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      body
+      authorName
+      __typename
+    }
+  }
+`;
+export const createForumVote = /* GraphQL */ `
+  mutation CreateForumVote(
+    $input: CreateForumVoteInput!
+    $condition: ModelForumVoteConditionInput
+  ) {
+    createForumVote(input: $input, condition: $condition) {
+      id
+      targetId
+      targetType
+      value
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const updateForumVote = /* GraphQL */ `
+  mutation UpdateForumVote(
+    $input: UpdateForumVoteInput!
+    $condition: ModelForumVoteConditionInput
+  ) {
+    updateForumVote(input: $input, condition: $condition) {
+      id
+      targetId
+      targetType
+      value
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const deleteForumVote = /* GraphQL */ `
+  mutation DeleteForumVote(
+    $input: DeleteForumVoteInput!
+    $condition: ModelForumVoteConditionInput
+  ) {
+    deleteForumVote(input: $input, condition: $condition) {
+      id
+      targetId
+      targetType
+      value
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      __typename
     }
   }
 `;
