@@ -11,4 +11,93 @@ type Comment @model @auth(rules: [{allow: public}]) {
   PostID: ID
   UserID: ID
   Content: String
+}
+
+type ForumBoard
+  @model
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read, update] }
+  ]) {
+  id: ID!
+  slug: String!
+  title: String!
+  description: String
+  section: String!
+  teamAbbrev: String
+  sortOrder: Int!
+  threadCount: Int
+  postCount: Int
+  lastPostTitle: String
+  lastPostAuthor: String
+  lastPostAt: AWSDateTime
+}
+
+type ForumThread
+  @model
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read, update] }
+    { allow: owner }
+  ]) {
+  id: ID!
+  boardSlug: String! @index(name: "byBoard", sortKeyFields: ["lastActivityAt"], queryField: "threadsByBoard")
+  gameId: String @index(name: "byGame", queryField: "threadsByGame")
+  feed: String! @index(name: "byFeed", sortKeyFields: ["postedAt"], queryField: "threadsByFeed")
+  authorId: String! @index(name: "byAuthor", sortKeyFields: ["postedAt"], queryField: "threadsByAuthor")
+  title: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+    { allow: owner }
+  ])
+  body: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+    { allow: owner }
+  ])
+  authorName: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+    { allow: owner }
+  ])
+  score: Int!
+  replyCount: Int!
+  viewCount: Int
+  postedAt: AWSDateTime!
+  lastActivityAt: AWSDateTime!
+  lastPostAuthor: String
+  lastPostExcerpt: String
+}
+
+type ForumReply
+  @model
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read, update] }
+    { allow: owner }
+  ]) {
+  id: ID!
+  threadId: ID! @index(name: "byThread", sortKeyFields: ["postedAt"], queryField: "repliesByThread")
+  body: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+    { allow: owner }
+  ])
+  authorName: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+    { allow: owner }
+  ])
+  authorId: String!
+  score: Int
+  postedAt: AWSDateTime!
+}
+
+type ForumVote
+  @model
+  @auth(rules: [{ allow: owner }]) {
+  id: ID!
+  targetId: ID!
+  targetType: String!
+  value: Int!
 } 

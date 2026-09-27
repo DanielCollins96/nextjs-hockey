@@ -18,6 +18,7 @@ const Header = () => {
     {href: "/seasons", label: "Seasons"},
     {href: "/drafts", label: "Drafts"},
     {href: "/games", label: "Games"},
+    {href: "/forum", label: "Forum"},
   ];
   const isActivePath = (href) => {
     const currentPath = router.asPath.split("?")[0].split("#")[0];
