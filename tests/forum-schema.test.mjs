@@ -14,17 +14,22 @@ test("ForumThread has a required number that clients cannot write", () => {
   const thread = typeBlock("ForumThread");
   assert.match(thread, /number:\s*Int!/);
   const numberField = thread.slice(thread.indexOf("number:"), thread.indexOf("boardSlug:"));
-  assert.match(numberField, /provider:\s*apiKey, operations:\s*\[\s*create/);
+  assert.match(numberField, /provider:\s*iam, operations:\s*\[\s*read,\s*create/);
   assert.doesNotMatch(numberField, /allow:\s*owner/);
-  assert.doesNotMatch(numberField, /provider:\s*iam, operations:\s*\[[^\]]*create/);
+  assert.doesNotMatch(numberField, /provider:\s*apiKey/);
 });
 
-test("ForumVote is readable by its owner and not client-writable", () => {
+test("trusted forum writes are not API-key mutations", () => {
+  ["ForumThread", "ForumReply", "ForumVote", "ForumUsage", "ForumCounter", "ForumActivity"].forEach((name) => {
+    assert.doesNotMatch(typeBlock(name), /provider:\s*apiKey/);
+  });
+});
+
+test("ForumVote is readable by its owner and not client-writable via owner rules", () => {
   const vote = typeBlock("ForumVote");
   const ownerRule = vote.match(/allow:\s*owner,?\s*operations:\s*\[([^\]]+)\]/);
   assert.ok(ownerRule, "ForumVote is missing an owner auth rule");
   assert.equal(ownerRule[1].replace(/\s/g, ""), "read");
-  assert.match(vote, /provider:\s*apiKey, operations:\s*\[\s*create/);
 });
 
 test("ForumUsage is owned by userId and clients cannot delete quota slots", () => {

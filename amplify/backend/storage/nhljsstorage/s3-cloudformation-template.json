@@ -316,6 +316,49 @@
 				}
 			}
 		},
+		"DenyForumTrustedMutationPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "DenyForumTrustedMutations",
+				"Roles": [
+					{
+						"Ref": "authRoleName"
+					},
+					{
+						"Ref": "unauthRoleName"
+					}
+				],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Deny",
+							"Action": "appsync:GraphQL",
+							"Resource": [
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/createForumThread" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/updateForumThread" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/deleteForumThread" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/createForumReply" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/updateForumReply" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/deleteForumReply" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/createForumVote" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/updateForumVote" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/deleteForumVote" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/createForumUsage" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/updateForumUsage" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/deleteForumUsage" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/createForumCounter" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/updateForumCounter" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/deleteForumCounter" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/createForumActivity" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/updateForumActivity" },
+								{ "Fn::Sub": "arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/Mutation/fields/deleteForumActivity" }
+							]
+						}
+					]
+				}
+			}
+		},
 		"S3AuthProtectedPolicy": {
 			"DependsOn": [
 				"S3Bucket"

@@ -54,7 +54,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ activity });
     }
     if (action === "markDeleted") {
-      const activity = await markTrustedDeleted({ id: req.body.id, boardSlug: req.body.boardSlug });
+      const activity = await markTrustedDeleted({
+        username: user.username,
+        id: req.body.id,
+        targetType: req.body.targetType,
+      });
       return res.status(200).json({ activity });
     }
     return res.status(400).json({ error: "Unknown forum action." });

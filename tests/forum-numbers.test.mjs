@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isForumOwner, isThreadNumber, postNumbers, threadIdForNumber, threadPath, threadNumbers } from "../lib/forum-numbers.js";
+import { activityDeleteTarget, isForumOwner, isThreadNumber, postNumbers, threadIdForNumber, threadPath, threadNumbers } from "../lib/forum-numbers.js";
 
 test("the author can delete a forum post even when the owner field is hidden", () => {
   const user = { username: "fan@example.com" };
@@ -8,6 +8,43 @@ test("the author can delete a forum post even when the owner field is hidden", (
   assert.equal(isForumOwner({ authorId: "someone-else", owner: null }, user), false);
   assert.equal(isForumOwner({ owner: "abc::fan@example.com" }, user), true);
   assert.equal(isForumOwner({ authorId: "system", owner: "fan@example.com" }, user), false);
+});
+
+test("activity deletion requires the caller to own the target post", () => {
+  const thread = {
+    id: "thread-1",
+    boardSlug: "leafs",
+    authorId: "fan@example.com",
+    lastPostAuthor: "fan",
+    lastActivityAt: "2026-09-27T02:00:00.000Z",
+  };
+  const reply = {
+    id: "reply-1",
+    threadId: "thread-1",
+    authorId: "fan@example.com",
+    authorName: "fan",
+    postedAt: "2026-09-27T02:00:00.000Z",
+  };
+  assert.deepEqual(
+    activityDeleteTarget({ username: "fan@example.com", targetType: "thread", thread }),
+    { activityId: "thread-1", boardSlug: "leafs" }
+  );
+  assert.equal(activityDeleteTarget({ username: "other@example.com", targetType: "thread", thread }), null);
+  assert.deepEqual(
+    activityDeleteTarget({ username: "fan@example.com", targetType: "reply", thread, reply }),
+    { activityId: "thread-1", boardSlug: "leafs" }
+  );
+  assert.equal(activityDeleteTarget({ username: "other@example.com", targetType: "reply", thread, reply }), null);
+  assert.deepEqual(
+    activityDeleteTarget({
+      username: "fan@example.com",
+      targetType: "reply",
+      thread: { ...thread, lastActivityAt: "2026-09-27T03:00:00.000Z" },
+      reply,
+    }),
+    { activityId: "", boardSlug: "leafs" }
+  );
+  assert.equal(activityDeleteTarget({ username: "fan@example.com", targetType: "activity", thread }), null);
 });
 
 test("threads are numbered as integers from oldest to newest", () => {
