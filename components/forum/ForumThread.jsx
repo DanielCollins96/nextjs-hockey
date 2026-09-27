@@ -15,8 +15,7 @@ import {
   incrementThreadView,
   isForumOwner,
   loadThread,
-  loadThreadNumberMap,
-  loadVote,
+  loadVotes,
   nestReplies,
   toggleVote,
 } from "../../lib/forum-api";
@@ -172,21 +171,19 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const thread = query.data?.thread || null;
   const replies = query.data?.replies || [];
   const repliesTruncated = Boolean(query.data?.truncated);
-  const numbersQuery = useQuery("forum-thread-numbers", loadThreadNumberMap);
-  const threadNumber = thread ? numbersQuery.data?.[thread.id] : null;
+  const threadNumber = thread?.number || null;
   const replyNumbers = postNumbers(replies);
 
   const voteQuery = useQuery(
     ["forum-votes", identity.user?.username, thread?.id, replies.map((reply) => reply.id).join(",")],
     async () => {
-      const username = identity.user.username;
-      const [threadVote, replyVotes] = await Promise.all([
-        loadVote(username, "thread", thread.id),
-        Promise.all(replies.map(async (reply) => [reply.id, await loadVote(username, "reply", reply.id)])),
+      const votes = await loadVotes(identity.user.username, [
+        { type: "thread", id: thread.id },
+        ...replies.map((reply) => ({ type: "reply", id: reply.id })),
       ]);
       return {
-        thread: threadVote,
-        replies: Object.fromEntries(replyVotes),
+        thread: votes[thread.id] || null,
+        replies: Object.fromEntries(replies.map((reply) => [reply.id, votes[reply.id] || null])),
       };
     },
     { enabled: Boolean(identity.user?.username && thread?.id) }
@@ -279,8 +276,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
             await createForumReply({
               thread: created,
               body: draft.body,
-              authorName: draft.authorName,
-              authorId: draft.authorId,
             });
             await query.refetch();
           }}
@@ -356,8 +351,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
               await createForumReply({
                 thread,
                 body: draft.body,
-                authorName: draft.authorName,
-                authorId: draft.authorId,
                 parentReplyId,
               });
               setReplyingTo(null);
@@ -377,8 +370,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         onSubmit={(draft) => createForumReply({
           thread,
           body: draft.body,
-          authorName: draft.authorName,
-          authorId: draft.authorId,
         }).then(() => query.refetch())}
       />
       <ConfirmDialog

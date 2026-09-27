@@ -1,14 +1,11 @@
-import { useEffect } from "react";
 import { useQuery } from "react-query";
 import SEO from "../../components/SEO";
 import BoardIndex from "../../components/forum/BoardIndex";
 import HotStrip from "../../components/forum/HotStrip";
-import { useForumIdentity } from "../../components/forum/useForumIdentity";
 import { calendarDateString } from "../../lib/format";
-import { ensureForumBoards, explainForumError, loadForumHome, mergeBoards } from "../../lib/forum-api";
+import { explainForumError, loadForumHome, mergeBoards } from "../../lib/forum-api";
 
 export default function ForumHomePage() {
-  const identity = useForumIdentity();
   const today = calendarDateString();
   const query = useQuery("forum-home", loadForumHome);
   const gamesQuery = useQuery(["forum-games", today], async () => {
@@ -17,21 +14,6 @@ export default function ForumHomePage() {
     const data = await response.json();
     return data.games || [];
   });
-  const { refetch } = query;
-
-  useEffect(() => {
-    if (!identity.user?.username) return undefined;
-    let cancelled = false;
-    ensureForumBoards()
-      .then(() => {
-        if (!cancelled) return refetch();
-        return null;
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [identity.user?.username, refetch]);
 
   return (
     <div className="mx-auto max-w-6xl px-3 py-6">

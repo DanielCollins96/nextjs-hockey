@@ -50,7 +50,7 @@ export default function ForumBoardPage() {
   const board = query.data?.board || definition;
   const threads = [...(query.data?.threads || []), ...extraThreads].map((thread) => ({
     ...thread,
-    number: numbersQuery.data?.[thread.id],
+    number: thread.number || numbersQuery.data?.[thread.id],
   }));
   const moreToken = cursor === undefined ? query.data?.nextToken : cursor;
 
@@ -94,10 +94,8 @@ export default function ForumBoardPage() {
                 boardSlug: definition.id,
                 title: draft.title,
                 body: draft.body,
-                authorName: draft.authorName,
-                authorId: draft.authorId,
               });
-              if (thread?.id) router.push(`/forum/t/${thread.id}`);
+              if (thread?.id) router.push(`/forum/t/${thread.number || thread.id}`);
             }}
           />
         ) : (

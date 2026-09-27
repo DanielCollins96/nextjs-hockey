@@ -29,7 +29,7 @@ export default function ProfileThreads({ username }) {
     <ul className="divide-y divide-gray-100 dark:divide-gray-700">
       {query.data.map((thread) => (
         <li key={thread.id} className="py-3">
-          <Link href={threadPath({ ...thread, number: numbersQuery.data?.[thread.id] })} className="font-semibold text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
+          <Link href={threadPath({ ...thread, number: thread.number || numbersQuery.data?.[thread.id] })} className="font-semibold text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
             {thread.title}
           </Link>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

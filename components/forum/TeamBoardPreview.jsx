@@ -38,7 +38,7 @@ export default function TeamBoardPreview({ abbreviation, teamName }) {
       <ul className="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
         {threads.map((thread) => (
           <li key={thread.id} className="py-2">
-            <Link href={threadPath({ ...thread, number: numbersQuery.data?.[thread.id] })} className="font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
+            <Link href={threadPath({ ...thread, number: thread.number || numbersQuery.data?.[thread.id] })} className="font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
               {thread.title}
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">

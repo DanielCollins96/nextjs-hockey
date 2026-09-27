@@ -21,6 +21,17 @@ test("threads are numbered as integers from oldest to newest", () => {
   assert.equal(numbers.get("c"), undefined);
 });
 
+test("persisted thread numbers stay stable when newer threads appear", () => {
+  const numbers = threadNumbers([
+    { id: "old", postedAt: "2026-09-27T01:00:00.000Z", number: 1 },
+    { id: "new", postedAt: "2026-09-27T03:00:00.000Z", number: 4 },
+    { id: "mid", postedAt: "2026-09-27T02:00:00.000Z" },
+  ]);
+  assert.equal(numbers.get("old"), 1);
+  assert.equal(numbers.get("new"), 4);
+  assert.equal(numbers.get("mid"), 5);
+});
+
 test("thread urls use the integer id only", () => {
   assert.equal(
     threadPath({ id: "c5041370-d58d-42aa-9978-d97044fc6355", number: 12, title: "MEOW" }),

@@ -1,6 +1,6 @@
 import { forumUserFromIdToken } from "../../lib/forum-aws";
 import { FORUM_GIF_SEARCHES_PER_DAY, isForumImageUrl } from "../../lib/forum-content";
-import { recordDailyQuota, refundDailyQuota, reserveDailyQuota } from "../../lib/forum-quota";
+import { releaseDailyQuota, reserveDailyQuota } from "../../lib/forum-quota";
 
 const cache = new Map();
 const CACHE_MS = 10 * 60 * 1000;
@@ -85,7 +85,8 @@ export default async function handler(req, res) {
   const cached = cachedGifs(query.toLowerCase());
   if (cached) return res.status(200).json({ configured: true, gifs: cached });
 
-  if (!(await reserveDailyQuota(token, user.username, "gif", FORUM_GIF_SEARCHES_PER_DAY))) {
+  const reservation = await reserveDailyQuota(token, user.username, "gif", FORUM_GIF_SEARCHES_PER_DAY);
+  if (!reservation) {
     return res.status(429).json({ configured: true, error: "GIF search is limited for today. Paste a GIF link instead." });
   }
 
@@ -94,10 +95,9 @@ export default async function handler(req, res) {
       ? await searchTenor(query, tenorKey)
       : await searchGiphy(query, giphyKey);
     rememberGifs(query.toLowerCase(), gifs);
-    await recordDailyQuota(token, user.username, "gif");
     return res.status(200).json({ configured: true, gifs });
   } catch {
-    await refundDailyQuota(user.username, "gif");
+    await releaseDailyQuota(token, reservation);
     return res.status(502).json({ configured: true, error: "GIF search is unavailable. Paste a GIF link instead." });
   }
 }

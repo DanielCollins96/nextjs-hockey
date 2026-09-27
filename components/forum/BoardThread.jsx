@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { useQuery } from "react-query";
 import { isForumDeleted } from "../../lib/forum-content";
-import { loadRecentReplies } from "../../lib/forum-api";
 import { threadPath } from "../../lib/forum-numbers";
 import ForumBody from "./ForumBody";
 import ForumTime from "./ForumTime";
@@ -11,12 +9,7 @@ const PREVIEW_REPLIES = 3;
 export default function BoardThread({ thread }) {
   const href = threadPath(thread);
   const replyCount = thread.replyCount || 0;
-  const preview = useQuery(
-    ["forum-thread-preview", thread.id],
-    () => loadRecentReplies(thread.id, PREVIEW_REPLIES),
-    { enabled: replyCount > 0 }
-  );
-  const replies = (preview.data || []).slice(-PREVIEW_REPLIES);
+  const replies = (thread.previewReplies || []).slice(-PREVIEW_REPLIES);
   const omitted = Math.max(0, replyCount - replies.length);
 
   return (

@@ -6,7 +6,7 @@ import {
   FORUM_UPLOADS_PER_DAY,
   forumUploadExtension,
 } from "../../lib/forum-content";
-import { recordDailyQuota, refundDailyQuota, reserveDailyQuota } from "../../lib/forum-quota";
+import { releaseDailyQuota, reserveDailyQuota } from "../../lib/forum-quota";
 
 const TYPES = {
   jpg: "image/jpeg",
@@ -64,7 +64,9 @@ export default async function handler(req, res) {
 
   const extension = forumUploadExtension({ type: String(req.headers["content-type"] || "").split(";")[0] });
   if (!extension) return res.status(400).json({ error: "Use a jpg, png, webp, or gif." });
-  if (!(await reserveDailyQuota(token, user.username, "upload", FORUM_UPLOADS_PER_DAY))) {
+
+  const reservation = await reserveDailyQuota(token, user.username, "upload", FORUM_UPLOADS_PER_DAY);
+  if (!reservation) {
     return res.status(429).json({ error: `You can upload ${FORUM_UPLOADS_PER_DAY} images a day.` });
   }
 
@@ -80,10 +82,9 @@ export default async function handler(req, res) {
       ContentType: TYPES[extension],
       CacheControl: "public, max-age=31536000, immutable",
     }));
-    await recordDailyQuota(token, user.username, "upload");
     return res.status(200).json({ key });
   } catch (error) {
-    await refundDailyQuota(user.username, "upload");
+    await releaseDailyQuota(token, reservation);
     const tooBig = error?.message === "Images must be 2 MB or smaller.";
     return res.status(tooBig ? 413 : 500).json({ error: tooBig ? error.message : "Could not upload that image." });
   }

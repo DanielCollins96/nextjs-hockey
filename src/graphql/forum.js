@@ -24,6 +24,7 @@ const threadFields = `
   gameId
   feed
   authorId
+  number
   title
   body
   authorName
@@ -91,22 +92,6 @@ export const listForumBoards = /* GraphQL */ `
   }
 `;
 
-export const createForumBoard = /* GraphQL */ `
-  mutation CreateForumBoard($input: CreateForumBoardInput!) {
-    createForumBoard(input: $input) {
-      ${boardFields}
-    }
-  }
-`;
-
-export const updateForumBoard = /* GraphQL */ `
-  mutation UpdateForumBoard($input: UpdateForumBoardInput!) {
-    updateForumBoard(input: $input) {
-      ${boardFields}
-    }
-  }
-`;
-
 export const getForumThread = /* GraphQL */ `
   query GetForumThread($id: ID!) {
     getForumThread(id: $id) {
@@ -166,6 +151,27 @@ export const threadsByAuthor = /* GraphQL */ `
   ) {
     threadsByAuthor(
       authorId: $authorId
+      sortDirection: $sortDirection
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        ${threadFields}
+      }
+      nextToken
+    }
+  }
+`;
+
+export const threadsByNumber = /* GraphQL */ `
+  query ThreadsByNumber(
+    $number: Int!
+    $sortDirection: ModelSortDirection
+    $limit: Int
+    $nextToken: String
+  ) {
+    threadsByNumber(
+      number: $number
       sortDirection: $sortDirection
       limit: $limit
       nextToken: $nextToken
@@ -275,6 +281,77 @@ export const updateForumVote = /* GraphQL */ `
   mutation UpdateForumVote($input: UpdateForumVoteInput!) {
     updateForumVote(input: $input) {
       ${voteFields}
+    }
+  }
+`;
+
+const activityFields = `
+  id
+  boardSlug
+  lastActivityAt
+  score
+  replyCount
+  viewCount
+  lastPostAuthor
+  lastPostExcerpt
+  _version
+  _deleted
+  _lastChangedAt
+  createdAt
+  updatedAt
+`;
+
+export const getForumActivity = /* GraphQL */ `
+  query GetForumActivity($id: ID!) {
+    getForumActivity(id: $id) {
+      ${activityFields}
+    }
+  }
+`;
+
+export const createForumActivity = /* GraphQL */ `
+  mutation CreateForumActivity($input: CreateForumActivityInput!) {
+    createForumActivity(input: $input) {
+      ${activityFields}
+    }
+  }
+`;
+
+export const updateForumActivity = /* GraphQL */ `
+  mutation UpdateForumActivity($input: UpdateForumActivityInput!) {
+    updateForumActivity(input: $input) {
+      ${activityFields}
+    }
+  }
+`;
+
+export const getForumCounter = /* GraphQL */ `
+  query GetForumCounter($id: ID!) {
+    getForumCounter(id: $id) {
+      id
+      value
+      _version
+      _deleted
+    }
+  }
+`;
+
+export const createForumCounter = /* GraphQL */ `
+  mutation CreateForumCounter($input: CreateForumCounterInput!) {
+    createForumCounter(input: $input) {
+      id
+      value
+      _version
+    }
+  }
+`;
+
+export const updateForumCounter = /* GraphQL */ `
+  mutation UpdateForumCounter($input: UpdateForumCounterInput!) {
+    updateForumCounter(input: $input) {
+      id
+      value
+      _version
     }
   }
 `;

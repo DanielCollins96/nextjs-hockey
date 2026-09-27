@@ -30,8 +30,6 @@ export default function ForumComposer({
       await onSubmit({
         title: draftTitle,
         body,
-        authorName: identity.authorName,
-        authorId: identity.user.username,
       });
       setDraftTitle("");
       setBody("");
