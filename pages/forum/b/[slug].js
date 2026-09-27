@@ -3,10 +3,12 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "react-query";
 import SEO from "../../../components/SEO";
+import BoardThread from "../../../components/forum/BoardThread";
 import ForumComposer from "../../../components/forum/ForumComposer";
-import ForumTime from "../../../components/forum/ForumTime";
 import { useForumIdentity } from "../../../components/forum/useForumIdentity";
+import GameThreadLinks from "../../../components/forum/GameThreadLinks";
 import { boardById } from "../../../lib/forum-boards";
+import { calendarDateString } from "../../../lib/format";
 import { createForumThread, explainForumError, loadBoardThreads } from "../../../lib/forum-api";
 
 export default function ForumBoardPage() {
@@ -18,10 +20,21 @@ export default function ForumBoardPage() {
   const [cursor, setCursor] = useState(undefined);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const today = calendarDateString();
   const query = useQuery(
     ["forum-board", slug],
     () => loadBoardThreads(slug),
     { enabled: Boolean(slug && definition) }
+  );
+  const gamesQuery = useQuery(
+    ["forum-games", today],
+    async () => {
+      const response = await fetch(`/api/games?date=${today}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.games || [];
+    },
+    { enabled: definition?.section === "team" }
   );
 
   if (!router.isReady) {
@@ -60,6 +73,7 @@ export default function ForumBoardPage() {
       </p>
       <h1 className="mt-2 text-3xl font-bold text-gray-950 dark:text-white">{board?.title}</h1>
       <p className="mt-2 text-gray-600 dark:text-gray-300">{board?.description}</p>
+      <GameThreadLinks games={gamesQuery.data} abbreviation={definition?.teamAbbrev} />
 
       <div className="mt-5">
         <ForumComposer
@@ -88,26 +102,14 @@ export default function ForumBoardPage() {
         </p>
       )}
 
-      <ul className="mt-6 divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-200 bg-white dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800">
+      <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         {threads.map((thread) => (
-          <li key={thread.id} className="px-4 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <Link href={`/forum/t/${thread.id}`} className="font-semibold text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
-                  {thread.title}
-                </Link>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {thread.authorName} · {thread.replyCount || 0} replies · <ForumTime value={thread.lastActivityAt || thread.postedAt} />
-                </p>
-              </div>
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{thread.score || 0}</span>
-            </div>
-          </li>
+          <BoardThread key={thread.id} thread={thread} />
         ))}
         {!query.isLoading && threads.length === 0 && (
-          <li className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">No threads yet.</li>
+          <p className="px-4 py-6 text-sm text-gray-600 dark:text-gray-300">No threads yet.</p>
         )}
-      </ul>
+      </div>
       {moreToken && (
         <button
           type="button"

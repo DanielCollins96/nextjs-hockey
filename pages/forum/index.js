@@ -4,11 +4,19 @@ import SEO from "../../components/SEO";
 import BoardIndex from "../../components/forum/BoardIndex";
 import HotStrip from "../../components/forum/HotStrip";
 import { useForumIdentity } from "../../components/forum/useForumIdentity";
+import { calendarDateString } from "../../lib/format";
 import { ensureForumBoards, explainForumError, loadForumHome, mergeBoards } from "../../lib/forum-api";
 
 export default function ForumHomePage() {
   const identity = useForumIdentity();
+  const today = calendarDateString();
   const query = useQuery("forum-home", loadForumHome);
+  const gamesQuery = useQuery(["forum-games", today], async () => {
+    const response = await fetch(`/api/games?date=${today}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.games || [];
+  });
   const { refetch } = query;
 
   useEffect(() => {
@@ -43,14 +51,14 @@ export default function ForumHomePage() {
             {explainForumError(query.error)}
           </p>
           <div className="mt-4">
-            <BoardIndex boards={mergeBoards([])} />
+            <BoardIndex boards={mergeBoards([])} games={gamesQuery.data} />
           </div>
         </div>
       )}
       {query.data && (
         <div className="mt-6">
           <HotStrip threads={query.data.hotThreads} />
-          <BoardIndex boards={query.data.boards} />
+          <BoardIndex boards={query.data.boards} games={gamesQuery.data} />
         </div>
       )}
     </div>

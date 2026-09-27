@@ -109,25 +109,6 @@ export default function ForumEditor({ value, onChange, placeholder = "Write a po
         </ToolbarButton>
       </div>
       <EditorContent editor={editor} />
-      <style jsx global>{`
-        .forum-editor-content {
-          min-height: 140px;
-          padding: 0.75rem;
-          outline: none;
-          color: inherit;
-        }
-        .forum-editor-content p.is-editor-empty:first-child::before {
-          color: #9ca3af;
-          content: attr(data-placeholder);
-          float: left;
-          height: 0;
-          pointer-events: none;
-        }
-        .forum-editor-content a {
-          color: #2563eb;
-          text-decoration: underline;
-        }
-      `}</style>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { FORUM_SECTIONS } from "../../lib/forum-boards";
+import { FORUM_SECTIONS, gamesForTeam } from "../../lib/forum-boards";
 import ForumTime, { isRecent } from "./ForumTime";
+import GameThreadLinks from "./GameThreadLinks";
 
 function Count({ label, value }) {
   return (
@@ -11,7 +12,7 @@ function Count({ label, value }) {
   );
 }
 
-export default function BoardIndex({ boards }) {
+export default function BoardIndex({ boards, games = [] }) {
   return (
     <div className="space-y-6">
       {FORUM_SECTIONS.map((section) => {
@@ -23,7 +24,9 @@ export default function BoardIndex({ boards }) {
               {section.title}
             </h2>
             <ul>
-              {rows.map((board) => (
+              {rows.map((board) => {
+                const teamGames = gamesForTeam(games, board.teamAbbrev);
+                return (
                 <li key={board.id} className="border-b border-gray-100 px-4 py-3 last:border-b-0 dark:border-gray-700">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
@@ -42,11 +45,18 @@ export default function BoardIndex({ boards }) {
                         <Count label="threads" value={board.threadCount} />
                         <Count label="posts" value={board.postCount} />
                       </div>
+                      <GameThreadLinks games={teamGames} abbreviation={board.teamAbbrev} />
                     </div>
                     <div className="sm:max-w-xs sm:text-right">
                       {board.lastPostTitle ? (
                         <>
-                          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{board.lastPostTitle}</p>
+                          {board.lastThreadId ? (
+                            <Link href={`/forum/t/${board.lastThreadId}`} className="block truncate text-sm font-medium text-gray-900 hover:text-blue-700 dark:text-gray-100 dark:hover:text-blue-300">
+                              {board.lastPostTitle}
+                            </Link>
+                          ) : (
+                            <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{board.lastPostTitle}</p>
+                          )}
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             {board.lastPostAuthor} · <ForumTime value={board.lastPostAt} />
                           </p>
@@ -57,7 +67,8 @@ export default function BoardIndex({ boards }) {
                     </div>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </section>
         );
