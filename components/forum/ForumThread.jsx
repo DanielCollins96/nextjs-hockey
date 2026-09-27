@@ -171,6 +171,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const { refetch } = query;
   const thread = query.data?.thread || null;
   const replies = query.data?.replies || [];
+  const repliesTruncated = Boolean(query.data?.truncated);
   const numbersQuery = useQuery("forum-thread-numbers", loadThreadNumberMap);
   const threadNumber = thread ? numbersQuery.data?.[thread.id] : null;
   const replyNumbers = postNumbers(replies);
@@ -364,6 +365,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
             }}
           />
         ))}
+        {repliesTruncated && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">Some older replies are not shown.</p>
+        )}
       </div>
       <ForumComposer
         identity={identity}

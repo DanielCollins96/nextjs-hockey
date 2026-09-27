@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ImageModal from "../ImageModal";
 import { resolveForumImages } from "../../lib/forum-media";
 
 export default function ForumBody({ html }) {
+  const bodyRef = useRef(null);
   const [safeHtml, setSafeHtml] = useState("");
   const [media, setMedia] = useState(null);
 
@@ -15,6 +16,18 @@ export default function ForumBody({ html }) {
       active = false;
     };
   }, [html]);
+
+  useEffect(() => {
+    const root = bodyRef.current;
+    if (!root) return;
+    root.querySelectorAll("img, video").forEach((node) => {
+      node.setAttribute("tabindex", "0");
+      node.setAttribute("role", "button");
+      if (!node.getAttribute("aria-label")) {
+        node.setAttribute("aria-label", node.getAttribute("alt") || "Open media");
+      }
+    });
+  }, [safeHtml]);
 
   const openMedia = (event) => {
     const node = event.target.closest?.("img, video");
@@ -35,8 +48,13 @@ export default function ForumBody({ html }) {
   return (
     <>
       <div
+        ref={bodyRef}
         className="prose prose-sm mt-2 max-w-none text-gray-800 dark:prose-invert dark:text-gray-100"
         onClick={openMedia}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          openMedia(event);
+        }}
         dangerouslySetInnerHTML={{ __html: safeHtml }}
       />
       <ImageModal

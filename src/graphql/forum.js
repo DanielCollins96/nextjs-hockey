@@ -202,6 +202,14 @@ export const deleteForumThread = /* GraphQL */ `
   }
 `;
 
+export const getForumReply = /* GraphQL */ `
+  query GetForumReply($id: ID!) {
+    getForumReply(id: $id) {
+      ${replyFields}
+    }
+  }
+`;
+
 export const repliesByThread = /* GraphQL */ `
   query RepliesByThread(
     $threadId: ID!

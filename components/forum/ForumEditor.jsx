@@ -7,7 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { Node, mergeAttributes } from "@tiptap/core";
 import toast from "react-hot-toast";
 import { forumUploadExtension, isForumImageUrl, isForumVideoUrl } from "../../lib/forum-content";
-import { uploadForumImage } from "../../lib/forum-media";
+import { forumAuthToken, uploadForumImage } from "../../lib/forum-media";
 
 const ForumImage = Image.extend({
   addAttributes() {
@@ -207,7 +207,10 @@ export default function ForumEditor({ value, onChange, placeholder = "Write a po
     setSearching(true);
     setGifNote("");
     try {
-      const response = await fetch(`/api/gifs?q=${encodeURIComponent(query)}`);
+      const token = await forumAuthToken().catch(() => "");
+      const response = await fetch(`/api/gifs?q=${encodeURIComponent(query)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await response.json();
       if (!data.configured) {
         setGifs([]);

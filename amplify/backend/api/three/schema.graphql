@@ -14,18 +14,36 @@ type Comment @model @auth(rules: [{allow: public}]) {
 }
 
 type ForumBoard
-  @model
+  @model(subscriptions: { level: off })
   @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read, update] }
   ]) {
   id: ID!
-  slug: String!
-  title: String!
-  description: String
-  section: String!
-  teamAbbrev: String
-  sortOrder: Int!
+  slug: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  title: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  description: String @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  section: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  teamAbbrev: String @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  sortOrder: Int! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
   threadCount: Int
   postCount: Int
   lastPostTitle: String
@@ -44,10 +62,22 @@ type ForumThread
   @key(name: "byFeed", fields: ["feed", "postedAt"], queryField: "threadsByFeed")
   @key(name: "byAuthor", fields: ["authorId", "postedAt"], queryField: "threadsByAuthor") {
   id: ID!
-  boardSlug: String!
-  gameId: String
-  feed: String!
-  authorId: String!
+  boardSlug: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  gameId: String @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  feed: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  authorId: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
   title: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read] }
@@ -66,7 +96,10 @@ type ForumThread
   score: Int!
   replyCount: Int!
   viewCount: Int
-  postedAt: AWSDateTime!
+  postedAt: AWSDateTime! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
   lastActivityAt: AWSDateTime!
   lastPostAuthor: String
   lastPostExcerpt: String
@@ -81,7 +114,10 @@ type ForumReply
   ])
   @key(name: "byThread", fields: ["threadId", "postedAt"], queryField: "repliesByThread") {
   id: ID!
-  threadId: ID!
+  threadId: ID! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
   body: String! @auth(rules: [
     { allow: public, provider: iam, operations: [read] }
     { allow: private, operations: [create, read] }
@@ -92,10 +128,19 @@ type ForumReply
     { allow: private, operations: [create, read] }
     { allow: owner }
   ])
-  authorId: String!
-  parentReplyId: ID
+  authorId: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
+  parentReplyId: ID @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
   score: Int
-  postedAt: AWSDateTime!
+  postedAt: AWSDateTime! @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [create, read] }
+  ])
 }
 
 type ForumVote
@@ -105,4 +150,16 @@ type ForumVote
   targetId: ID!
   targetType: String!
   value: Int!
+}
+
+type ForumUsage
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: owner, operations: [create, read] }
+  ])
+  @key(name: "byUserDay", fields: ["userId", "day"], queryField: "usageByUserDay") {
+  id: ID!
+  userId: String!
+  day: String!
+  kind: String!
 } 

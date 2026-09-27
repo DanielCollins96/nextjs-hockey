@@ -590,13 +590,13 @@ export const getForumReply = /* GraphQL */ `
     }
   }
 `;
-export const listForumReplys = /* GraphQL */ `
-  query ListForumReplys(
+export const listForumReplies = /* GraphQL */ `
+  query ListForumReplies(
     $filter: ModelForumReplyFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listForumReplys(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listForumReplies(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
         threadId
