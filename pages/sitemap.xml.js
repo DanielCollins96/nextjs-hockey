@@ -2,10 +2,11 @@ import { draftTeamUrl, playerUrl, teamUrl } from '../lib/routes';
 import { loadSitemapPlayers } from '../lib/player-data';
 import { loadTeamIds } from '../lib/team-data';
 import { loadDraftYears, loadDraftTeams } from '../lib/draft-data';
+import { loadFantasySitemapHrefs } from '../lib/fantasy-data';
 
 const SITE_URL = 'https://www.hocke.ca';
 
-function generateSiteMap({ playerIds, draftYears, draftTeams, teamIds }) {
+function generateSiteMap({ playerIds, draftYears, draftTeams, teamIds, fantasyHrefs }) {
   const today = new Date().toISOString().split('T')[0];
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -41,6 +42,17 @@ function generateSiteMap({ playerIds, draftYears, draftTeams, teamIds }) {
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
+  ${(fantasyHrefs || ["/fantasy"])
+    .map(
+      (href) => `
+  <url>
+    <loc>${SITE_URL}${href}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>`
+    )
+    .join("")}
   <url>
     <loc>${SITE_URL}/seasons</loc>
     <lastmod>${today}</lastmod>
@@ -114,11 +126,12 @@ function generateSiteMap({ playerIds, draftYears, draftTeams, teamIds }) {
 }
 
 export async function getServerSideProps({ res }) {
-  const [playersPayload, draftsPayload, draftTeamsPayload, teamsPayload] = await Promise.all([
+  const [playersPayload, draftsPayload, draftTeamsPayload, teamsPayload, fantasyHrefs] = await Promise.all([
     loadSitemapPlayers().catch(() => ({})),
     loadDraftYears().catch(() => ({})),
     loadDraftTeams().catch(() => ({})),
     loadTeamIds().catch(() => ({})),
+    loadFantasySitemapHrefs().catch(() => ["/fantasy"]),
   ]);
 
   const playerIds = playersPayload?.players || [];
@@ -131,6 +144,7 @@ export async function getServerSideProps({ res }) {
     draftYears: draftYears || [],
     draftTeams: draftTeams || [],
     teamIds: teamIds || [],
+    fantasyHrefs: fantasyHrefs || ["/fantasy"],
   });
 
   res.setHeader('Content-Type', 'text/xml');

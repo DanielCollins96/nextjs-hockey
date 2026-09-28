@@ -14,6 +14,7 @@ const Header = () => {
   const navItems = [
     {href: "/teams", label: "Teams"},
     {href: "/players", label: "Players"},
+    {href: "/fantasy", label: "Fantasy"},
     {href: "/players/compare", label: "Compare"},
     {href: "/seasons", label: "Seasons"},
     {href: "/drafts", label: "Drafts"},
