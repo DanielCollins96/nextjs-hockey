@@ -453,7 +453,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
           />
           <button
             type="button"
-            onClick={() => downloadCsv(rows, ["GP", ...visibleStats])}
+            onClick={() => downloadCsv(rows, visibleStats)}
             className="ml-auto rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-blue-400 hover:text-blue-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
             Download CSV
