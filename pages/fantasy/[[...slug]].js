@@ -259,7 +259,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
       <SEO
         title={`Fantasy Point Projections ${formatSeason(season)}`}
         description="Score every NHL player from a season with a spreadsheet-style fantasy formula for goals, assists, power-play points, shots, wins, and shutouts."
-        path="/fantasy"
+        path={fantasyPageHref(season, phase, availableSeasons?.[0])}
       />
       <div className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-4">
