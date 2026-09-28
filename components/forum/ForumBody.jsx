@@ -20,7 +20,7 @@ export default function ForumBody({ html }) {
   useEffect(() => {
     const root = bodyRef.current;
     if (!root) return;
-    root.querySelectorAll("img").forEach((node) => {
+    root.querySelectorAll("img, video").forEach((node) => {
       node.setAttribute("tabindex", "0");
       node.setAttribute("role", "button");
       if (!node.getAttribute("aria-label")) {
@@ -30,16 +30,16 @@ export default function ForumBody({ html }) {
   }, [safeHtml]);
 
   const openMedia = (event) => {
-    if (event.target.closest?.("video")) return;
-    const node = event.target.closest?.("img");
+    const node = event.target.closest?.("img, video");
     if (!node || !event.currentTarget.contains(node)) return;
     const src = node.currentSrc || node.getAttribute("src");
     if (!src) return;
+    if (node.tagName === "VIDEO") node.pause();
     event.preventDefault();
     setMedia({
       src,
       alt: node.getAttribute("alt") || "",
-      kind: "native",
+      kind: node.tagName === "VIDEO" ? "video" : "native",
     });
   };
 

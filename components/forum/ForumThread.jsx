@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FaTrashAlt } from "react-icons/fa";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import toast from "react-hot-toast";
 
 import { boardById, gameThreadId, gameThreadTitle } from "../../lib/forum-boards";
@@ -44,7 +44,31 @@ function VoteButton({ active, score, disabled, onClick }) {
   );
 }
 
-function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelete, onReply, voting, composer }) {
+function patchScore(current, targetType, targetId, delta, score) {
+  if (!current) return current;
+  const nextScore = (post) => (score == null ? Math.max(0, (post.score || 0) + delta) : score);
+  if (targetType === "thread") {
+    if (current.thread?.id !== targetId) return current;
+    return { ...current, thread: { ...current.thread, score: nextScore(current.thread) } };
+  }
+  return {
+    ...current,
+    replies: (current.replies || []).map((reply) => (
+      reply.id === targetId ? { ...reply, score: nextScore(reply) } : reply
+    )),
+  };
+}
+
+function patchVote(current, targetType, targetId, value) {
+  const vote = value === 1 ? { value: 1 } : null;
+  if (targetType === "thread") return { thread: vote, replies: current?.replies || {} };
+  return {
+    thread: current?.thread || null,
+    replies: { ...(current?.replies || {}), [targetId]: vote },
+  };
+}
+
+function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelete, onReply, composer }) {
   const deleted = isForumDeleted(post.body);
   return (
     <article id={`p-${postNumber}`} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
@@ -81,7 +105,7 @@ function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelet
         <>
           <ForumBody html={post.body} />
           <div className="mt-3 flex items-center gap-3">
-            <VoteButton active={vote?.value === 1} score={post.score} disabled={voting || !onVote} onClick={onVote} />
+            <VoteButton active={vote?.value === 1} score={post.score} disabled={!onVote} onClick={onVote} />
             {onReply && (
               <button
                 type="button"
@@ -103,7 +127,7 @@ function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelet
   );
 }
 
-function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, votes, onToggleReply, onSubmitReply, onVote, onDelete, votingId }) {
+function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, votes, onToggleReply, onSubmitReply, onVote, onDelete }) {
   return (
     <div className={depth > 0 ? "ml-4 border-l border-gray-200 pl-3 dark:border-gray-600" : ""}>
       <PostCard
@@ -111,7 +135,6 @@ function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, vo
         postNumber={postNumber}
         canDelete={isForumOwner(reply, identity.user)}
         vote={votes?.[reply.id]}
-        voting={votingId === reply.id}
         onVote={identity.user ? () => onVote("reply", reply) : null}
         onDelete={() => onDelete(reply)}
         onReply={() => onToggleReply(reply.id)}
@@ -143,7 +166,6 @@ function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, vo
               onSubmitReply={onSubmitReply}
               onVote={onVote}
               onDelete={onDelete}
-              votingId={votingId}
             />
           ))}
         </div>
@@ -154,12 +176,13 @@ function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, vo
 
 export default function ForumThread({ threadId, game = null, embedded = false }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const identity = useForumIdentity();
   const resolvedId = game ? gameThreadId(game.id) : threadId;
   const viewed = useRef(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [votingId, setVotingId] = useState(null);
+  const voting = useRef(false);
   const [replyingTo, setReplyingTo] = useState(null);
 
   const query = useQuery(
@@ -174,8 +197,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const threadNumber = thread?.number || null;
   const replyNumbers = postNumbers(replies);
 
+  const voteKey = ["forum-votes", identity.user?.username, thread?.id, replies.map((reply) => reply.id).join(",")];
   const voteQuery = useQuery(
-    ["forum-votes", identity.user?.username, thread?.id, replies.map((reply) => reply.id).join(",")],
+    voteKey,
     async () => {
       const votes = await loadVotes(identity.user.username, [
         { type: "thread", id: thread.id },
@@ -215,18 +239,26 @@ export default function ForumThread({ threadId, game = null, embedded = false })
       toast.error("Log in to upvote.");
       return;
     }
-    setVotingId(target.id);
+    if (voting.current) return;
+    voting.current = true;
+    const threadKey = ["forum-thread", resolvedId];
+    const previousThread = queryClient.getQueryData(threadKey);
+    const previousVotes = queryClient.getQueryData(voteKey);
+    const currentVote = targetType === "thread" ? previousVotes?.thread : previousVotes?.replies?.[target.id];
+    const nextValue = currentVote?.value === 1 ? 0 : 1;
+    const delta = nextValue === 1 ? 1 : -1;
+    queryClient.setQueryData(threadKey, (current) => patchScore(current, targetType, target.id, delta));
+    queryClient.setQueryData(voteKey, (current) => patchVote(current, targetType, target.id, nextValue));
     try {
-      await toggleVote({
-        username: identity.user.username,
-        targetType,
-        target,
-      });
-      await Promise.all([query.refetch(), voteQuery.refetch()]);
+      const result = await toggleVote({ targetType, target });
+      queryClient.setQueryData(threadKey, (current) => patchScore(current, targetType, target.id, 0, result.score));
+      queryClient.setQueryData(voteKey, (current) => patchVote(current, targetType, target.id, result.value));
     } catch (error) {
+      queryClient.setQueryData(threadKey, previousThread);
+      queryClient.setQueryData(voteKey, previousVotes);
       toast.error(explainForumError(error));
     } finally {
-      setVotingId(null);
+      voting.current = false;
     }
   };
 
@@ -239,7 +271,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         toast.success("Post deleted");
         await query.refetch();
       } else {
-        await deleteOwnReply(deleteTarget.reply, thread);
+        await deleteOwnReply(deleteTarget.reply);
         toast.success("Post deleted");
         await query.refetch();
       }
@@ -328,7 +360,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         postNumber={1}
         canDelete={isForumOwner(thread, identity.user)}
         vote={voteQuery.data?.thread}
-        voting={votingId === thread.id}
         onVote={identity.user ? () => vote("thread", thread) : null}
         onDelete={() => setDeleteTarget({ kind: "thread" })}
       />
@@ -343,7 +374,6 @@ export default function ForumThread({ threadId, game = null, embedded = false })
             replyingTo={replyingTo}
             identity={identity}
             votes={voteQuery.data?.replies}
-            votingId={votingId}
             onToggleReply={(replyId) => setReplyingTo((current) => (replyId && current === replyId ? null : replyId))}
             onVote={vote}
             onDelete={(target) => setDeleteTarget({ kind: "reply", reply: target })}
