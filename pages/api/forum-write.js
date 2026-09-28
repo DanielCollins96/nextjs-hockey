@@ -46,12 +46,15 @@ export default async function handler(req, res) {
       return res.status(200).json({ activity });
     }
     if (action === "voteTarget") {
-      const activity = await voteTrustedTarget({
+      const vote = await voteTrustedTarget({
         username: user.username,
         id: req.body.id,
         targetType: req.body.targetType,
       });
-      return res.status(200).json({ activity });
+      return res.status(200).json({
+        activity: { id: vote.id, score: vote.score },
+        value: vote.value,
+      });
     }
     if (action === "markDeleted") {
       const activity = await markTrustedDeleted({
