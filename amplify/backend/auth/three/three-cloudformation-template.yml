@@ -293,29 +293,29 @@ Resources:
       Code:
         ZipFile: !Join
           - |+
-          - - 'const response = require(''cfn-response'');'
-            - 'const aws = require(''aws-sdk'');'
-            - 'const identity = new aws.CognitoIdentityServiceProvider();'
-            - 'exports.handler = (event, context, callback) => {'
-            - ' if (event.RequestType == ''Delete'') { '
-            - '   response.send(event, context, response.SUCCESS, {})'
-            - ' }'
-            - ' if (event.RequestType == ''Update'' || event.RequestType == ''Create'') {'
-            - '   const params = {'
-            - '     ClientId: event.ResourceProperties.clientId,'
-            - '     UserPoolId: event.ResourceProperties.userpoolId'
-            - '   };'
-            - '   identity.describeUserPoolClient(params).promise()'
-            - '     .then((res) => {'
-            - '       response.send(event, context, response.SUCCESS, {''appSecret'': res.UserPoolClient.ClientSecret});'
-            - '     })'
-            - '     .catch((err) => {'
-            - '       response.send(event, context, response.FAILED, {err});'
-            - '     });'
-            - ' }'
-            - '};'
+          - - "const response = require('cfn-response');"
+            - "const { CognitoIdentityProviderClient, DescribeUserPoolClientCommand } = require('@aws-sdk/client-cognito-identity-provider');"
+            - "const identity = new CognitoIdentityProviderClient({});"
+            - "exports.handler = (event, context) => {"
+            - "  if (event.RequestType == 'Delete') {"
+            - "    response.send(event, context, response.SUCCESS, {});"
+            - "    return;"
+            - "  }"
+            - "  const params = {"
+            - "    ClientId: event.ResourceProperties.clientId,"
+            - "    UserPoolId: event.ResourceProperties.userpoolId"
+            - "  };"
+            - "  identity.send(new DescribeUserPoolClientCommand(params))"
+            - "    .then((res) => {"
+            - "      const secret = res.UserPoolClient && res.UserPoolClient.ClientSecret;"
+            - "      response.send(event, context, response.SUCCESS, { appSecret: secret || '' });"
+            - "    })"
+            - "    .catch((err) => {"
+            - "      response.send(event, context, response.FAILED, { err });"
+            - "    });"
+            - "};"
       Handler: index.handler
-      Runtime: nodejs12.x
+      Runtime: nodejs22.x
       Timeout: 300
       Role: !GetAtt
         - UserPoolClientRole

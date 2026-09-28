@@ -2,10 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { API, graphqlOperation } from "aws-amplify";
 import { FaChevronLeft, FaChevronRight, FaRegCommentDots } from "react-icons/fa";
-import { UseAuth } from "../contexts/Auth";
-import * as queries from "../src/graphql/queries";
+import { fetchReplyCounts } from "../lib/forum-api";
 import { teamUrl } from "../lib/routes";
 import { calendarDateString, rememberViewerTimeZone } from "../lib/format";
 
@@ -152,7 +150,6 @@ function TeamLogo({ logo, abbrev }) {
 }
 
 export default function GamesBanner() {
-  const { user } = UseAuth();
   const [games, setGames] = useState([]);
   const [selectedDate, setSelectedDate] = useState(calendarDateString());
   const [loading, setLoading] = useState(true);
@@ -185,38 +182,14 @@ export default function GamesBanner() {
   }, [selectedDate]);
 
   useEffect(() => {
-    async function fetchCommentCounts() {
-      if (!user?.username || !games.length) {
+    async function loadCounts() {
+      if (!games.length) {
         setCommentCounts({});
         return;
       }
 
       try {
-        const response = await API.graphql(
-          graphqlOperation(queries.listPosts, {
-            limit: 1000,
-            filter: {
-              subject: {
-                beginsWith: "THREAD#GAME#",
-              },
-            },
-          })
-        );
-
-        const posts = response?.data?.listPosts?.items || [];
-        const gameIds = new Set(games.map((game) => String(game.id)));
-        const counts = {};
-
-        posts.forEach((post) => {
-          if (post?._deleted) return;
-          const subject = String(post?.subject || "");
-          const parts = subject.split("#");
-          const gameId = parts[2];
-
-          if (!gameId || !gameIds.has(String(gameId))) return;
-          counts[gameId] = (counts[gameId] || 0) + 1;
-        });
-
+        const counts = await fetchReplyCounts(games.map((game) => game.id));
         setCommentCounts(counts);
       } catch (error) {
         console.error("Error fetching thread comment counts:", error);
@@ -224,8 +197,8 @@ export default function GamesBanner() {
       }
     }
 
-    fetchCommentCounts();
-  }, [games, user?.username]);
+    loadCounts();
+  }, [games]);
 
   useEffect(() => {
     if (games.length > 0) {
@@ -322,7 +295,7 @@ export default function GamesBanner() {
                 <GameCard
                   key={game.id}
                   game={game}
-                  showCommentMeta={!!user?.username}
+                  showCommentMeta
                   commentCount={commentCounts[String(game.id)] || 0}
                 />
               ))}

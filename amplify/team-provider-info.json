@@ -30,6 +30,13 @@
           "deploymentBucketName": "amplify-three-staging-60858-deployment",
           "s3Key": "amplify-builds/three5b4d821a-42654c366d6b304a3266-build.zip"
         }
+      },
+      "storage": {
+        "nhljsstorage": {}
+      },
+      "api": {
+        "restapithree": {},
+        "three": {}
       }
     }
   },

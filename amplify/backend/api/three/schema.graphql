@@ -11,4 +11,194 @@ type Comment @model @auth(rules: [{allow: public}]) {
   PostID: ID
   UserID: ID
   Content: String
-} 
+}
+
+type ForumBoard
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read] }
+    { allow: private, operations: [read] }
+  ]) {
+  id: ID!
+  slug: String!
+  title: String!
+  description: String
+  section: String!
+  teamAbbrev: String
+  sortOrder: Int!
+  threadCount: Int
+  postCount: Int
+  lastPostTitle: String
+  lastPostAuthor: String
+  lastPostAt: AWSDateTime
+}
+
+type ForumThread
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  @key(name: "byBoard", fields: ["boardSlug", "lastActivityAt"], queryField: "threadsByBoard")
+  @key(name: "byFeed", fields: ["feed", "postedAt"], queryField: "threadsByFeed")
+  @key(name: "byAuthor", fields: ["authorId", "postedAt"], queryField: "threadsByAuthor")
+  @key(name: "byNumber", fields: ["number"], queryField: "threadsByNumber") {
+  id: ID!
+  number: Int! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  boardSlug: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  gameId: String @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  feed: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  authorId: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  title: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  body: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  authorName: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  score: Int! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  replyCount: Int! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  viewCount: Int @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  postedAt: AWSDateTime! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  lastActivityAt: AWSDateTime! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  lastPostAuthor: String @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  lastPostExcerpt: String @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+}
+
+type ForumReply
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  @key(name: "byThread", fields: ["threadId", "postedAt"], queryField: "repliesByThread") {
+  id: ID!
+  threadId: ID! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  body: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  authorName: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+    { allow: owner, operations: [update] }
+  ])
+  authorId: String! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  parentReplyId: ID @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  score: Int @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+  postedAt: AWSDateTime! @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create] }
+    { allow: private, operations: [read] }
+  ])
+}
+
+type ForumVote
+  @model
+  @auth(rules: [
+    { allow: owner, operations: [read] }
+    { allow: public, provider: iam, operations: [create, read, update] }
+  ]) {
+  id: ID!
+  targetId: ID!
+  targetType: String!
+  value: Int!
+}
+
+type ForumUsage
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: owner, ownerField: "userId", identityClaim: "cognito:username", operations: [read] }
+    { allow: public, provider: iam, operations: [create, delete] }
+  ])
+  @key(name: "byUserDay", fields: ["userId", "day"], queryField: "usageByUserDay") {
+  id: ID!
+  userId: String!
+  day: String!
+  kind: String!
+}
+
+type ForumCounter
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: private, operations: [read] }
+    { allow: public, provider: iam, operations: [create, read, update] }
+  ]) {
+  id: ID!
+  value: Int!
+}
+
+type ForumActivity
+  @model(subscriptions: { level: off })
+  @auth(rules: [
+    { allow: public, provider: iam, operations: [read, create, update] }
+    { allow: private, operations: [read] }
+  ])
+  @key(name: "byBoardActivity", fields: ["boardSlug", "lastActivityAt"], queryField: "activityByBoard") {
+  id: ID!
+  boardSlug: String
+  lastActivityAt: AWSDateTime
+  score: Int
+  replyCount: Int
+  viewCount: Int
+  lastPostAuthor: String
+  lastPostExcerpt: String
+}

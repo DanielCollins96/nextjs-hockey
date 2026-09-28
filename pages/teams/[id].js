@@ -7,7 +7,7 @@ import {MdOutlineChevronLeft, MdOutlineChevronRight} from "react-icons/md";
 import ReactTable from "../../components/Table";
 import PaginatedTable from "../../components/PaginatedTable";
 import { ClickableImage } from "../../components/ImageModal";
-import ThreadMessageBoard from "../../components/ThreadMessageBoard";
+import TeamBoardPreview from "../../components/forum/TeamBoardPreview";
 import SEO, { generateTeamJsonLd } from "../../components/SEO";
 import { getContractSeasonRows } from "../../lib/contracts";
 import { formatCurrency, formatSeason, formatSeasonStartYear, formatShortSeason, toNumber } from "../../lib/format";
@@ -1279,12 +1279,7 @@ export default function TeamPage({
         </div>
       </div>
       <div className="p-1 mt-2">
-        <ThreadMessageBoard
-          threadType="team"
-          threadId={teamId}
-          title={`${teamName} Message Board`}
-          emptyMessage={`No posts yet for ${teamName}.`}
-        />
+        <TeamBoardPreview abbreviation={abbreviation} teamName={teamName} />
       </div>
       <style jsx>{`
         .team-content-grid {

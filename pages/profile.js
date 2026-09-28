@@ -8,6 +8,7 @@ import "react-tabs/style/react-tabs.css";
 
 import * as queries from "../src/graphql/queries";
 import * as mutations from "../src/graphql/mutations";
+import ProfileThreads from "../components/forum/ProfileThreads";
 import PostEditor from "../components/PostEditor";
 import PostsList from "../components/PostsList";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -287,6 +288,7 @@ function Profile() {
             <TabList className="mb-3 flex flex-wrap gap-2 rounded-lg bg-gray-100 p-1 dark:bg-gray-900">
               <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Posts</Tab>
               <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Board Posts</Tab>
+              <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Forum</Tab>
               <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Settings</Tab>
               <Tab className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-200" selectedClassName="bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">Create Post</Tab>
             </TabList>
@@ -310,6 +312,9 @@ function Profile() {
                   deletePost={requestDeletePost}
                   toggle={togglePostsDate}
                 />
+              </TabPanel>
+              <TabPanel>
+                <ProfileThreads username={user.username} />
               </TabPanel>
               <TabPanel>
                 <div id="settings" className="max-w-2xl">

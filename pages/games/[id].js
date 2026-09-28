@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SEO from '../../components/SEO';
-import ThreadMessageBoard from '../../components/ThreadMessageBoard';
+import ForumThread from '../../components/forum/ForumThread';
 import { playerUrl, teamUrl } from '../../lib/routes';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
 
@@ -377,13 +377,9 @@ export default function GamePage({ game, goals, penalties, threeStars }) {
         )}
       </div>
 
-      <ThreadMessageBoard
-        threadType="game"
-        threadId={game.id}
-        title={`${game.awayTeam_abbrev} @ ${game.homeTeam_abbrev} Game Thread`}
-        emptyMessage="No posts yet for this game."
-        anchorId="thread"
-      />
+      <div className="mt-4">
+        <ForumThread game={game} embedded />
+      </div>
     </div>
   );
 }

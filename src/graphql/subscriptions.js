@@ -14,6 +14,7 @@ export const onCreatePost = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -30,6 +31,7 @@ export const onUpdatePost = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -46,6 +48,7 @@ export const onDeletePost = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -61,6 +64,7 @@ export const onCreateComment = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -76,6 +80,7 @@ export const onUpdateComment = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -91,6 +96,130 @@ export const onDeleteComment = /* GraphQL */ `
       _lastChangedAt
       createdAt
       updatedAt
+      __typename
+    }
+  }
+`;
+export const onCreateForumBoard = /* GraphQL */ `
+  subscription OnCreateForumBoard {
+    onCreateForumBoard {
+      id
+      slug
+      title
+      description
+      section
+      teamAbbrev
+      sortOrder
+      threadCount
+      postCount
+      lastPostTitle
+      lastPostAuthor
+      lastPostAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateForumBoard = /* GraphQL */ `
+  subscription OnUpdateForumBoard {
+    onUpdateForumBoard {
+      id
+      slug
+      title
+      description
+      section
+      teamAbbrev
+      sortOrder
+      threadCount
+      postCount
+      lastPostTitle
+      lastPostAuthor
+      lastPostAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteForumBoard = /* GraphQL */ `
+  subscription OnDeleteForumBoard {
+    onDeleteForumBoard {
+      id
+      slug
+      title
+      description
+      section
+      teamAbbrev
+      sortOrder
+      threadCount
+      postCount
+      lastPostTitle
+      lastPostAuthor
+      lastPostAt
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onCreateForumVote = /* GraphQL */ `
+  subscription OnCreateForumVote($owner: String) {
+    onCreateForumVote(owner: $owner) {
+      id
+      targetId
+      targetType
+      value
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const onUpdateForumVote = /* GraphQL */ `
+  subscription OnUpdateForumVote($owner: String) {
+    onUpdateForumVote(owner: $owner) {
+      id
+      targetId
+      targetType
+      value
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const onDeleteForumVote = /* GraphQL */ `
+  subscription OnDeleteForumVote($owner: String) {
+    onDeleteForumVote(owner: $owner) {
+      id
+      targetId
+      targetType
+      value
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+      owner
+      __typename
     }
   }
 `;

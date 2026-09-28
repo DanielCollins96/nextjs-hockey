@@ -1,92 +1,137 @@
 {
-  "auth": {
-    "three": {
-      "service": "Cognito",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [],
-      "customAuth": false
-    }
-  },
   "api": {
-    "three": {
-      "service": "AppSync",
+    "restapithree": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "three70c5ffdc"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "three5b4d821a"
+        }
+      ],
       "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
+    "three": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "three"
+        }
+      ],
       "output": {
         "authConfig": {
-          "defaultAuthentication": {
-            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
-            "userPoolConfig": {
-              "userPoolId": "auththree"
-            }
-          },
           "additionalAuthenticationProviders": [
             {
               "authenticationType": "AWS_IAM"
             },
             {
-              "authenticationType": "API_KEY",
               "apiKeyConfig": {
                 "apiKeyExpirationDays": 30,
                 "description": "api key description"
-              }
+              },
+              "authenticationType": "API_KEY"
             }
-          ]
+          ],
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "auththree"
+            }
+          }
         }
       },
-      "dependsOn": [
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
+  "auth": {
+    "three": {
+      "customAuth": false,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    }
+  },
+  "function": {
+    "three5b4d821a": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "three70c5ffdc": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_nhlteams_deploymentBucketName": {
+      "usedBy": [
         {
-          "category": "auth",
-          "resourceName": "three",
-          "attributes": [
-            "UserPoolId"
-          ]
+          "category": "function",
+          "resourceName": "nhlteams"
         }
       ]
     },
-    "restapithree": {
-      "service": "API Gateway",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [
+    "AMPLIFY_function_nhlteams_s3Key": {
+      "usedBy": [
         {
           "category": "function",
-          "resourceName": "three5b4d821a",
-          "attributes": [
-            "Name",
-            "Arn"
-          ]
-        },
+          "resourceName": "nhlteams"
+        }
+      ]
+    },
+    "AMPLIFY_function_three5b4d821a_deploymentBucketName": {
+      "usedBy": [
         {
           "category": "function",
-          "resourceName": "threeepython",
-          "attributes": [
-            "Name",
-            "Arn"
-          ]
+          "resourceName": "three5b4d821a"
+        }
+      ]
+    },
+    "AMPLIFY_function_three5b4d821a_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "three5b4d821a"
+        }
+      ]
+    },
+    "AMPLIFY_function_three70c5ffdc_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "three70c5ffdc"
+        }
+      ]
+    },
+    "AMPLIFY_function_three70c5ffdc_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "three70c5ffdc"
         }
       ]
     }
   },
   "storage": {
     "nhljsstorage": {
-      "service": "S3",
-      "providerPlugin": "awscloudformation"
-    }
-  },
-  "function": {
-    "three70c5ffdc": {
-      "build": true,
       "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "three5b4d821a": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "threeepython": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
+      "service": "S3"
     }
   }
 }

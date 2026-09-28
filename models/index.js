@@ -4,9 +4,13 @@ import { schema } from './schema';
 
 
 
-const { Post, Comment } = initSchema(schema);
+const { Post, Comment, ForumBoard, ForumThread, ForumReply, ForumVote } = initSchema(schema);
 
 export {
   Post,
-  Comment
+  Comment,
+  ForumBoard,
+  ForumThread,
+  ForumReply,
+  ForumVote
 };

@@ -2,10 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { API, graphqlOperation } from 'aws-amplify';
 import SEO from '../../components/SEO';
-import { UseAuth } from '../../contexts/Auth';
-import * as queries from '../../src/graphql/queries';
+import { fetchReplyCounts } from '../../lib/forum-api';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
 import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload, FaRegCommentDots } from 'react-icons/fa';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
@@ -334,7 +332,6 @@ function exportToCSV(games, filename) {
 }
 
 export default function Games({ games: initialGames, selectedDate, dateRange, dateBounds }) {
-  const { user } = UseAuth();
   const router = useRouter();
   const [viewMode, setViewMode] = useState('cards');
   const [showAllDates, setShowAllDates] = useState(!!dateRange);
@@ -416,38 +413,14 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
   }, [games, selectedTeam]);
 
   useEffect(() => {
-    async function fetchCommentCounts() {
-      if (!user?.username || !filteredGames.length) {
+    async function loadCounts() {
+      if (!filteredGames.length) {
         setCommentCounts({});
         return;
       }
 
       try {
-        const response = await API.graphql(
-          graphqlOperation(queries.listPosts, {
-            limit: 1000,
-            filter: {
-              subject: {
-                beginsWith: 'THREAD#GAME#',
-              },
-            },
-          })
-        );
-
-        const posts = response?.data?.listPosts?.items || [];
-        const gameIds = new Set(filteredGames.map((game) => String(game.id)));
-        const counts = {};
-
-        posts.forEach((post) => {
-          if (post?._deleted) return;
-          const subject = String(post?.subject || '');
-          const parts = subject.split('#');
-          const gameId = parts[2];
-
-          if (!gameId || !gameIds.has(String(gameId))) return;
-          counts[gameId] = (counts[gameId] || 0) + 1;
-        });
-
+        const counts = await fetchReplyCounts(filteredGames.map((game) => game.id));
         setCommentCounts(counts);
       } catch (error) {
         console.error('Error fetching thread comment counts:', error);
@@ -455,8 +428,8 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
       }
     }
 
-    fetchCommentCounts();
-  }, [filteredGames, user?.username]);
+    loadCounts();
+  }, [filteredGames]);
 
   const changeDate = (days) => {
     const date = new Date(`${activeDate}T12:00:00`);
@@ -642,7 +615,7 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
               key={game.id}
               game={game}
               commentCount={commentCounts[String(game.id)] || 0}
-              showCommentMeta={!!user?.username}
+              showCommentMeta
             />
           ))}
         </div>
