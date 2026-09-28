@@ -45,6 +45,14 @@ test("activity deletion requires the caller to own the target post", () => {
     { activityId: "", boardSlug: "leafs" }
   );
   assert.equal(activityDeleteTarget({ username: "fan@example.com", targetType: "activity", thread }), null);
+  assert.deepEqual(
+    activityDeleteTarget({
+      identities: ["cognito-sub", "fan@example.com"],
+      targetType: "thread",
+      thread,
+    }),
+    { activityId: "thread-1", boardSlug: "leafs" }
+  );
 });
 
 test("threads are numbered as integers from oldest to newest", () => {

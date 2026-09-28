@@ -56,6 +56,7 @@ export default async function handler(req, res) {
     if (action === "markDeleted") {
       const activity = await markTrustedDeleted({
         username: user.username,
+        identities: user.identities,
         id: req.body.id,
         targetType: req.body.targetType,
       });

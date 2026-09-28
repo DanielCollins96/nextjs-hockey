@@ -239,7 +239,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         toast.success("Post deleted");
         await query.refetch();
       } else {
-        await deleteOwnReply(deleteTarget.reply, thread);
+        await deleteOwnReply(deleteTarget.reply);
         toast.success("Post deleted");
         await query.refetch();
       }
