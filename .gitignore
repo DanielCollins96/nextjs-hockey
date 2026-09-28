@@ -16,6 +16,9 @@ test_index.html
 /.next/
 /out/
 
+# Generated fantasy read models. Publish these keys to the CloudFront bucket.
+/data/read-models/
+
 # production
 /build
 
