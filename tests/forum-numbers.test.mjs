@@ -83,6 +83,7 @@ test("thread urls use the integer id only", () => {
     "/forum/t/12"
   );
   assert.equal(threadPath({ id: "abc", title: "A very long title that should not appear" }), "/forum/t/abc");
+  assert.equal(threadPath({ id: "abc", number: 3 }, { feed: "popular" }), "/forum/t/3?feed=popular");
   assert.equal(isThreadNumber("12"), true);
   assert.equal(isThreadNumber("c5041370"), false);
   assert.equal(threadIdForNumber({ abc: 12, def: 4 }, "12"), "abc");

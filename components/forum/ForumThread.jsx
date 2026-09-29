@@ -14,6 +14,7 @@ import {
   explainForumError,
   incrementThreadView,
   isForumOwner,
+  loadForumHome,
   loadThread,
   loadVotes,
   nestReplies,
@@ -25,21 +26,25 @@ import ConfirmDialog from "../ConfirmDialog";
 import ForumBody from "./ForumBody";
 import ForumComposer from "./ForumComposer";
 import ForumTime from "./ForumTime";
+import PopularBrowse from "./PopularBrowse";
+import PopularStepper from "./PopularStepper";
 import { useForumIdentity } from "./useForumIdentity";
 
 function VoteButton({ active, score, disabled, onClick }) {
+  const tint = active ? "text-orange-500" : "text-gray-500 dark:text-gray-300";
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold ${
-        active
-          ? "border-blue-600 bg-blue-600 text-white"
-          : "border-gray-300 text-gray-700 hover:border-blue-400 dark:border-gray-600 dark:text-gray-200"
-      } disabled:opacity-50`}
+      aria-label={active ? "Remove upvote" : "Upvote"}
+      aria-pressed={active}
+      className={`inline-flex items-center gap-1 rounded-full bg-gray-100 py-1 pl-2 pr-3 hover:bg-gray-200 disabled:opacity-40 dark:bg-gray-900 dark:hover:bg-gray-800 ${tint}`}
     >
-      Upvote {score || 0}
+      <svg viewBox="0 0 20 20" aria-hidden="true" className="h-5 w-5">
+        <path d="M5 12.5 10 7l5 5.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <span className="min-w-[1rem] text-center text-xs font-bold tabular-nums">{score || 0}</span>
     </button>
   );
 }
@@ -110,9 +115,19 @@ function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelet
               <button
                 type="button"
                 onClick={onReply}
-                className="text-xs font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                aria-label="Reply"
+                className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
               >
-                Reply
+                <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4">
+                  <path
+                    d="M4 5.5h12v7.2H8.2L4 16.2V5.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {isThread ? (post.replyCount || 0) : null}
               </button>
             )}
           </div>
@@ -191,6 +206,8 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     { enabled: Boolean(resolvedId) }
   );
   const { refetch } = query;
+  const inPopular = !embedded && router.isReady && router.query.feed === "popular";
+  const popularQuery = useQuery("forum-home", loadForumHome, { enabled: inPopular });
   const thread = query.data?.thread || null;
   const replies = query.data?.replies || [];
   const repliesTruncated = Boolean(query.data?.truncated);
@@ -222,8 +239,10 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     const canonical = threadPath({ ...thread, number: threadNumber });
     const [current, hash] = router.asPath.split("#");
     const path = current.split("?")[0];
+    const search = current.slice(path.length);
     if (path === canonical) return undefined;
-    router.replace(hash ? `${canonical}#${hash}` : canonical);
+    const nextUrl = `${canonical}${search}`;
+    router.replace(hash ? `${nextUrl}#${hash}` : nextUrl);
     return undefined;
   }, [embedded, router, thread, threadNumber]);
 
@@ -326,7 +345,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
 
   const board = boardById(thread.boardSlug);
 
-  return (
+  const threadView = (
     <div id="thread" className="space-y-4">
       {!embedded && (
         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -334,6 +353,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
           {" / "}
           <Link href={`/forum/b/${thread.boardSlug}`} className="hover:underline">{board?.title || "Board"}</Link>
         </p>
+      )}
+      {inPopular && (
+        <PopularStepper threads={popularQuery.data?.popularFeed} threadId={thread.id} listen />
       )}
       {embedded && (
         <div className="flex items-center justify-between gap-3">
@@ -402,6 +424,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
           body: draft.body,
         }).then(() => query.refetch())}
       />
+      {inPopular && (
+        <PopularStepper threads={popularQuery.data?.popularFeed} threadId={thread.id} />
+      )}
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete post"
@@ -412,5 +437,12 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         onConfirm={confirmDelete}
       />
     </div>
+  );
+
+  if (!inPopular) return threadView;
+  return (
+    <PopularBrowse threads={popularQuery.data?.popularFeed} threadId={thread.id}>
+      {threadView}
+    </PopularBrowse>
   );
 }
