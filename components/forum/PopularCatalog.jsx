@@ -3,7 +3,7 @@ import Link from "next/link";
 import { boardById } from "../../lib/forum-boards";
 import { POPULAR_PAGE_SIZE } from "../../lib/forum-hot";
 import { threadPath } from "../../lib/forum-numbers";
-import ForumTime from "./ForumTime";
+import UpvoteCount from "./UpvoteCount";
 
 function Pager({ page, pages, onPage }) {
   if (pages < 2) return null;
@@ -61,23 +61,22 @@ export default function PopularCatalog({ threads }) {
           const replies = thread.replyCount || 0;
           const score = thread.score || 0;
           return (
-            <li key={thread.id}>
+            <li key={thread.id} className="min-w-0">
               <Link
                 href={threadPath(thread, { feed: "popular" })}
-                className="group flex h-full gap-2 rounded-md border border-gray-200 bg-white p-2 hover:border-blue-400 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
+                className="group flex h-full items-stretch gap-2 overflow-hidden rounded-md border border-gray-200 bg-white p-2 hover:border-blue-400 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
               >
-                <span className="w-6 shrink-0 text-center text-lg font-bold tabular-nums leading-none text-gray-400 dark:text-gray-500">
-                  {rank}
-                </span>
-                <span className="flex w-10 shrink-0 flex-col items-center justify-center text-blue-700 dark:text-blue-300">
-                  <span className="text-sm font-bold tabular-nums leading-none">{score}</span>
-                  <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-wide">{score === 1 ? "upvote" : "upvotes"}</span>
+                <span className="flex w-9 shrink-0 flex-col items-center justify-between">
+                  <span className="pt-1 text-lg font-bold tabular-nums leading-none text-gray-400 dark:text-gray-500">
+                    {rank}
+                  </span>
+                  <UpvoteCount score={score} plain compact />
                 </span>
                 {thread.image ? (
                   <img src={thread.image} alt="" className="h-16 w-16 shrink-0 rounded object-cover" />
                 ) : null}
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold leading-snug text-gray-900 group-hover:text-blue-700 dark:text-gray-100 dark:group-hover:text-blue-300">
+                <span className="min-w-0 flex-1">
+                  <span className="line-clamp-2 break-words text-sm font-semibold leading-snug text-gray-900 group-hover:text-blue-700 dark:text-gray-100 dark:group-hover:text-blue-300">
                     {thread.title}
                   </span>
                   {thread.excerpt ? (
@@ -87,10 +86,6 @@ export default function PopularCatalog({ threads }) {
                   ) : null}
                   <span className="mt-1 block text-[11px] text-gray-500 dark:text-gray-400">
                     {replies} {replies === 1 ? "reply" : "replies"}
-                    {" · "}
-                    Latest: {thread.lastPostAuthor || thread.authorName}
-                    {" · "}
-                    <ForumTime value={thread.lastActivityAt || thread.postedAt || thread.createdAt} />
                   </span>
                   <span className="mt-0.5 block text-[11px] text-gray-600 underline decoration-gray-300 underline-offset-2 dark:text-gray-300">
                     {board?.title || "Forum"}

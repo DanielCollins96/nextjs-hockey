@@ -22,32 +22,15 @@ import {
 } from "../../lib/forum-api";
 import { isForumDeleted } from "../../lib/forum-content";
 import { postNumbers, threadPath } from "../../lib/forum-numbers";
+import { VOTE_FLIP_MS } from "../../lib/forum-votes";
 import ConfirmDialog from "../ConfirmDialog";
 import ForumBody from "./ForumBody";
 import ForumComposer from "./ForumComposer";
 import ForumTime from "./ForumTime";
 import PopularBrowse from "./PopularBrowse";
 import PopularStepper from "./PopularStepper";
+import { VoteButton } from "./UpvoteCount";
 import { useForumIdentity } from "./useForumIdentity";
-
-function VoteButton({ active, score, disabled, onClick }) {
-  const tint = active ? "text-orange-500" : "text-gray-500 dark:text-gray-300";
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      aria-label={active ? "Remove upvote" : "Upvote"}
-      aria-pressed={active}
-      className={`inline-flex items-center gap-1 rounded-full bg-gray-100 py-1 pl-2 pr-3 hover:bg-gray-200 disabled:opacity-40 dark:bg-gray-900 dark:hover:bg-gray-800 ${tint}`}
-    >
-      <svg viewBox="0 0 20 20" aria-hidden="true" className="h-5 w-5">
-        <path d="M5 12.5 10 7l5 5.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <span className="min-w-[1rem] text-center text-xs font-bold tabular-nums">{score || 0}</span>
-    </button>
-  );
-}
 
 function patchScore(current, targetType, targetId, delta, score) {
   if (!current) return current;
@@ -142,7 +125,7 @@ function PostCard({ post, isThread, postNumber, canDelete, vote, onVote, onDelet
   );
 }
 
-function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, votes, onToggleReply, onSubmitReply, onVote, onDelete }) {
+function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, votes, isVoteLocked, onToggleReply, onSubmitReply, onVote, onDelete }) {
   return (
     <div className={depth > 0 ? "ml-4 border-l border-gray-200 pl-3 dark:border-gray-600" : ""}>
       <PostCard
@@ -150,7 +133,7 @@ function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, vo
         postNumber={postNumber}
         canDelete={isForumOwner(reply, identity.user)}
         vote={votes?.[reply.id]}
-        onVote={identity.user ? () => onVote("reply", reply) : null}
+        onVote={identity.user && onVote && !isVoteLocked?.(reply.id) ? () => onVote("reply", reply) : null}
         onDelete={() => onDelete(reply)}
         onReply={() => onToggleReply(reply.id)}
         composer={replyingTo === reply.id ? (
@@ -177,6 +160,7 @@ function ReplyTree({ reply, depth, postNumber, numbers, replyingTo, identity, vo
               replyingTo={replyingTo}
               identity={identity}
               votes={votes}
+              isVoteLocked={isVoteLocked}
               onToggleReply={onToggleReply}
               onSubmitReply={onSubmitReply}
               onVote={onVote}
@@ -198,6 +182,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const voting = useRef(false);
+  const [lockedVotes, setLockedVotes] = useState({});
   const [replyingTo, setReplyingTo] = useState(null);
 
   const query = useQuery(
@@ -229,6 +214,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     },
     { enabled: Boolean(identity.user?.username && thread?.id) }
   );
+  const canVote = Boolean(identity.user && voteQuery.isSuccess);
 
   useEffect(() => {
     viewed.current = false;
@@ -258,8 +244,18 @@ export default function ForumThread({ threadId, game = null, embedded = false })
       toast.error("Log in to upvote.");
       return;
     }
-    if (voting.current) return;
+    if (!voteQuery.isSuccess || voting.current || lockedVotes[target.id]) return;
     voting.current = true;
+    const unlockAt = Date.now() + VOTE_FLIP_MS;
+    setLockedVotes((current) => ({ ...current, [target.id]: unlockAt }));
+    window.setTimeout(() => {
+      setLockedVotes((current) => {
+        if (current[target.id] !== unlockAt) return current;
+        const next = { ...current };
+        delete next[target.id];
+        return next;
+      });
+    }, VOTE_FLIP_MS);
     const threadKey = ["forum-thread", resolvedId];
     const previousThread = queryClient.getQueryData(threadKey);
     const previousVotes = queryClient.getQueryData(voteKey);
@@ -275,7 +271,8 @@ export default function ForumThread({ threadId, game = null, embedded = false })
     } catch (error) {
       queryClient.setQueryData(threadKey, previousThread);
       queryClient.setQueryData(voteKey, previousVotes);
-      toast.error(explainForumError(error));
+      const message = explainForumError(error);
+      if (!/wait a moment/i.test(message)) toast.error(message);
     } finally {
       voting.current = false;
     }
@@ -382,7 +379,7 @@ export default function ForumThread({ threadId, game = null, embedded = false })
         postNumber={1}
         canDelete={isForumOwner(thread, identity.user)}
         vote={voteQuery.data?.thread}
-        onVote={identity.user ? () => vote("thread", thread) : null}
+        onVote={canVote && !lockedVotes[thread.id] ? () => vote("thread", thread) : null}
         onDelete={() => setDeleteTarget({ kind: "thread" })}
       />
       <div className="space-y-3">
@@ -396,8 +393,9 @@ export default function ForumThread({ threadId, game = null, embedded = false })
             replyingTo={replyingTo}
             identity={identity}
             votes={voteQuery.data?.replies}
+            isVoteLocked={(id) => Boolean(lockedVotes[id])}
             onToggleReply={(replyId) => setReplyingTo((current) => (replyId && current === replyId ? null : replyId))}
-            onVote={vote}
+            onVote={canVote ? vote : null}
             onDelete={(target) => setDeleteTarget({ kind: "reply", reply: target })}
             onSubmitReply={async (draft, parentReplyId) => {
               await createForumReply({

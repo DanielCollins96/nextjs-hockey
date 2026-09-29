@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { popularNeighbors } from "../../lib/forum-hot";
 import { threadPath } from "../../lib/forum-numbers";
+import UpvoteCount from "./UpvoteCount";
 
 const POPULAR_SEARCH = { feed: "popular" };
 
@@ -28,9 +29,8 @@ function RankList({ threads, threadId }) {
                 <span className={`min-w-0 flex-1 truncate text-[13px] leading-5 ${current ? "font-semibold text-gray-950 dark:text-white" : "text-gray-800 dark:text-gray-200"}`}>
                   {thread.title}
                 </span>
-                <span className="shrink-0 text-right text-[11px] font-semibold tabular-nums leading-4 text-blue-700 dark:text-blue-300">
-                  {score}
-                  <span className="block font-normal text-gray-400 dark:text-gray-500">{score === 1 ? "upvote" : "upvotes"}</span>
+                <span className="shrink-0">
+                  <UpvoteCount score={score} plain compact />
                 </span>
               </Link>
             </li>
@@ -60,9 +60,9 @@ function NextCard({ thread, rank }) {
       {thread.excerpt ? (
         <p className="mt-1 line-clamp-4 text-xs leading-snug text-gray-600 dark:text-gray-300">{thread.excerpt}</p>
       ) : null}
-      <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-        {thread.score || 0} {(thread.score || 0) === 1 ? "upvote" : "upvotes"}
-      </p>
+      <div className="mt-2">
+        <UpvoteCount score={thread.score} plain compact />
+      </div>
     </Link>
   );
 }
