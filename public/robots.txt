@@ -1,6 +1,7 @@
 # Normal crawlers may index the site, except account pages.
 User-agent: *
 Disallow: /accounts
+Disallow: /players/compare/
 
 # Chinese and other crawlers that walk the whole sitemap.
 User-agent: Baiduspider
