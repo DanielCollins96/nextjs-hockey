@@ -1,23 +1,10 @@
-# Normal crawlers may index the site, except account pages.
+# Block all crawlers for /accounts
 User-agent: *
 Disallow: /accounts
 
-# Chinese and other crawlers that walk the whole sitemap.
-User-agent: Baiduspider
-User-agent: Baiduspider-image
-User-agent: Baiduspider-video
-User-agent: Bytespider
-User-agent: PetalBot
-User-agent: Sogou web spider
-User-agent: Sogou inst spider
-User-agent: Sogou News Spider
-User-agent: YisouSpider
-User-agent: 360Spider
-User-agent: HaosouSpider
-User-agent: YoudaoBot
-User-agent: Sosospider
-User-agent: JikeSpider
-User-agent: EasouSpider
-Disallow: /
+# Allow all crawlers
+User-agent: *
+Allow: /
 
+# Sitemap
 Sitemap: https://www.hocke.ca/sitemap.xml

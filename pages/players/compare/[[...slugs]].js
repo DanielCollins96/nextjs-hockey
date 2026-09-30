@@ -196,6 +196,7 @@ export async function getServerSideProps({ params, query, res }) {
   }
 
   setPageCache(res, PAGE_CACHE.hourly);
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
   return {
     props: {
       people: validPeople,
