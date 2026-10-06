@@ -25,6 +25,8 @@ import {
   nhlSeasonsByYear,
   formatStatValue,
   formatToi,
+  mergeLandingPlayerStats,
+  mergeLandingSeasonsIntoPlayerStats,
   mergeToiIntoPlayerStats,
   parseToiSeconds,
   seasonAge,
@@ -312,6 +314,64 @@ test('TOI parses MM:SS and merges NHL landing averages onto season rows', () => 
   assert.equal(merged[0]['stat.toiPerGame'], 1379);
   assert.equal(merged[1]['stat.toiPerGame'], undefined);
   assert.equal(careerTotals(merged, false).toi, 1379);
+});
+
+test('landing seasons fill NHL years missing from stored playerStats', () => {
+  const stored = [
+    nhlRow({ season: 20252026, 'stat.games': 82, 'stat.goals': 23, 'stat.assists': 37, 'stat.points': 60 }),
+  ];
+  const landing = {
+    currentTeamId: 24,
+    featuredStats: { season: 20262027 },
+    seasonTotals: [
+      {
+        leagueAbbrev: 'NHL',
+        gameTypeId: 2,
+        season: 20262027,
+        gamesPlayed: 2,
+        goals: 1,
+        assists: 1,
+        points: 2,
+        pim: 0,
+        plusMinus: 2,
+        avgToi: '19:54',
+        teamName: { default: 'Anaheim Ducks' },
+      },
+      {
+        leagueAbbrev: 'NHL',
+        gameTypeId: 2,
+        season: 20252026,
+        gamesPlayed: 82,
+        goals: 23,
+        assists: 37,
+        points: 60,
+        avgToi: '17:27',
+        teamName: { default: 'Anaheim Ducks' },
+      },
+      {
+        leagueAbbrev: 'OHL',
+        gameTypeId: 2,
+        season: 20242025,
+        gamesPlayed: 56,
+        goals: 36,
+        assists: 50,
+        points: 86,
+      },
+    ],
+  };
+
+  const filled = mergeLandingSeasonsIntoPlayerStats(stored, landing);
+  assert.equal(filled[0].season, 20262027);
+  assert.equal(filled[0]['team.name'], 'Anaheim Ducks');
+  assert.equal(filled[0]['team.id'], 24);
+  assert.equal(filled[0]['stat.games'], 2);
+  assert.equal(filled[0]['stat.points'], 2);
+  assert.equal(filled[1].season, 20252026);
+  assert.equal(filled.length, 2);
+
+  const withToi = mergeLandingPlayerStats(stored, landing);
+  assert.equal(withToi[0]['stat.toiPerGame'], 1194);
+  assert.equal(withToi[1]['stat.toiPerGame'], 1047);
 });
 
 test('compareHref keeps the age alignment query on shareable URLs', () => {
