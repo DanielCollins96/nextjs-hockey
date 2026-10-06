@@ -1375,7 +1375,7 @@ export async function getServerSideProps({params, query, res}) {
       ? normalizeSeasonId(requestedSeason)
       : seasonIds[0] || null;
 
-  setPageCache(res, PAGE_CACHE.hourly);
+  setPageCache(res, PAGE_CACHE.live);
   return {
     props: {
       seasons: seasonMap,

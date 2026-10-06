@@ -1,14 +1,12 @@
 import { loadSearch } from '../../lib/search-data'
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 export default async function handler(req, res) {
   try {
     const { q = '', limit = '8' } = req.query
     const result = await loadSearch(q, limit)
 
-    res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=43200, stale-while-revalidate=86400'
-    )
+    setPageCache(res, PAGE_CACHE.search)
     res.setHeader('X-Data-Source', result.source)
     return res.status(200).json({
       players: result.players,

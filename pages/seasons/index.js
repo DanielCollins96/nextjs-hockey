@@ -8,6 +8,7 @@ import SEO from "../../components/SEO";
 import { formatSeason, toNumber } from "../../lib/format";
 import { PAGE_CACHE, setPageCache } from "../../lib/http-cache";
 import { playerUrl, teamAbbrevFromName, teamUrl } from "../../lib/routes";
+import { currentNhlSeasonId } from "../../lib/season";
 
 const MAJOR_AWARDS = [
   "Hart Memorial Trophy",
@@ -667,7 +668,8 @@ export async function getServerSideProps(context) {
     return { notFound: true };
   }
 
-  setPageCache(context.res, PAGE_CACHE.hourly);
+  const isCurrentSeason = Number(resolvedSeason) === Number(currentNhlSeasonId());
+  setPageCache(context.res, isCurrentSeason ? PAGE_CACHE.live : PAGE_CACHE.hourly);
   return {
     props: {
       players: payload?.players || [],

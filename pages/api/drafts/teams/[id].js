@@ -1,5 +1,6 @@
 import { extractEntityId } from '../../../../lib/routes'
 import { loadDraftByTeam } from '../../../../lib/draft-data'
+import { PAGE_CACHE, setPageCache } from '../../../../lib/http-cache'
 
 export default async function handler(req, res) {
   try {
@@ -11,10 +12,7 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('X-Data-Source', result.source)
-    res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=86400, stale-while-revalidate=172800'
-    )
+    setPageCache(res, PAGE_CACHE.daily)
 
     return res.status(200).json({
       team: result.team,
