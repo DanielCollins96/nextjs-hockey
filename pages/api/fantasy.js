@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     res.setHeader("X-Data-Source", result.source);
     res.setHeader(
       "Cache-Control",
-      Number(result.season) === Number(latest) ? PAGE_CACHE.hourly : PAGE_CACHE.stable
+      Number(result.season) === Number(latest) ? PAGE_CACHE.live : PAGE_CACHE.stable
     );
 
     return res.status(200).json({

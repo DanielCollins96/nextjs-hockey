@@ -1,4 +1,6 @@
 import { loadSeason } from '../../lib/season-data'
+import { currentNhlSeasonId } from '../../lib/season'
+import { PAGE_CACHE, setPageCache } from '../../lib/http-cache'
 
 export default async function handler(req, res) {
   try {
@@ -13,10 +15,8 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('X-Data-Source', result.source)
-    res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=43200, stale-while-revalidate=86400'
-    )
+    const isCurrentSeason = Number(result.season) === Number(currentNhlSeasonId())
+    setPageCache(res, isCurrentSeason ? PAGE_CACHE.live : PAGE_CACHE.hourly)
 
     res.status(200).json({
       players: result.players,

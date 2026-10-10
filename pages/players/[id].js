@@ -859,7 +859,7 @@ export async function getServerSideProps({ params, res }) {
         };
     }
 
-    setPageCache(res, PAGE_CACHE.hourly);
+    setPageCache(res, PAGE_CACHE.live);
     const similar = await findSimilarPlayersSafe(id, {
         limit: 6,
         excludeIds: [id],
