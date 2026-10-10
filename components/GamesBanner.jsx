@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { FaChevronLeft, FaChevronRight, FaRegCommentDots } from "react-icons/fa";
 import { fetchReplyCounts } from "../lib/forum-api";
 import { teamUrl } from "../lib/routes";
-import { calendarDateString, rememberViewerTimeZone } from "../lib/format";
+import { calendarDateString, DEFAULT_CALENDAR_TIMEZONE, rememberViewerTimeZone } from "../lib/format";
 
 function formatDate(dateString) {
   const date = new Date(dateString + "T12:00:00");
@@ -151,7 +151,9 @@ function TeamLogo({ logo, abbrev }) {
 
 export default function GamesBanner() {
   const [games, setGames] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(calendarDateString());
+  const [selectedDate, setSelectedDate] = useState(() =>
+    calendarDateString(new Date(), DEFAULT_CALENDAR_TIMEZONE)
+  );
   const [loading, setLoading] = useState(true);
   const [commentCounts, setCommentCounts] = useState({});
   const [isBannerHovered, setIsBannerHovered] = useState(false);
@@ -162,6 +164,8 @@ export default function GamesBanner() {
 
   useEffect(() => {
     rememberViewerTimeZone();
+    const localDate = calendarDateString();
+    setSelectedDate((current) => (current === localDate ? current : localDate));
   }, []);
 
   useEffect(() => {
