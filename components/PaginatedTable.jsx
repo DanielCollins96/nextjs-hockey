@@ -20,6 +20,7 @@ export default function ReactTable({
   onPageRowsChange,
   modern = false,
   compact = false,
+  tight = false,
   fillLastPage = false,
 }) {
   const [sorting, setSorting] = useState(
@@ -82,14 +83,28 @@ export default function ReactTable({
     ? `${compact ? "inline-flex h-7 min-w-7 px-1 text-xs" : "inline-flex h-9 min-w-9 px-2 text-sm"} items-center justify-center rounded-md border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-slate-700 dark:disabled:hover:border-slate-700 dark:disabled:hover:bg-slate-800 dark:disabled:hover:text-slate-100`
     : "px-3 py-1 rounded border transition text-black bg-gray-100 border-gray-300 hover:bg-gray-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-slate-900 dark:disabled:text-slate-600";
 
+  const leafSizes = table.getAllLeafColumns().map((column) => Number(column.columnDef.size) || 0);
+  const lockTableWidth = modern && leafSizes.length > 0 && leafSizes.every((size) => size > 0);
+  const tableWidth = leafSizes.reduce((sum, size) => sum + size, 0);
+
   return (
     <div>
-      <div className={`relative overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}>
-        <table className={modern ? "text-sm w-max table-fixed border-collapse" : "border border-black p-2 m-1"}>
+      <div className={`relative max-w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}>
+        <table
+          style={lockTableWidth ? { width: "100%", maxWidth: tableWidth, minWidth: 0 } : undefined}
+          className={modern ? `${tight ? "text-xs 2xl:text-sm" : "text-sm"} table-fixed border-collapse ${lockTableWidth ? "w-full" : "w-max"}` : "border border-black p-2 m-1"}
+        >
         {modern && (
           <colgroup>
             {table.getAllLeafColumns().map((column) => (
-              <col key={column.id} style={{ width: getColumnWidth(column) }} />
+              <col
+                key={column.id}
+                style={{
+                  width: lockTableWidth
+                    ? `${((Number(column.columnDef.size) || 0) / tableWidth) * 100}%`
+                    : getColumnWidth(column),
+                }}
+              />
             ))}
           </colgroup>
         )}
@@ -104,7 +119,7 @@ export default function ReactTable({
                   <th
                     className={
                       modern
-                        ? `border-b border-slate-200 bg-slate-50 ${compact ? "px-1.5 py-1" : "px-2 py-2"} text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
+                        ? `min-w-0 border-b border-slate-200 bg-slate-50 ${tight ? "px-1 py-1 text-xs 2xl:text-sm" : compact ? "px-1 py-1 text-xs" : "px-2 py-2 text-xs"} text-left font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
                         : ""
                     }
                     key={header.id}
@@ -124,7 +139,7 @@ export default function ReactTable({
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          <span className="text-xs align-middle opacity-70 ml-1">
+                          <span className={tight ? "ml-0.5 align-middle text-[10px] opacity-70 xl:ml-1 xl:text-xs" : "ml-1 align-middle text-xs opacity-70"}>
                             {{
                               asc: "▲",
                               desc: "▼",
@@ -165,7 +180,7 @@ export default function ReactTable({
                     <td
                       className={
                         modern
-                          ? `border-b border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap overflow-hidden text-ellipsis ${cellClassName}`
+                          ? `min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-b border-slate-200 ${tight ? "px-1" : compact ? "px-1" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 ${cellClassName}`
                           : "border-black border px-1 text-sm whitespace-nowrap"
                       }
                       key={cell.id}

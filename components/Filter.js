@@ -41,7 +41,7 @@ export default function Filter({
       value={(columnFilterValue ?? '')}
       onChange={e => column.setFilterValue(e.target.value)}
       placeholder={`Search...`}
-      className="w-36 border shadow rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
+      className="w-full min-w-0 border shadow rounded px-1 dark:bg-gray-700 dark:text-white dark:border-gray-600"
     />
   )
 }

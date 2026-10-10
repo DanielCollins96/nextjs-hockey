@@ -195,7 +195,7 @@ function TeamCell({ row }) {
   const name = row.original["team.name"];
   const id = row.original["team.id"];
   const label = teamLabel(row.original);
-  const className = `${linkClass} block max-w-[3.25rem] truncate`;
+  const className = `${linkClass} block truncate`;
 
   if (name && id) {
     return (
@@ -206,7 +206,7 @@ function TeamCell({ row }) {
   }
 
   return (
-    <span className="block max-w-[3.25rem] truncate" title={name}>
+    <span className="block truncate" title={name}>
       {label}
     </span>
   );
@@ -228,8 +228,8 @@ function playerCell(cupWinnerIds) {
     const wonCup = cupWinnerIds.has(String(row.original.playerId));
 
     return (
-      <span className="inline-flex min-w-0 items-center gap-1.5">
-        <Link href={playerUrl(row.original.player_name, row.original.playerId)} className={linkClass}>
+      <span className="flex min-w-0 max-w-full items-center gap-1">
+        <Link href={playerUrl(row.original.player_name, row.original.playerId)} className={`${linkClass} truncate`} title={row.original.player_name}>
           {row.original.player_name}
         </Link>
         {wonCup ? <CupMark /> : null}
@@ -293,38 +293,38 @@ export default function Seasons({
 
   const skaterColumns = useMemo(
     () => [
-      { header: "Rk", accessorKey: "row_number", size: 44 },
+      { header: "Rk", accessorKey: "row_number", size: 34 },
       {
         header: "Name",
         accessorKey: "player_name",
-        size: 180,
+        size: 148,
         cell: playerCell(cupWinnerIds),
       },
       {
         header: "Team",
         accessorFn: teamLabel,
-        size: 56,
+        size: 58,
         cell: TeamCell,
       },
       { header: "Pos", accessorFn: (row) => row.position, size: 44 },
       {
         header: "GP",
         accessorFn: (row) => row["stat.games"],
-        size: 48,
+        size: 32,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
       {
         header: "G",
         accessorFn: (row) => row["stat.goals"],
-        size: 48,
+        size: 28,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
       {
         header: "A",
         accessorFn: (row) => row["stat.assists"],
-        size: 48,
+        size: 28,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
@@ -332,14 +332,14 @@ export default function Seasons({
         id: "P",
         header: "P",
         accessorFn: (row) => row["stat.points"],
-        size: 48,
+        size: 40,
         meta: emphasizedNumericColumnMeta,
         cell: numberCell(),
       },
       {
         header: "P/GP",
         accessorFn: (row) => (row["stat.games"] > 0 ? row["stat.points"] / row["stat.games"] : 0),
-        size: 56,
+        size: 64,
         meta: numericColumnMeta,
         cell: numberCell(2),
         sortingFn: "basic",
@@ -350,25 +350,25 @@ export default function Seasons({
 
   const goalieColumns = useMemo(
     () => [
-      { header: "Rk", accessorKey: "row_number", size: 44 },
+      { header: "Rk", accessorKey: "row_number", size: 34 },
       {
         header: "Name",
         accessorKey: "player_name",
-        size: 180,
+        size: 156,
         cell: playerCell(cupWinnerIds),
       },
       {
         id: "Team",
         header: "Team",
         accessorFn: teamLabel,
-        size: 56,
+        size: 58,
         cell: TeamCell,
       },
       {
         id: "GP",
         header: "GP",
         accessorFn: (row) => row["stat.games"],
-        size: 48,
+        size: 32,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
@@ -376,7 +376,7 @@ export default function Seasons({
         id: "W",
         header: "W",
         accessorFn: (row) => row["stat.wins"],
-        size: 48,
+        size: 28,
         meta: emphasizedNumericColumnMeta,
         cell: numberCell(),
       },
@@ -384,7 +384,7 @@ export default function Seasons({
         id: "L",
         header: "L",
         accessorFn: (row) => row["stat.losses"],
-        size: 48,
+        size: 28,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
@@ -392,7 +392,7 @@ export default function Seasons({
         id: "OTL",
         header: "OTL",
         accessorFn: (row) => row["stat.otl"],
-        size: 48,
+        size: 36,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
@@ -400,7 +400,7 @@ export default function Seasons({
         id: "GAA",
         header: "GAA",
         accessorFn: (row) => row["stat.gaa"],
-        size: 56,
+        size: 44,
         meta: numericColumnMeta,
         cell: numberCell(2),
       },
@@ -408,7 +408,7 @@ export default function Seasons({
         id: "SV%",
         header: "SV%",
         accessorFn: (row) => row["stat.savePct"],
-        size: 60,
+        size: 48,
         meta: numericColumnMeta,
         cell: numberCell(3),
       },
@@ -416,7 +416,7 @@ export default function Seasons({
         id: "SO",
         header: "SO",
         accessorFn: (row) => row["stat.shutouts"],
-        size: 48,
+        size: 28,
         meta: numericColumnMeta,
         cell: numberCell(),
       },
@@ -536,12 +536,12 @@ export default function Seasons({
         <div
           className={
             showAwardsSidebar
-              ? "grid gap-4 lg:grid-cols-[minmax(0,1fr)_17.5rem] lg:items-start"
+              ? "grid items-start gap-3 md:grid-cols-[minmax(0,1fr)_11rem]"
               : ""
           }
         >
-          <div className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2">
-            <section className="min-w-0">
+          <div className="grid min-w-0 items-start gap-3 min-[1360px]:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)]">
+            <section className="min-w-0 overflow-hidden">
               <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">Skating Leaders</h2>
               {skaterRows?.length ? (
                 <ReactTable
@@ -553,6 +553,7 @@ export default function Seasons({
                   pageSize={25}
                   modern
                   compact
+                  tight
                 />
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -563,7 +564,7 @@ export default function Seasons({
               )}
             </section>
 
-            <section className="min-w-0">
+            <section className="min-w-0 overflow-hidden">
               <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">Goaltending Leaders</h2>
               {goalieRows?.length ? (
                 <ReactTable
@@ -575,6 +576,7 @@ export default function Seasons({
                   pageSize={25}
                   modern
                   compact
+                  tight
                 />
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -587,7 +589,7 @@ export default function Seasons({
           </div>
 
           {showAwardsSidebar && (
-            <aside className="min-w-0 lg:sticky lg:top-[5.75rem] lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto lg:pr-0.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <aside className="relative z-10 min-w-0 md:sticky md:top-32 md:max-h-[calc(100vh-9rem)] md:overflow-y-auto md:pr-0.5">
               <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">Season awards</h2>
               {cupChampion ? (
                 <div className="mb-3 overflow-hidden rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900/60 dark:bg-amber-950/40">
@@ -623,7 +625,7 @@ export default function Seasons({
                 <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
                   <ul className="divide-y divide-slate-200 dark:divide-slate-700">
                     {awardRows.map((award) => (
-                      <li key={award.trophy} className="px-3 py-2">
+                      <li key={award.trophy} className="px-2.5 py-1.5">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                           {award.trophy}
                         </p>
