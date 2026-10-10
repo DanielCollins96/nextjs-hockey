@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { FaInfoCircle } from "react-icons/fa";
 import { MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 import ReactTable from "../../components/PaginatedTable";
 import SEO from "../../components/SEO";
@@ -44,18 +45,122 @@ function seasonIndex(seasons, season) {
   return (seasons || []).findIndex((value) => Number(value) === Number(season));
 }
 
+function insertTextAtSelection(element, start, end, text) {
+  element.focus();
+  element.setSelectionRange(start, end);
+  // Stays on the textarea undo stack. Setting the value from React does not.
+  return document.execCommand("insertText", false, text);
+}
+
+function pointerCanHover() {
+  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
+
+function ScoringHelp({ season }) {
+  const rootRef = useRef(null);
+  const [hovering, setHovering] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const open = hovering || pinned;
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event) => {
+      if (event.type === "keydown" && event.key !== "Escape") return;
+      if (event.type === "pointerdown" && rootRef.current?.contains(event.target)) return;
+      setHovering(false);
+      setPinned(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
+  return (
+    <span
+      ref={rootRef}
+      className="inline-flex"
+      onMouseEnter={() => {
+        if (pointerCanHover()) setHovering(true);
+      }}
+      onMouseLeave={() => {
+        if (pointerCanHover()) setHovering(false);
+      }}
+    >
+      <button
+        type="button"
+        aria-label="How scoring works"
+        aria-expanded={open}
+        onFocus={() => {
+          if (pointerCanHover()) setHovering(true);
+        }}
+        onBlur={() => {
+          if (pointerCanHover()) setHovering(false);
+        }}
+        onClick={() => {
+          if (pointerCanHover()) return;
+          setPinned((value) => !value);
+        }}
+        className="-m-1 inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-400 transition hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 dark:hover:text-blue-300"
+      >
+        <FaInfoCircle size={14} aria-hidden="true" />
+      </button>
+      {open ? (
+        <>
+          <button
+            type="button"
+            aria-label="Close scoring help"
+            className="fixed inset-0 z-20 bg-slate-900/40 sm:hidden"
+            onClick={() => {
+              setHovering(false);
+              setPinned(false);
+            }}
+          />
+          <span className="fixed inset-x-3 bottom-3 z-30 sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:right-0 sm:top-7 sm:w-auto sm:pt-1">
+            <span
+              role="tooltip"
+              onMouseDown={(event) => event.preventDefault()}
+              className="block rounded-md border border-slate-200 bg-white p-3 text-left text-xs font-normal normal-case leading-5 tracking-normal text-slate-600 shadow-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <span className="block">
+                Every player who appeared in an NHL game in {formatSeason(season)}. The formula uses
+                that season&apos;s counting stats. Tap a stat to insert it. Use + - * / ^, parentheses,
+                comparisons, and IF, MIN, MAX, ABS, ROUND. Write 50% as 0.5.
+              </span>
+              <span className="mt-2 block">
+                FP/82 stretches the same score to an 82-game season. Missing stats count as 0. A
+                player stays blank if the formula divides by zero.
+              </span>
+              <span className="mt-2 block font-mono text-[11px] text-slate-500 dark:text-slate-300">
+                IF(GP&gt;0, (3*G + 2*A)/GP*82, 0)
+              </span>
+              <span className="mt-2 block">
+                League scoring is 2 per goal, 1 per assist, 0.5 per power-play or shorthanded point,
+                0.1 per shot or hit, 0.5 per block, 4 per win, minus 2 per goal against, 0.2 per
+                save, 3 per shutout, and 1 per overtime loss.
+              </span>
+            </span>
+          </span>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
 function escapeCsvCell(value) {
   const stringValue = value == null ? "" : String(value);
   return /[",\n\r]/.test(stringValue) ? `"${stringValue.replace(/"/g, '""')}"` : stringValue;
 }
 
 function downloadCsv(rows, stats) {
-  const headers = ["Rank", "Name", "Pos", "Team", "GP", ...stats, "FP", "FP/82"];
+  const headers = ["Rank", "Team", "Pos", "Name", "GP", ...stats, "FP", "FP/82"];
   const body = rows.map((player) => [
     player.rank ?? "",
-    player.name,
-    player.position,
     player.teamAbbrev || player.teamName,
+    player.position,
+    player.name,
     player.GP,
     ...stats.map((key) => player[key] ?? ""),
     player.fp ?? "",
@@ -158,7 +263,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
       id: key,
       header: label,
       accessorFn: (row) => row[key],
-      size: key === "AGE" ? 52 : 58,
+      size: label.length <= 1 ? 36 : label.length === 2 ? 44 : 52,
       meta: numericColumnMeta,
       cell: ({ getValue }) => formatFantasyStat(key, getValue()),
     });
@@ -173,18 +278,6 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         cell: ({ getValue }) => getValue() ?? "—",
       },
       {
-        id: "name",
-        header: "Player",
-        accessorKey: "name",
-        size: 180,
-        cell: ({ row }) => (
-          <Link href={playerUrl(row.original.name, row.original.playerId)} className={linkClass}>
-            {row.original.name}
-          </Link>
-        ),
-      },
-      { id: "position", header: "Pos", accessorKey: "position", size: 48 },
-      {
         id: "team",
         header: "Team",
         accessorFn: (row) => row.teamAbbrev || row.teamName,
@@ -198,6 +291,18 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
             </Link>
           );
         },
+      },
+      { id: "position", header: "Pos", accessorKey: "position", size: 48 },
+      {
+        id: "name",
+        header: "Player",
+        accessorKey: "name",
+        size: 180,
+        cell: ({ row }) => (
+          <Link href={playerUrl(row.original.name, row.original.playerId)} className={linkClass}>
+            {row.original.name}
+          </Link>
+        ),
       },
       statColumn("GP"),
       ...visibleStats.map((key) => {
@@ -233,22 +338,22 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
     router.push(fantasyPageHref(year, nextPhase, availableSeasons[0]), undefined, { scroll: false });
   };
 
-  const insertStat = (key) => {
-    const current = formula;
+  const editFormula = (start, end, text) => {
     const element = formulaRef.current;
+    if (element && insertTextAtSelection(element, start, end, text)) return;
+    const current = element?.value ?? formula;
+    setFormula(current.slice(0, start) + text + current.slice(end));
+  };
+
+  const insertStat = (key) => {
+    const element = formulaRef.current;
+    const current = element?.value ?? formula;
     const start = element?.selectionStart ?? current.length;
     const end = element?.selectionEnd ?? current.length;
     const prefix = current.slice(0, start);
     const needsSpace = prefix.length > 0 && !/[\s(+\-*/^,(]$/.test(prefix);
     const token = `${needsSpace ? " + " : ""}${key}`;
-    const next = prefix + token + current.slice(end);
-    setFormula(next);
-    requestAnimationFrame(() => {
-      if (!formulaRef.current) return;
-      const cursor = start + token.length;
-      formulaRef.current.focus();
-      formulaRef.current.setSelectionRange(cursor, cursor);
-    });
+    editFormula(start, end, token);
   };
 
   const currentIndex = seasonIndex(availableSeasons, season);
@@ -263,13 +368,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
       />
       <div className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-4">
-          <div>
-            <h1 className="text-2xl font-bold">Fantasy projections</h1>
-            <p className="mt-1 max-w-3xl text-sm text-slate-600 dark:text-slate-300">
-              Every player who appeared in an NHL game in {formatSeason(season)}. The formula uses
-              that season&apos;s counting stats, the same way a spreadsheet would.
-            </p>
-          </div>
+          <h1 className="text-2xl font-bold">Fantasy projections</h1>
           <div className="flex flex-wrap items-center gap-2">
             <select
               aria-label="Select season"
@@ -315,14 +414,32 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
 
       <main className="mx-auto max-w-7xl space-y-4 px-3 py-4">
         <section className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <label className="min-w-[16rem] flex-1">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Scoring formula
-              </span>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Scoring presets">
+            {FANTASY_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  const length = formulaRef.current?.value.length ?? formula.length;
+                  editFormula(0, length, preset.formula);
+                }}
+                className={phaseButtonClass(matchedPreset?.id === preset.id)}
+              >
+                {preset.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <div className="relative min-w-[16rem] flex-1">
+              <div className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <label htmlFor="fantasy-formula">Scoring formula</label>
+                <ScoringHelp season={season} />
+              </div>
               <span className="flex items-start gap-2">
                 <span className="pt-2 font-mono text-sm font-semibold text-slate-500 dark:text-slate-400">fx</span>
                 <textarea
+                  id="fantasy-formula"
                   ref={formulaRef}
                   value={formula}
                   spellCheck={false}
@@ -332,8 +449,8 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
                   className={`${fieldClass} min-h-[4.25rem] w-full resize-y font-mono`}
                 />
               </span>
-            </label>
-            <label className="w-36">
+            </div>
+            <label className="w-40">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Project to GP
               </span>
@@ -346,7 +463,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
                 aria-label="Project scoring to this many games"
                 value={paceGames}
                 onChange={(event) => setPaceGames(event.target.value)}
-                className={fieldClass}
+                className={`${fieldClass} w-full`}
               />
             </label>
           </div>
@@ -354,27 +471,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
             <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300" role="alert">
               {compiled.error}
             </p>
-          ) : (
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              {rows.length.toLocaleString("en-US")} players
-              {hasMinimum ? ` with at least ${minimumGames} GP` : ""}
-              {paceActive ? `, paced to ${pace} games` : ""}. FP/82 is that same score stretched to an 82-game season. Missing stats count as 0. A player is left blank if the formula divides by zero.
-              {hitsLoaded ? "" : " Hits and blocked shots did not load."}
-            </p>
-          )}
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {FANTASY_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => setFormula(preset.formula)}
-                className={phaseButtonClass(matchedPreset?.id === preset.id)}
-              >
-                {preset.name}
-              </button>
-            ))}
-          </div>
+          ) : null}
 
           <div className="mt-3 space-y-2">
             {STAT_GROUPS.map((group) => (
@@ -404,11 +501,14 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Click a stat to insert it. Use + - * / ^, parentheses, comparisons, and IF, MIN, MAX, ABS, ROUND.
-            50% means 0.5. Example pace: IF(GP&gt;0, (3*G + 2*A)/GP*82, 0).
-            League scoring is 2 per goal, 1 per assist, 0.5 per power-play point and shorthanded point, 0.1 per shot and hit, 0.5 per block, 4 per win, minus 2 per goal against, 0.2 per save, 3 per shutout, and 1 per overtime loss.
-          </p>
+          {!compiled.error ? (
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              {rows.length.toLocaleString("en-US")} players
+              {hasMinimum ? ` · ${minimumGames}+ GP` : ""}
+              {paceActive ? ` · paced to ${pace}` : ""}
+              {hitsLoaded ? "" : " · hits and blocks unavailable"}
+            </p>
+          ) : null}
         </section>
 
         <div className="flex flex-wrap items-center gap-2">
