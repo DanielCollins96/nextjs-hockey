@@ -67,7 +67,7 @@ function GameCard({ game, showCommentMeta = false, commentCount = 0 }) {
           router.push(gamePath);
         }
       }}
-      className="flex-shrink-0 w-32 sm:w-40 cursor-pointer bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 px-2 py-1 sm:px-3 sm:py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      className="flex w-32 flex-shrink-0 cursor-pointer flex-col justify-center self-stretch border-r border-gray-200 bg-white px-2.5 py-1.5 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 sm:w-40 sm:px-3"
     >
       <div className={`text-[10px] sm:text-xs font-semibold mb-1 ${isLive ? "text-red-500" : "text-gray-500 dark:text-gray-400"} ${showCommentMeta ? "flex items-center justify-between" : ""}`}>
         <span>{status}</span>
@@ -237,21 +237,21 @@ export default function GamesBanner() {
         }
       }}
     >
-      <div className={`flex ${games.length > 0 || (keepBannerExpanded && (isBannerHovered || isDatePickerFocused)) ? "h-[88px] min-h-[88px]" : "h-10 min-h-10"} items-center transition-[height] duration-150 ease-out`}>
-        {/* Date selector */}
-        <div className="flex-shrink-0 flex items-center self-stretch border-r border-gray-200 dark:border-gray-700 px-1 sm:px-2 bg-white dark:bg-gray-800">
+      <div className={`flex items-stretch transition-[height] duration-150 ease-out ${games.length > 0 || (keepBannerExpanded && (isBannerHovered || isDatePickerFocused)) ? "h-[88px] min-h-[88px]" : "h-14 min-h-14"}`}>
+        <div className="flex shrink-0 items-stretch border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
           <button
+            type="button"
             onClick={() => changeDate(-1)}
-            className="p-0.5 sm:p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            className="flex w-10 items-center justify-center text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700 sm:w-11"
             aria-label="Previous day"
           >
-            <FaChevronLeft className="w-2.5 h-2.5 sm:w-3 sm:h-3 dark:text-white" />
+            <FaChevronLeft className="h-3.5 w-3.5" />
           </button>
-          <label className="relative flex min-w-24 flex-col items-center px-1 sm:min-w-32 sm:px-2">
-            <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400">
+          <label className="relative flex w-[4.5rem] flex-col items-center justify-center leading-none sm:w-20">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               {formatDateForDisplay(selectedDate).split(",")[0]}
             </span>
-            <span className="text-xs font-bold dark:text-white sm:text-base">{formatDate(selectedDate)}</span>
+            <span className="mt-0.5 text-sm font-bold text-gray-950 dark:text-white">{formatDate(selectedDate)}</span>
             <input
               ref={dateInputRef}
               type="date"
@@ -268,21 +268,22 @@ export default function GamesBanner() {
             />
           </label>
           <button
+            type="button"
             onClick={() => changeDate(1)}
-            className="p-0.5 sm:p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            className="flex w-10 items-center justify-center text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700 sm:w-11"
             aria-label="Next day"
           >
-            <FaChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 dark:text-white" />
+            <FaChevronRight className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {/* Games scroll area */}
         {games.length > 0 ? (
-          <div className="relative flex-1 min-w-0 overflow-hidden">
+          <div className="relative h-full min-w-0 flex-1 overflow-hidden">
             {/* Left scroll button */}
             <button
               onClick={() => scroll("left")}
-              className="absolute left-0 top-0 bottom-0 z-10 bg-gradient-to-r from-gray-100 dark:from-gray-900 to-transparent px-2 hover:from-gray-200 dark:hover:from-gray-800"
+              className="absolute bottom-0 left-0 top-0 z-10 flex w-8 items-center justify-center bg-gradient-to-r from-gray-100 to-transparent hover:from-gray-200 dark:from-gray-900 dark:hover:from-gray-800"
               aria-label="Scroll left"
             >
               <FaChevronLeft className="w-4 h-4 dark:text-white" />
@@ -291,7 +292,7 @@ export default function GamesBanner() {
             {/* Scrollable games container */}
             <div
               ref={scrollContainerRef}
-              className="flex overflow-x-scroll scroll-smooth pl-8 sm:pl-10"
+              className="flex h-full items-stretch overflow-x-scroll scroll-smooth pl-8"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
             >
               <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
@@ -308,14 +309,14 @@ export default function GamesBanner() {
             {/* Right scroll button */}
             <button
               onClick={() => scroll("right")}
-              className="absolute right-0 top-0 bottom-0 z-10 bg-gradient-to-l from-gray-100 dark:from-gray-900 to-transparent px-2 hover:from-gray-200 dark:hover:from-gray-800"
+              className="absolute bottom-0 right-0 top-0 z-10 flex w-8 items-center justify-center bg-gradient-to-l from-gray-100 to-transparent hover:from-gray-200 dark:from-gray-900 dark:hover:from-gray-800"
               aria-label="Scroll right"
             >
               <FaChevronRight className="w-4 h-4 dark:text-white" />
             </button>
           </div>
         ) : (
-          <div className="flex h-full flex-1 items-center justify-center border-l border-gray-200 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400" aria-label="No games scheduled">
+          <div className="flex h-full flex-1 items-center justify-center text-xs text-gray-500 dark:text-gray-400" aria-label="No games scheduled">
             {loading ? "Loading..." : "No games scheduled"}
           </div>
         )}
