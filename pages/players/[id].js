@@ -158,7 +158,7 @@ const weightedAverageFooter = (valueKeys, weightKeys, digits) => {
 
 const columnId = (prefix, header) => `${prefix}-${String(header).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
-const makeStatColumn = ({ header, keys, size = 44, digits = 0, footer = true }) => ({
+const makeStatColumn = ({ header, keys, size = 40, digits = 0, footer = true }) => ({
     id: columnId('regular', header),
     header,
     accessorFn: (row) => getFirstValue(row, keys),
@@ -168,7 +168,7 @@ const makeStatColumn = ({ header, keys, size = 44, digits = 0, footer = true }) 
     footer: footer ? totalFooter(keys) : undefined,
 });
 
-const makePlayoffColumn = ({ header, keys, size = 44, digits = 0, footer = true }) => ({
+const makePlayoffColumn = ({ header, keys, size = 40, digits = 0, footer = true }) => ({
     id: columnId('playoff', header),
     header,
     accessorFn: (row) => getFirstValue(row, keys),
@@ -364,9 +364,9 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                 {
                     header: 'Regular Season',
                     columns: [
-                        makeStatColumn({ header: 'GP', keys: regularStatKeys.games, size: 42 }),
-                        makeStatColumn({ header: 'W', keys: regularStatKeys.wins, size: 38 }),
-                        makeStatColumn({ header: 'L', keys: regularStatKeys.losses, size: 38 }),
+                        makeStatColumn({ header: 'GP', keys: regularStatKeys.games, size: 40 }),
+                        makeStatColumn({ header: 'W', keys: regularStatKeys.wins, size: 36 }),
+                        makeStatColumn({ header: 'L', keys: regularStatKeys.losses, size: 36 }),
                         makeAverageColumn({
                             header: 'GAA',
                             keys: regularStatKeys.gaa,
@@ -379,18 +379,18 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                             weightKeys: regularStatKeys.games,
                             digits: 3,
                         }),
-                        makeStatColumn({ header: 'SO', keys: regularStatKeys.shutouts, size: 38 }),
-                        makeStatColumn({ header: 'G', keys: regularStatKeys.goals, size: 38 }),
-                        makeStatColumn({ header: 'A', keys: regularStatKeys.assists, size: 38 }),
-                        makeStatColumn({ header: 'PIM', keys: regularStatKeys.pim, size: 44 }),
+                        makeStatColumn({ header: 'SO', keys: regularStatKeys.shutouts, size: 36 }),
+                        makeStatColumn({ header: 'G', keys: regularStatKeys.goals, size: 36 }),
+                        makeStatColumn({ header: 'A', keys: regularStatKeys.assists, size: 36 }),
+                        makeStatColumn({ header: 'PIM', keys: regularStatKeys.pim, size: 40 }),
                     ],
                 },
                 {
                     header: 'Playoffs',
                     columns: [
-                        makePlayoffColumn({ header: 'GP', keys: playoffStatKeys.games, size: 42 }),
-                        makePlayoffColumn({ header: 'W', keys: playoffStatKeys.wins, size: 38 }),
-                        makePlayoffColumn({ header: 'L', keys: playoffStatKeys.losses, size: 38 }),
+                        makePlayoffColumn({ header: 'GP', keys: playoffStatKeys.games, size: 40 }),
+                        makePlayoffColumn({ header: 'W', keys: playoffStatKeys.wins, size: 36 }),
+                        makePlayoffColumn({ header: 'L', keys: playoffStatKeys.losses, size: 36 }),
                         makePlayoffAverageColumn({
                             header: 'GAA',
                             keys: playoffStatKeys.gaa,
@@ -403,9 +403,9 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                             weightKeys: playoffStatKeys.games,
                             digits: 3,
                         }),
-                        makePlayoffColumn({ header: 'G', keys: playoffStatKeys.goals, size: 38 }),
-                        makePlayoffColumn({ header: 'A', keys: playoffStatKeys.assists, size: 38 }),
-                        makePlayoffColumn({ header: 'PIM', keys: playoffStatKeys.pim, size: 44 }),
+                        makePlayoffColumn({ header: 'G', keys: playoffStatKeys.goals, size: 36 }),
+                        makePlayoffColumn({ header: 'A', keys: playoffStatKeys.assists, size: 36 }),
+                        makePlayoffColumn({ header: 'PIM', keys: playoffStatKeys.pim, size: 40 }),
                     ],
                 },
             ];
@@ -425,23 +425,23 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
             {
                 header: 'Regular Season',
                 columns: [
-                    makeStatColumn({ header: 'GP', keys: regularStatKeys.games, size: 42 }),
-                    makeStatColumn({ header: 'G', keys: regularStatKeys.goals, size: 38 }),
-                    makeStatColumn({ header: 'A', keys: regularStatKeys.assists, size: 38 }),
-                    makeStatColumn({ header: 'P', keys: regularStatKeys.points, size: 38 }),
-                    makeStatColumn({ header: 'PIM', keys: regularStatKeys.pim, size: 44 }),
-                    makeStatColumn({ header: '+/-', keys: regularStatKeys.plusMinus, size: 44 }),
+                    makeStatColumn({ header: 'GP', keys: regularStatKeys.games, size: 40 }),
+                    makeStatColumn({ header: 'G', keys: regularStatKeys.goals, size: 36 }),
+                    makeStatColumn({ header: 'A', keys: regularStatKeys.assists, size: 36 }),
+                    makeStatColumn({ header: 'P', keys: regularStatKeys.points, size: 40 }),
+                    makeStatColumn({ header: 'PIM', keys: regularStatKeys.pim, size: 40 }),
+                    makeStatColumn({ header: '+/-', keys: regularStatKeys.plusMinus, size: 40 }),
                 ],
             },
             {
                 header: 'Playoffs',
                 columns: [
-                    makePlayoffColumn({ header: 'GP', keys: playoffStatKeys.games, size: 42 }),
-                    makePlayoffColumn({ header: 'G', keys: playoffStatKeys.goals, size: 38 }),
-                    makePlayoffColumn({ header: 'A', keys: playoffStatKeys.assists, size: 38 }),
-                    makePlayoffColumn({ header: 'P', keys: playoffStatKeys.points, size: 38 }),
-                    makePlayoffColumn({ header: 'PIM', keys: playoffStatKeys.pim, size: 44 }),
-                    makePlayoffColumn({ header: '+/-', keys: playoffStatKeys.plusMinus, size: 44 }),
+                    makePlayoffColumn({ header: 'GP', keys: playoffStatKeys.games, size: 40 }),
+                    makePlayoffColumn({ header: 'G', keys: playoffStatKeys.goals, size: 36 }),
+                    makePlayoffColumn({ header: 'A', keys: playoffStatKeys.assists, size: 36 }),
+                    makePlayoffColumn({ header: 'P', keys: playoffStatKeys.points, size: 40 }),
+                    makePlayoffColumn({ header: 'PIM', keys: playoffStatKeys.pim, size: 40 }),
+                    makePlayoffColumn({ header: '+/-', keys: playoffStatKeys.plusMinus, size: 40 }),
                 ],
             },
         ];
