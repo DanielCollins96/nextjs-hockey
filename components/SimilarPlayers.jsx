@@ -162,11 +162,12 @@ export default function SimilarPlayers({
   initialPlayers = null,
   className = "",
 }) {
-  const { loading, players, source } = useSimilarPlayers(playerId, {
+  const { loading, players: loadedPlayers, source } = useSimilarPlayers(playerId, {
     limit,
     excludeIds,
     initialPlayers,
   });
+  const players = loadedPlayers.slice(0, limit);
 
   if (!playerId) return null;
   if (!loading && (source === "none" || players.length === 0)) return null;

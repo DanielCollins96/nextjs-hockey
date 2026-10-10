@@ -830,7 +830,7 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                     playerId={id}
                     playerName={playerName}
                     excludeIds={[id]}
-                    limit={8}
+                    limit={6}
                     heading="Similar players"
                     initialPlayers={similarPlayers}
                     actionLabel="Compare"
@@ -861,7 +861,7 @@ export async function getServerSideProps({ params, res }) {
 
     setPageCache(res, PAGE_CACHE.hourly);
     const similar = await findSimilarPlayersSafe(id, {
-        limit: 8,
+        limit: 6,
         excludeIds: [id],
         profileOverride: person,
     });
