@@ -452,6 +452,7 @@ export default function TeamPage({
         columns: [
           {
             header: "GP",
+            id: "PO GP",
             accessorFn: (d) => d["playoffGamesPlayed"],
             size: 34,
             meta: numericColumnMeta,
@@ -463,6 +464,7 @@ export default function TeamPage({
           },
           {
             header: "P",
+            id: "PO P",
             accessorFn: (d) => d["playoffPoints"],
             size: 34,
             meta: numericColumnMeta,
@@ -474,6 +476,7 @@ export default function TeamPage({
           },
           {
             header: "W",
+            id: "PO W",
             accessorFn: (d) => d["playoffWins"],
             size: 34,
             meta: numericColumnMeta,
@@ -485,6 +488,7 @@ export default function TeamPage({
           },
           {
             header: "L",
+            id: "PO L",
             accessorFn: (d) => d["playoffLosses"],
             size: 34,
             meta: numericColumnMeta,
@@ -493,6 +497,30 @@ export default function TeamPage({
                 {formatPlayoffValue(props.getValue())}
               </p>
             ),
+          },
+          {
+            header: "GAA",
+            id: "PO GAA",
+            accessorFn: (d) => d["playoffGoalsAgainstAverage"],
+            size: 48,
+            meta: numericColumnMeta,
+            cell: (props) => {
+              const value = props.getValue();
+              const formatted = value == null || value === "" ? value : Number(value).toFixed(2);
+              return <p className="text-right">{formatPlayoffValue(formatted)}</p>;
+            },
+          },
+          {
+            header: "SV%",
+            id: "PO SV%",
+            accessorFn: (d) => d["playoffSavePercentage"],
+            size: 48,
+            meta: numericColumnMeta,
+            cell: (props) => {
+              const value = props.getValue();
+              const formatted = value == null || value === "" ? value : Number(value).toFixed(3);
+              return <p className="text-right">{formatPlayoffValue(formatted)}</p>;
+            },
           },
         ],
       },
