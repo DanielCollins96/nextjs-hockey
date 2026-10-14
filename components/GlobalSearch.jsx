@@ -118,7 +118,7 @@ export default function GlobalSearch({compact = false, className = "", onNavigat
             if (trimmedQuery.length >= 2) setOpen(true);
           }}
           placeholder="Search players or teams"
-          className="h-10 w-full rounded-md border border-gray-300 bg-white pl-9 pr-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+          className="h-10 w-full rounded-md border border-gray-300 bg-white pl-9 pr-3 text-base text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-gray-600 dark:bg-gray-900 dark:text-white md:text-sm"
           aria-label="Search players or teams"
         />
       </form>

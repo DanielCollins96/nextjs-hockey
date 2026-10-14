@@ -54,16 +54,16 @@ const Header = () => {
   return (
     <>
       <header className="relative z-40 w-full max-w-full bg-gray-100 px-2 py-2 shadow-sm dark:bg-gray-800 md:ml-32 md:w-[calc(100%-8rem)]">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <Link
             href="/"
             className="block flex-shrink-0 self-center px-1 py-1 text-lg font-bold dark:text-white sm:px-2 sm:text-xl md:hidden"
           >
-            <p>NHL Stats</p>
+            NHL Stats
           </Link>
-          <div className="ml-auto flex min-w-0 items-center gap-2">
-            <GlobalSearch className="w-[min(34vw,14rem)] sm:w-[min(54vw,30rem)] md:w-[min(46vw,30rem)] lg:w-[min(38vw,30rem)]" />
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+            <GlobalSearch className="min-w-0 flex-1 sm:max-w-[30rem] md:w-[min(46vw,30rem)] md:flex-none lg:w-[min(38vw,30rem)]" />
+            <div className="hidden flex-shrink-0 md:block">
               <DarkModeToggle />
             </div>
             <div className="hidden flex-shrink-0 md:block">
@@ -80,7 +80,7 @@ const Header = () => {
               )}
             </div>
             <button
-              className="flex flex-shrink-0 items-center px-2 py-2 md:hidden"
+              className="flex flex-shrink-0 items-center px-2 py-2 text-gray-900 dark:text-white md:hidden"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
             >
@@ -112,7 +112,7 @@ const Header = () => {
             NHL Stats
           </Link>
           <button
-            className="md:hidden"
+            className="text-gray-900 dark:text-white md:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
           >
@@ -152,6 +152,9 @@ const Header = () => {
                 />
               </li>
             )}
+            <li className="pt-2 md:hidden">
+              <DarkModeToggle />
+            </li>
           </ul>
         </nav>
       </aside>
