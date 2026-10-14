@@ -55,6 +55,10 @@ function seasonIndex(seasons, season) {
   return (seasons || []).findIndex((value) => Number(value) === Number(season));
 }
 
+function columnWidth(columns) {
+  return columns.reduce((sum, column) => sum + (Number(column.size) || 0), 0);
+}
+
 function seasonPhaseFromQuery(query) {
   return query?.phase === "playoffs" ? "playoffs" : "regular";
 }
@@ -423,6 +427,8 @@ export default function Seasons({
     ],
     [cupWinnerIds]
   );
+  const skaterTableWidth = columnWidth(skaterColumns);
+  const goalieTableWidth = columnWidth(goalieColumns);
 
   const seasonQuery = (nextSeason, nextPhase = phase) => {
     const query = { year: nextSeason };
@@ -540,8 +546,11 @@ export default function Seasons({
               : ""
           }
         >
-          <div className="grid min-w-0 items-start gap-3 min-[1360px]:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)]">
-            <section className="min-w-0 overflow-hidden">
+          <div className="flex min-w-0 flex-wrap items-start gap-3">
+            <section
+              className="min-w-[min(100%,28rem)] max-w-full flex-1 basis-[28rem] overflow-hidden"
+              style={{ maxWidth: skaterTableWidth }}
+            >
               <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">Skating Leaders</h2>
               {skaterRows?.length ? (
                 <ReactTable
@@ -564,7 +573,10 @@ export default function Seasons({
               )}
             </section>
 
-            <section className="min-w-0 overflow-hidden">
+            <section
+              className="min-w-[min(100%,28rem)] max-w-full flex-1 basis-[28rem] overflow-hidden"
+              style={{ maxWidth: goalieTableWidth }}
+            >
               <h2 className="mb-2 text-lg font-bold text-slate-950 dark:text-white">Goaltending Leaders</h2>
               {goalieRows?.length ? (
                 <ReactTable
