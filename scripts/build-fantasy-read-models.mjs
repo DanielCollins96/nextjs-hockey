@@ -1,6 +1,7 @@
+import { createHash } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { FANTASY_READ_MODEL_DIR, fantasyGameTypeId, fantasyPhase } from "../lib/fantasy-data.js";
 import { loadFantasyPool, loadFantasySeasons } from "../lib/fantasy-pool.js";
 import { applySkaterRealtime, fetchSkaterRealtime } from "../lib/fantasy-realtime.js";
@@ -13,9 +14,26 @@ const s3 = bucket
   ? new S3Client({ region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-west-2" })
   : null;
 
+function isMissingObject(error) {
+  const status = error?.$metadata?.httpStatusCode;
+  return status === 404 || error?.name === "NotFound" || error?.name === "NoSuchKey";
+}
+
 async function upload(key, body) {
   if (!s3) return;
   const objectKey = prefix ? `${prefix}/${key}` : key;
+  const digest = createHash("md5").update(body).digest("hex");
+  try {
+    const head = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: objectKey }));
+    const etag = String(head.ETag || "").replaceAll('"', "");
+    if (etag && !etag.includes("-") && etag === digest) {
+      console.log(`unchanged s3://${bucket}/${objectKey}`);
+      return;
+    }
+  } catch (error) {
+    if (!isMissingObject(error)) throw error;
+  }
+
   await s3.send(
     new PutObjectCommand({
       Bucket: bucket,
@@ -51,17 +69,18 @@ try {
   await writeJson(readModelPaths.fantasySeasons(), { seasons });
   console.log(`seasons ${seasons.length}`);
 
+  const currentSeason = seasons[0];
   for (const season of seasons) {
     for (const phase of PHASES) {
       const key = readModelPaths.fantasyPool(season, fantasyPhase(phase));
       const existing = await readExisting(key);
-      if (existing?.hitsLoaded && Array.isArray(existing.players)) {
-        await upload(key, JSON.stringify(existing));
-        console.log(`${key} kept players=${existing.players.length}`);
+      const current = Number(season) === Number(currentSeason);
+      if (!current && existing?.hitsLoaded && Array.isArray(existing.players)) {
+        console.log(`${key} unchanged players=${existing.players.length}`);
         continue;
       }
 
-      if (Array.isArray(existing?.players)) {
+      if (!current && Array.isArray(existing?.players)) {
         try {
           const totals = await fetchSkaterRealtime(season, fantasyGameTypeId(phase));
           const players = applySkaterRealtime(existing.players, totals);
