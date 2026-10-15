@@ -712,6 +712,10 @@ export default function TeamPage({
   const handleTeamTablePageRowsChange = useCallback((rows) => {
     setVisibleTeamTableRows(rows);
   }, []);
+  const isSelectedSeasonRecord = useCallback(
+    (record) => normalizeSeasonId(record?.seasonId) === seasonId,
+    [seasonId]
+  );
 
   useEffect(() => {
     setVisibleTeamTableRows([]);
@@ -1236,6 +1240,8 @@ export default function TeamPage({
                       sortKey="seasonId"
                       pageSize={10}
                       onPageRowsChange={handleTeamTablePageRowsChange}
+                      isRowHighlighted={isSelectedSeasonRecord}
+                      highlightKey={seasonId}
                       fillLastPage
                       modern
                       compact
