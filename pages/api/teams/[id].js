@@ -1,5 +1,6 @@
 import { extractEntityId } from '../../../lib/routes'
 import { loadTeam, loadTeamContractsOnly } from '../../../lib/team-data'
+import { PAGE_CACHE, setPageCache } from '../../../lib/http-cache'
 
 export default async function handler(req, res) {
   try {
@@ -22,10 +23,7 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('X-Data-Source', result.source)
-    res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=43200, stale-while-revalidate=86400'
-    )
+    setPageCache(res, PAGE_CACHE.live)
 
     if (contractsOnly) {
       return res.status(200).json({ teamContracts: result.teamContracts })

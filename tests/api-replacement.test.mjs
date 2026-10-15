@@ -6,12 +6,14 @@ const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 const PLAYER_ID = process.env.TEST_PLAYER_ID || '8478402';
 const TEAM_ID = process.env.TEST_TEAM_ID || '10';
 
-test('players API returns expected shape and 12-hour cache header', async () => {
+test('players API returns expected shape and live cache header', async () => {
   const response = await fetch(`${BASE_URL}/api/players/${PLAYER_ID}`);
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /max-age=0/);
+  assert.match(cacheControl, /s-maxage=300/);
+  assert.match(cacheControl, /stale-while-revalidate=3600/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.player), 'player should be an array');
@@ -24,12 +26,13 @@ test('players API returns expected shape and 12-hour cache header', async () => 
   );
 });
 
-test('teams API returns expected shape and 12-hour cache header', async () => {
+test('teams API returns expected shape and live cache header', async () => {
   const response = await fetch(`${BASE_URL}/api/teams/${TEAM_ID}`);
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /max-age=0/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(payload.team && typeof payload.team === 'object', 'team should be an object');
@@ -39,45 +42,45 @@ test('teams API returns expected shape and 12-hour cache header', async () => {
   assert.ok(Array.isArray(payload.playoffSeasons), 'playoffSeasons should be an array');
 });
 
-test('teams list API returns expected shape and 12-hour cache header', async () => {
+test('teams list API returns expected shape and live cache header', async () => {
   const response = await fetch(`${BASE_URL}/api/teams`);
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.teams), 'teams should be an array');
 });
 
-test('players search API returns expected shape and 12-hour cache header', async () => {
+test('players search API returns expected shape and search cache header', async () => {
   const response = await fetch(`${BASE_URL}/api/players?q=McDavid&limit=10`);
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=600/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.players), 'players should be an array');
 });
 
-test('teams rosters API returns expected shape and 12-hour cache header', async () => {
+test('teams rosters API returns expected shape and live cache header', async () => {
   const response = await fetch(`${BASE_URL}/api/teams/rosters`);
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.rosters), 'rosters should be an array');
 });
 
-test('seasons API returns expected shape and 12-hour cache header', async () => {
-  const response = await fetch(`${BASE_URL}/api/seasons?year=20232024`);
+test('seasons API returns expected shape and live cache header for the current season', async () => {
+  const response = await fetch(`${BASE_URL}/api/seasons`);
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.players), 'players should be an array');
@@ -190,4 +193,14 @@ test('public pages load data through shared helpers, not HTTP self-fetch or dire
       `${pagePath} should not rebuild API URLs from the request Host`
     );
   }
+
+  const readModelSource = await readFile(new URL('../lib/read-models.js', import.meta.url), 'utf8');
+  assert.match(
+    readModelSource,
+    /cache:\s*["']no-store["']/,
+    'S3 read-model fetches must disable Next/Vercel fetch caching'
+  );
+
+  const playerApi = await readFile(new URL('../pages/api/players/[id].js', import.meta.url), 'utf8');
+  assert.match(playerApi, /PAGE_CACHE\.live/, 'player API should use the live cache policy');
 });
