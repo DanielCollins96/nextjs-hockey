@@ -75,14 +75,27 @@ try {
       }
 
       const poolResult = await loadFantasyPool(season, fantasyGameTypeId(phase));
-      await writeJson(key, {
-        season: Number(season),
-        phase: fantasyPhase(phase),
-        gameTypeId: fantasyGameTypeId(phase),
-        hitsLoaded: poolResult.hitsLoaded,
-        players: poolResult.players,
-      });
-      console.log(`${key} players=${poolResult.players.length} hits=${poolResult.hitsLoaded}`);
+      try {
+        const totals = await fetchSkaterRealtime(season, fantasyGameTypeId(phase));
+        const players = applySkaterRealtime(poolResult.players, totals);
+        await writeJson(key, {
+          season: Number(season),
+          phase: fantasyPhase(phase),
+          gameTypeId: fantasyGameTypeId(phase),
+          hitsLoaded: true,
+          players,
+        });
+        console.log(`${key} players=${players.length} hits=true`);
+      } catch (error) {
+        await writeJson(key, {
+          season: Number(season),
+          phase: fantasyPhase(phase),
+          gameTypeId: fantasyGameTypeId(phase),
+          hitsLoaded: false,
+          players: poolResult.players,
+        });
+        console.error(`${key} hits still missing: ${error.message}`);
+      }
     }
   }
 } finally {
