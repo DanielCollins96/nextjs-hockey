@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import SEO from '../../../components/SEO'
 import DraftTeamList from '../../../components/DraftTeamList'
 import { FaDownload } from 'react-icons/fa'
+import { partitionNhlTeams } from '../../../lib/nhl-teams'
 import { draftTeamUrl, extractEntityId, playerUrl, teamUrl } from '../../../lib/routes'
 import { PAGE_CACHE, setPageCache } from '../../../lib/http-cache'
 
@@ -24,6 +25,7 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
   const selectedYear = year !== 'all' && draft[year] ? year : 'all'
   const allPlayers = years.flatMap((draftYear) => draft[draftYear] || [])
   const selectedPlayers = selectedYear === 'all' ? allPlayers : draft[selectedYear] || []
+  const { active: activeDraftTeams, former: formerDraftTeams } = partitionNhlTeams(draftTeams)
 
   const teamName = team?.name || team?.abbreviation || 'Team'
   const teamAbbrev = team?.abbreviation || ''
@@ -252,11 +254,20 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                   }}
                   className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white lg:hidden"
                 >
-                  {draftTeams.map((entry) => (
-                    <option value={entry.id} key={entry.id}>
-                      {entry.abbreviation || entry.name}
-                    </option>
-                  ))}
+                  {[
+                    ['Active teams', activeDraftTeams],
+                    ['Former teams', formerDraftTeams],
+                  ].map(([label, entries]) =>
+                    entries.length ? (
+                      <optgroup label={label} key={label}>
+                        {entries.map((entry) => (
+                          <option value={entry.id} key={entry.id}>
+                            {entry.abbreviation || entry.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : null
+                  )}
                 </select>
                 <div className="hidden rounded-md bg-slate-100 px-2.5 py-1.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:block">
                   <span className="font-semibold">
@@ -434,6 +445,7 @@ export async function getServerSideProps({ params, res }) {
         id: entry.id,
         name: entry.name,
         abbreviation: entry.abbreviation,
+        active: Boolean(entry.active),
       })),
     },
   }
