@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node --test tests/player-compare.test.mjs tests/serialize-dates.test.mjs tests/player-embeddings.test.mjs tests/fantasy-formula.test.mjs tests/fantasy-data.test.mjs tests/forum-hot.test.mjs tests/forum-content.test.mjs tests/forum-numbers.test.mjs tests/forum-quota.test.mjs tests/forum-schema.test.mjs tests/forum-votes.test.mjs tests/forum-iam.test.mjs",
+    "test:unit": "node --test tests/player-compare.test.mjs tests/serialize-dates.test.mjs tests/player-embeddings.test.mjs tests/fantasy-formula.test.mjs tests/fantasy-data.test.mjs tests/forum-hot.test.mjs tests/forum-content.test.mjs tests/forum-numbers.test.mjs tests/forum-quota.test.mjs tests/forum-schema.test.mjs tests/forum-votes.test.mjs tests/forum-iam.test.mjs tests/forum-storage.test.mjs",
     "build:fantasy-read-models": "node --env-file=.env.local scripts/build-fantasy-read-models.mjs",
     "test:api-replacement": "node scripts/run-api-replacement-tests.mjs",
     "test:api-replacement:direct": "node --test tests/api-replacement.test.mjs"
