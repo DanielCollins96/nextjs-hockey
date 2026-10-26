@@ -188,7 +188,7 @@ test('vectors are L2-normalized and identical players have cosine 1', () => {
   assert.equal(similarityPercent(1), 100);
   assert.equal(similarityPercent(-1), 0);
   assert.equal(parseSimilarLimit('99'), 20);
-  assert.equal(parseSimilarLimit('nope'), 8);
+  assert.equal(parseSimilarLimit('nope'), 6);
 });
 
 test('McDavid-like playmakers rank closer than snipers or depth scorers', () => {

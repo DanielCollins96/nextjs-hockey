@@ -20,7 +20,10 @@ export default function ReactTable({
   onPageRowsChange,
   modern = false,
   compact = false,
+  tight = false,
   fillLastPage = false,
+  isRowHighlighted,
+  highlightKey,
 }) {
   const [sorting, setSorting] = useState(
     initialSorting || [
@@ -72,6 +75,22 @@ export default function ReactTable({
     onPageRowsChange(pageRows);
   }, [data, displayRows, onPageRowsChange, pagination, sorting, table]);
 
+  // Jump to the page holding the highlighted row whenever the highlight target (or sort) changes.
+  useEffect(() => {
+    if (!isRowHighlighted || highlightKey == null) return;
+
+    const rowIndex = table
+      .getPrePaginationRowModel()
+      .rows.findIndex((row) => isRowHighlighted(row.original));
+    if (rowIndex < 0) return;
+
+    const targetPageIndex = Math.floor(rowIndex / pagination.pageSize);
+    setPagination((current) =>
+      current.pageIndex === targetPageIndex ? current : {...current, pageIndex: targetPageIndex}
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightKey, data, sorting, pagination.pageSize]);
+
   const getColumnWidth = (column) => {
     const width = column.columnDef.size;
 
@@ -82,14 +101,28 @@ export default function ReactTable({
     ? `${compact ? "inline-flex h-7 min-w-7 px-1 text-xs" : "inline-flex h-9 min-w-9 px-2 text-sm"} items-center justify-center rounded-md border border-slate-200 bg-white font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:bg-white disabled:hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-slate-700 dark:disabled:hover:border-slate-700 dark:disabled:hover:bg-slate-800 dark:disabled:hover:text-slate-100`
     : "px-3 py-1 rounded border transition text-black bg-gray-100 border-gray-300 hover:bg-gray-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-slate-900 dark:disabled:text-slate-600";
 
+  const leafSizes = table.getAllLeafColumns().map((column) => Number(column.columnDef.size) || 0);
+  const lockTableWidth = modern && leafSizes.length > 0 && leafSizes.every((size) => size > 0);
+  const tableWidth = leafSizes.reduce((sum, size) => sum + size, 0);
+
   return (
     <div>
-      <div className={`relative overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}>
-        <table className={modern ? "text-sm w-max table-fixed border-collapse" : "border border-black p-2 m-1"}>
+      <div className={`relative max-w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${modern ? `${compact ? "rounded-md" : "rounded-lg"} border border-slate-200 dark:border-slate-700` : ""}`}>
+        <table
+          style={lockTableWidth ? { width: "100%", maxWidth: tableWidth, minWidth: 0 } : undefined}
+          className={modern ? `${tight ? "text-xs 2xl:text-sm" : "text-sm"} table-fixed border-collapse ${lockTableWidth ? "w-full" : "w-max"}` : "border border-black p-2 m-1"}
+        >
         {modern && (
           <colgroup>
             {table.getAllLeafColumns().map((column) => (
-              <col key={column.id} style={{ width: getColumnWidth(column) }} />
+              <col
+                key={column.id}
+                style={{
+                  width: lockTableWidth
+                    ? `${((Number(column.columnDef.size) || 0) / tableWidth) * 100}%`
+                    : getColumnWidth(column),
+                }}
+              />
             ))}
           </colgroup>
         )}
@@ -104,7 +137,7 @@ export default function ReactTable({
                   <th
                     className={
                       modern
-                        ? `border-b border-slate-200 bg-slate-50 ${compact ? "px-1.5 py-1" : "px-2 py-2"} text-left text-xs font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
+                        ? `min-w-0 border-b border-slate-200 bg-slate-50 ${tight ? "px-1 py-1 text-xs 2xl:text-sm" : compact ? "px-1 py-1 text-xs" : "px-2 py-2 text-xs"} text-left font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${headerClassName}`
                         : ""
                     }
                     key={header.id}
@@ -124,7 +157,7 @@ export default function ReactTable({
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          <span className="text-xs align-middle opacity-70 ml-1">
+                          <span className={tight ? "ml-0.5 align-middle text-[10px] opacity-70 xl:ml-1 xl:text-xs" : "ml-1 align-middle text-xs opacity-70"}>
                             {{
                               asc: "▲",
                               desc: "▼",
@@ -149,13 +182,17 @@ export default function ReactTable({
             const isNHL =
               row?.original["league.name"] == "National Hockey League" ||
               row?.original["league.name"] == "NHL";
+            const isHighlighted = Boolean(isRowHighlighted?.(row.original));
             return (
               <tr
                 key={row.id}
+                aria-current={isHighlighted ? "true" : undefined}
                 className={
                   modern
-                    ? "whitespace-nowrap bg-white odd:bg-white even:bg-slate-50 hover:bg-blue-50 dark:bg-slate-900 dark:odd:bg-slate-900 dark:even:bg-slate-800/70 dark:hover:bg-slate-800"
-                    : isNHL ? "bg-slate-200" : ""
+                    ? isHighlighted
+                      ? "whitespace-nowrap font-semibold bg-blue-100 odd:bg-blue-100 even:bg-blue-100 hover:bg-blue-200 shadow-[inset_3px_0_0_0_#2563eb] dark:bg-blue-900/60 dark:odd:bg-blue-900/60 dark:even:bg-blue-900/60 dark:hover:bg-blue-900/80"
+                      : "whitespace-nowrap bg-white odd:bg-white even:bg-slate-50 hover:bg-blue-50 dark:bg-slate-900 dark:odd:bg-slate-900 dark:even:bg-slate-800/70 dark:hover:bg-slate-800"
+                    : isHighlighted ? "bg-blue-100 font-semibold" : isNHL ? "bg-slate-200" : ""
                 }
               >
                 {row.getVisibleCells().map((cell) => {
@@ -165,7 +202,7 @@ export default function ReactTable({
                     <td
                       className={
                         modern
-                          ? `border-b border-slate-200 ${compact ? "px-1.5" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap overflow-hidden text-ellipsis ${cellClassName}`
+                          ? `min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-b border-slate-200 ${tight ? "px-1" : compact ? "px-1" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 ${cellClassName}`
                           : "border-black border px-1 text-sm whitespace-nowrap"
                       }
                       key={cell.id}

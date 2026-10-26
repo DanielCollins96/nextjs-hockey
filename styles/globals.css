@@ -72,6 +72,22 @@
   animation: loading-bar 2s ease-in-out infinite;
 }
 
+@media (min-width: 640px) and (max-width: 1279px) {
+  .mobile-fit-table {
+    width: max-content;
+  }
+
+  .mobile-fit-table th,
+  .mobile-fit-table td {
+    padding-left: 0.125rem;
+    padding-right: 0.125rem;
+  }
+
+  .mobile-fit-table tfoot td {
+    font-size: 0.65rem;
+  }
+}
+
 @media (max-width: 639px) {
   .mobile-fit-table {
     width: 125%;
