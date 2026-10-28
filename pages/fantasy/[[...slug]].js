@@ -275,7 +275,10 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         header: "Rk",
         accessorKey: "rank",
         size: 48,
-        meta: numericColumnMeta,
+        meta: {
+          ...numericColumnMeta,
+          sticky: true,
+        },
         cell: ({ getValue }) => getValue() ?? "—",
       },
       {
@@ -299,6 +302,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         header: "Player",
         accessorKey: "name",
         size: 180,
+        meta: { sticky: true },
         cell: ({ row }) => (
           <Link href={playerUrl(row.original.name, row.original.playerId)} className={linkClass}>
             {row.original.name}
@@ -571,6 +575,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
             pageSize={40}
             modern
             compact
+            scrollX
           />
         ) : (
           <p className="text-sm text-slate-500 dark:text-slate-400">No players match this season and filter.</p>
