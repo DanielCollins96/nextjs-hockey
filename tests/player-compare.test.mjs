@@ -314,6 +314,20 @@ test('TOI parses MM:SS and merges NHL landing averages onto season rows', () => 
   assert.equal(careerTotals(merged, false).toi, 1379);
 });
 
+test('compare reads stored TOI without an NHL landing merge', () => {
+  const stored = [
+    nhlRow({ season: 20252026, 'stat.games': 82, 'stat.toiPerGame': 1379 }),
+    nhlRow({ season: 20242025, 'stat.games': 76, avgToi: '21:22' }),
+  ];
+  const toiColumn = seasonCompareColumns(false).find((column) => column.key === 'toi');
+  const byYear = nhlSeasonsByYear(stored);
+
+  assert.equal(formatToi(seasonCellValue(byYear[0].row, toiColumn)), '22:59');
+  assert.equal(formatToi(seasonCellValue(byYear[1].row, toiColumn)), '21:22');
+  assert.equal(formatToi(seasonCellValue(mergeNhlSeasons([stored])[0].left, toiColumn)), '22:59');
+  assert.equal(formatToi(careerTotals(stored, false).toi), '22:12');
+});
+
 test('compareHref keeps the age alignment query on shareable URLs', () => {
   assert.equal(
     compareHref([
