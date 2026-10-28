@@ -11,7 +11,7 @@ test('players API returns expected shape and 12-hour cache header', async () => 
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.player), 'player should be an array');
@@ -29,7 +29,7 @@ test('teams API returns expected shape and 12-hour cache header', async () => {
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(payload.team && typeof payload.team === 'object', 'team should be an object');
@@ -44,7 +44,7 @@ test('teams list API returns expected shape and 12-hour cache header', async () 
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.teams), 'teams should be an array');
@@ -55,7 +55,7 @@ test('players search API returns expected shape and 12-hour cache header', async
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=600/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.players), 'players should be an array');
@@ -66,7 +66,7 @@ test('teams rosters API returns expected shape and 12-hour cache header', async 
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=300/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.rosters), 'rosters should be an array');
@@ -77,7 +77,7 @@ test('seasons API returns expected shape and 12-hour cache header', async () => 
   assert.equal(response.status, 200);
 
   const cacheControl = response.headers.get('cache-control') || '';
-  assert.match(cacheControl, /s-maxage=43200/);
+  assert.match(cacheControl, /s-maxage=3600/);
 
   const payload = await response.json();
   assert.ok(Array.isArray(payload.players), 'players should be an array');

@@ -740,6 +740,10 @@ export default function TeamPage({
   const handleTeamTablePageRowsChange = useCallback((rows) => {
     setVisibleTeamTableRows(rows);
   }, []);
+  const isSelectedSeasonRecord = useCallback(
+    (record) => normalizeSeasonId(record?.seasonId) === seasonId,
+    [seasonId]
+  );
 
   useEffect(() => {
     setVisibleTeamTableRows([]);
@@ -1264,6 +1268,8 @@ export default function TeamPage({
                       sortKey="seasonId"
                       pageSize={10}
                       onPageRowsChange={handleTeamTablePageRowsChange}
+                      isRowHighlighted={isSelectedSeasonRecord}
+                      highlightKey={seasonId}
                       fillLastPage
                       modern
                       compact
@@ -1403,7 +1409,7 @@ export async function getServerSideProps({params, query, res}) {
       ? normalizeSeasonId(requestedSeason)
       : seasonIds[0] || null;
 
-  setPageCache(res, PAGE_CACHE.hourly);
+  setPageCache(res, PAGE_CACHE.live);
   return {
     props: {
       seasons: seasonMap,

@@ -22,6 +22,8 @@ export default function ReactTable({
   compact = false,
   tight = false,
   fillLastPage = false,
+  isRowHighlighted,
+  highlightKey,
 }) {
   const [sorting, setSorting] = useState(
     initialSorting || [
@@ -72,6 +74,22 @@ export default function ReactTable({
     lastPageRowsSignature.current = pageRowsSignature;
     onPageRowsChange(pageRows);
   }, [data, displayRows, onPageRowsChange, pagination, sorting, table]);
+
+  // Jump to the page holding the highlighted row whenever the highlight target (or sort) changes.
+  useEffect(() => {
+    if (!isRowHighlighted || highlightKey == null) return;
+
+    const rowIndex = table
+      .getPrePaginationRowModel()
+      .rows.findIndex((row) => isRowHighlighted(row.original));
+    if (rowIndex < 0) return;
+
+    const targetPageIndex = Math.floor(rowIndex / pagination.pageSize);
+    setPagination((current) =>
+      current.pageIndex === targetPageIndex ? current : {...current, pageIndex: targetPageIndex}
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightKey, data, sorting, pagination.pageSize]);
 
   const getColumnWidth = (column) => {
     const width = column.columnDef.size;
@@ -164,13 +182,17 @@ export default function ReactTable({
             const isNHL =
               row?.original["league.name"] == "National Hockey League" ||
               row?.original["league.name"] == "NHL";
+            const isHighlighted = Boolean(isRowHighlighted?.(row.original));
             return (
               <tr
                 key={row.id}
+                aria-current={isHighlighted ? "true" : undefined}
                 className={
                   modern
-                    ? "whitespace-nowrap bg-white odd:bg-white even:bg-slate-50 hover:bg-blue-50 dark:bg-slate-900 dark:odd:bg-slate-900 dark:even:bg-slate-800/70 dark:hover:bg-slate-800"
-                    : isNHL ? "bg-slate-200" : ""
+                    ? isHighlighted
+                      ? "whitespace-nowrap font-semibold bg-blue-100 odd:bg-blue-100 even:bg-blue-100 hover:bg-blue-200 shadow-[inset_3px_0_0_0_#2563eb] dark:bg-blue-900/60 dark:odd:bg-blue-900/60 dark:even:bg-blue-900/60 dark:hover:bg-blue-900/80"
+                      : "whitespace-nowrap bg-white odd:bg-white even:bg-slate-50 hover:bg-blue-50 dark:bg-slate-900 dark:odd:bg-slate-900 dark:even:bg-slate-800/70 dark:hover:bg-slate-800"
+                    : isHighlighted ? "bg-blue-100 font-semibold" : isNHL ? "bg-slate-200" : ""
                 }
               >
                 {row.getVisibleCells().map((cell) => {
