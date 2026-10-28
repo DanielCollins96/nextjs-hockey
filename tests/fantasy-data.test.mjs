@@ -3,7 +3,6 @@ import test from "node:test";
 import {
   fantasyPoolFromReadModel,
   fantasySeasonList,
-  fantasyStaticPathEntries,
   parseFantasySlug,
 } from "../lib/fantasy-data.js";
 import { fantasyPageHref, fantasyPublicHrefs } from "../lib/fantasy-paths.js";
@@ -23,13 +22,6 @@ test("fantasy page paths cover the latest season and playoffs", () => {
     "/fantasy/20252026/playoffs",
     "/fantasy/20242025",
     "/fantasy/20242025/playoffs",
-  ]);
-  assert.deepEqual(fantasyStaticPathEntries([20252026, 20242025]), [
-    { params: { slug: [] } },
-    { params: { slug: ["20252026"] } },
-    { params: { slug: ["20252026", "playoffs"] } },
-    { params: { slug: ["20242025"] } },
-    { params: { slug: ["20242025", "playoffs"] } },
   ]);
   assert.deepEqual(parseFantasySlug([]), { season: null, phase: "regular" });
   assert.deepEqual(parseFantasySlug(undefined), { season: null, phase: "regular" });

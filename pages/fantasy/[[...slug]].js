@@ -16,6 +16,7 @@ import {
   projectScore,
 } from "../../lib/fantasy-formula";
 import { fantasyPageHref } from "../../lib/fantasy-paths";
+import { PAGE_CACHE, setPageCache } from "../../lib/http-cache";
 import { playerUrl, teamUrl } from "../../lib/routes";
 
 const FORMULA_KEY = "hocke.fantasy.formula";
@@ -579,18 +580,16 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
   );
 }
 
-export async function getStaticPaths() {
-  const { fantasyStaticPaths } = await import("../../lib/fantasy-data");
-  return {
-    paths: await fantasyStaticPaths(),
-    fallback: false,
-  };
-}
+export async function getServerSideProps({ params, res }) {
+  const { loadFantasy, parseFantasySlug } = await import("../../lib/fantasy-data");
+  const parsed = parseFantasySlug(params?.slug);
+  if (!parsed) return { notFound: true };
 
-export async function getStaticProps({ params }) {
-  const { loadStaticFantasyPage } = await import("../../lib/fantasy-data");
-  const result = await loadStaticFantasyPage(params?.slug);
+  const result = await loadFantasy({ year: parsed.season, phase: parsed.phase });
   if (result.notFound) return { notFound: true };
+
+  const latest = result.availableSeasons[0];
+  setPageCache(res, Number(result.season) === Number(latest) ? PAGE_CACHE.live : PAGE_CACHE.stable);
 
   return {
     props: {
