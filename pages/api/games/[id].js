@@ -1,4 +1,5 @@
 import { loadGame } from '../../../lib/game-data'
+import { PAGE_CACHE, setPageCache } from '../../../lib/http-cache'
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -13,10 +14,7 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('X-Data-Source', result.source)
-    res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=300, stale-while-revalidate=3600'
-    )
+    setPageCache(res, PAGE_CACHE.live)
 
     res.status(200).json({
       game: result.game,
