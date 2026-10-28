@@ -39,6 +39,15 @@ export default function ReactTable({
     pageIndex: 0,
     pageSize: pageSize,
   });
+  const [narrowViewport, setNarrowViewport] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 640px)");
+    const update = () => setNarrowViewport(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
 
   const table = useReactTable({
     columns,
@@ -103,7 +112,13 @@ export default function ReactTable({
     : "px-3 py-1 rounded border transition text-black bg-gray-100 border-gray-300 hover:bg-gray-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-slate-900 dark:disabled:text-slate-600";
 
   const leafColumns = table.getAllLeafColumns();
-  const leafSizes = leafColumns.map((column) => Number(column.columnDef.size) || 0);
+  const columnSize = (column) => {
+    const size = Number(column.columnDef.size) || 0;
+    if (!narrowViewport) return size;
+    const mobileSize = Number(column.columnDef.meta?.mobileSize);
+    return Number.isFinite(mobileSize) && mobileSize > 0 ? mobileSize : size;
+  };
+  const leafSizes = leafColumns.map((column) => columnSize(column));
   const lockTableWidth = modern && leafSizes.length > 0 && leafSizes.every((size) => size > 0);
   const tableWidth = leafSizes.reduce((sum, size) => sum + size, 0);
   const stickyLeft = {};
@@ -111,7 +126,7 @@ export default function ReactTable({
   for (const column of leafColumns) {
     if (!column.columnDef.meta?.sticky) continue;
     stickyLeft[column.id] = stickyOffset;
-    stickyOffset += Number(column.columnDef.size) || 0;
+    stickyOffset += columnSize(column);
   }
 
   const hasStickyColumns = Object.keys(stickyLeft).length > 0;
@@ -168,8 +183,8 @@ export default function ReactTable({
                 style={{
                   width: lockTableWidth
                     ? scrollX
-                      ? `${Number(column.columnDef.size) || 0}px`
-                      : `${((Number(column.columnDef.size) || 0) / tableWidth) * 100}%`
+                      ? `${columnSize(column)}px`
+                      : `${(columnSize(column) / tableWidth) * 100}%`
                     : getColumnWidth(column),
                 }}
               />

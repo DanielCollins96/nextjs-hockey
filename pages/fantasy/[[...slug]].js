@@ -30,6 +30,17 @@ const numericColumnMeta = {
 };
 const linkClass = "text-blue-700 hover:underline dark:text-blue-300";
 
+function compactPlayerName(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length < 2) return name;
+  const initial = parts[0].charAt(0);
+  if (!initial) return name;
+  return `${initial}. ${parts[parts.length - 1]}`;
+}
+
 const fieldClass =
   "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-white";
 
@@ -278,6 +289,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         meta: {
           ...numericColumnMeta,
           sticky: true,
+          mobileSize: 36,
         },
         cell: ({ getValue }) => getValue() ?? "—",
       },
@@ -302,10 +314,15 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         header: "Player",
         accessorKey: "name",
         size: 180,
-        meta: { sticky: true },
+        meta: { sticky: true, mobileSize: 120 },
         cell: ({ row }) => (
-          <Link href={playerUrl(row.original.name, row.original.playerId)} className={linkClass}>
-            {row.original.name}
+          <Link
+            href={playerUrl(row.original.name, row.original.playerId)}
+            className={linkClass}
+            title={row.original.name}
+          >
+            <span className="sm:hidden">{compactPlayerName(row.original.name)}</span>
+            <span className="hidden sm:inline">{row.original.name}</span>
           </Link>
         ),
       },
