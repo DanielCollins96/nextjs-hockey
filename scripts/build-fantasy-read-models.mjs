@@ -1,18 +1,23 @@
 import { createHash } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { FANTASY_READ_MODEL_DIR, fantasyGameTypeId, fantasyPhase } from "../lib/fantasy-data.js";
 import { loadFantasyPool, loadFantasySeasons } from "../lib/fantasy-pool.js";
 import { applySkaterRealtime, fetchSkaterRealtime } from "../lib/fantasy-realtime.js";
 import { readModelPaths } from "../lib/read-models.js";
 
 const PHASES = ["regular", "playoffs"];
+const ALL = process.argv.includes("--all");
 const bucket = (process.env.READ_MODEL_S3_BUCKET || "").trim();
 const prefix = (process.env.READ_MODEL_S3_PREFIX || "").trim().replace(/^\/+|\/+$/g, "");
 const s3 = bucket
   ? new S3Client({ region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-west-2" })
   : null;
+
+function objectKeyFor(key) {
+  return prefix ? `${prefix}/${key}` : key;
+}
 
 function isMissingObject(error) {
   const status = error?.$metadata?.httpStatusCode;
@@ -21,7 +26,7 @@ function isMissingObject(error) {
 
 async function upload(key, body) {
   if (!s3) return;
-  const objectKey = prefix ? `${prefix}/${key}` : key;
+  const objectKey = objectKeyFor(key);
   const digest = createHash("md5").update(body).digest("hex");
   try {
     const head = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: objectKey }));
@@ -59,7 +64,14 @@ async function readExisting(key) {
   try {
     return JSON.parse(await readFile(path.join(FANTASY_READ_MODEL_DIR, key), "utf8"));
   } catch (error) {
-    if (error.code === "ENOENT") return null;
+    if (error.code !== "ENOENT") throw error;
+  }
+  if (!s3) return null;
+  try {
+    const object = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: objectKeyFor(key) }));
+    return JSON.parse(await object.Body.transformToString());
+  } catch (error) {
+    if (isMissingObject(error)) return null;
     throw error;
   }
 }
@@ -70,7 +82,7 @@ try {
   console.log(`seasons ${seasons.length}`);
 
   const currentSeason = seasons[0];
-  for (const season of seasons) {
+  for (const season of ALL ? seasons : [currentSeason]) {
     for (const phase of PHASES) {
       const key = readModelPaths.fantasyPool(season, fantasyPhase(phase));
       const existing = await readExisting(key);
