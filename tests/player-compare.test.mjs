@@ -25,7 +25,6 @@ import {
   nhlSeasonsByYear,
   formatStatValue,
   formatToi,
-  mergeToiIntoPlayerStats,
   parseToiSeconds,
   seasonAge,
 } from '../lib/player-stats.js';
@@ -291,27 +290,13 @@ test('mergeNhlSeasonsByAge aligns different calendar years at the same age', () 
   assert.equal(missingAge.length, 0);
 });
 
-test('TOI parses MM:SS and merges NHL landing averages onto season rows', () => {
+test('TOI parses MM:SS and averages season seconds into career totals', () => {
   assert.equal(parseToiSeconds('22:59'), 1379);
   assert.equal(formatToi(1379), '22:59');
   assert.equal(formatToi(null), '-');
 
-  const merged = mergeToiIntoPlayerStats(
-    [
-      nhlRow({ season: 20252026 }),
-      nhlRow({ season: 20232024, 'league.name': 'OHL' }),
-    ],
-    {
-      seasonTotals: [
-        { leagueAbbrev: 'NHL', gameTypeId: 2, season: 20252026, gamesPlayed: 82, avgToi: '22:59' },
-        { leagueAbbrev: 'NHL', gameTypeId: 2, season: 20232024, gamesPlayed: 76, avgToi: '21:22' },
-      ],
-    }
-  );
-
-  assert.equal(merged[0]['stat.toiPerGame'], 1379);
-  assert.equal(merged[1]['stat.toiPerGame'], undefined);
-  assert.equal(careerTotals(merged, false).toi, 1379);
+  const rows = [nhlRow({ season: 20252026, 'stat.toiPerGame': 1379 })];
+  assert.equal(careerTotals(rows, false).toi, 1379);
 });
 
 test('compareHref keeps the age alignment query on shareable URLs', () => {
