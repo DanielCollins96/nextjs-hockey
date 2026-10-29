@@ -30,6 +30,17 @@ const numericColumnMeta = {
 };
 const linkClass = "text-blue-700 hover:underline dark:text-blue-300";
 
+function compactPlayerName(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length < 2) return name;
+  const initial = parts[0].charAt(0);
+  if (!initial) return name;
+  return `${initial}. ${parts[parts.length - 1]}`;
+}
+
 const fieldClass =
   "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-800 dark:text-white";
 
@@ -265,7 +276,10 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
       header: label,
       accessorFn: (row) => row[key],
       size: label.length <= 1 ? 36 : label.length === 2 ? 44 : 52,
-      meta: numericColumnMeta,
+      meta: {
+        ...numericColumnMeta,
+        mobileSize: label.length <= 1 ? 28 : label.length === 2 ? 34 : 42,
+      },
       cell: ({ getValue }) => formatFantasyStat(key, getValue()),
     });
 
@@ -275,7 +289,11 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         header: "Rk",
         accessorKey: "rank",
         size: 48,
-        meta: numericColumnMeta,
+        meta: {
+          ...numericColumnMeta,
+          sticky: true,
+          mobileSize: 36,
+        },
         cell: ({ getValue }) => getValue() ?? "—",
       },
       {
@@ -283,6 +301,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         header: "Team",
         accessorFn: (row) => row.teamAbbrev || row.teamName,
         size: 64,
+        meta: { mobileSize: 40 },
         cell: ({ row }) => {
           const label = row.original.teamAbbrev || row.original.teamName || "—";
           if (!row.original.teamId || !row.original.teamName) return label;
@@ -293,15 +312,21 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
           );
         },
       },
-      { id: "position", header: "Pos", accessorKey: "position", size: 48 },
+      { id: "position", header: "Pos", accessorKey: "position", size: 48, meta: { mobileSize: 32 } },
       {
         id: "name",
         header: "Player",
         accessorKey: "name",
         size: 180,
+        meta: { sticky: true, mobileSize: 120 },
         cell: ({ row }) => (
-          <Link href={playerUrl(row.original.name, row.original.playerId)} className={linkClass}>
-            {row.original.name}
+          <Link
+            href={playerUrl(row.original.name, row.original.playerId)}
+            className={linkClass}
+            title={row.original.name}
+          >
+            <span className="sm:hidden">{compactPlayerName(row.original.name)}</span>
+            <span className="hidden sm:inline">{row.original.name}</span>
           </Link>
         ),
       },
@@ -318,6 +343,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         meta: {
           headerClassName: "text-right",
           cellClassName: "text-right tabular-nums font-semibold",
+          mobileSize: 52,
         },
         cell: ({ getValue }) => formatFantasyPoints(getValue()),
       },
@@ -329,6 +355,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         meta: {
           headerClassName: "text-right",
           cellClassName: "text-right tabular-nums font-semibold",
+          mobileSize: 56,
         },
         cell: ({ getValue }) => formatFantasyPoints(getValue()),
       },
@@ -571,6 +598,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
             pageSize={40}
             modern
             compact
+            scrollX
           />
         ) : (
           <p className="text-sm text-slate-500 dark:text-slate-400">No players match this season and filter.</p>
