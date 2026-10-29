@@ -276,7 +276,10 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
       header: label,
       accessorFn: (row) => row[key],
       size: label.length <= 1 ? 36 : label.length === 2 ? 44 : 52,
-      meta: numericColumnMeta,
+      meta: {
+        ...numericColumnMeta,
+        mobileSize: label.length <= 1 ? 28 : label.length === 2 ? 34 : 42,
+      },
       cell: ({ getValue }) => formatFantasyStat(key, getValue()),
     });
 
@@ -298,6 +301,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         header: "Team",
         accessorFn: (row) => row.teamAbbrev || row.teamName,
         size: 64,
+        meta: { mobileSize: 40 },
         cell: ({ row }) => {
           const label = row.original.teamAbbrev || row.original.teamName || "—";
           if (!row.original.teamId || !row.original.teamName) return label;
@@ -308,7 +312,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
           );
         },
       },
-      { id: "position", header: "Pos", accessorKey: "position", size: 48 },
+      { id: "position", header: "Pos", accessorKey: "position", size: 48, meta: { mobileSize: 32 } },
       {
         id: "name",
         header: "Player",
@@ -339,6 +343,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         meta: {
           headerClassName: "text-right",
           cellClassName: "text-right tabular-nums font-semibold",
+          mobileSize: 52,
         },
         cell: ({ getValue }) => formatFantasyPoints(getValue()),
       },
@@ -350,6 +355,7 @@ export default function FantasyPage({ players, season, availableSeasons, phase, 
         meta: {
           headerClassName: "text-right",
           cellClassName: "text-right tabular-nums font-semibold",
+          mobileSize: 56,
         },
         cell: ({ getValue }) => formatFantasyPoints(getValue()),
       },

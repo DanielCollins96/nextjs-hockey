@@ -155,6 +155,7 @@ export default function ReactTable({
       ? "overscroll-x-contain"
       : "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
   }`;
+  const mobileTightPad = scrollX ? "max-sm:px-0.5" : "";
 
   return (
     <div>
@@ -202,14 +203,14 @@ export default function ReactTable({
                   <th
                     className={
                       modern
-                        ? `min-w-0 border-b border-slate-200 bg-slate-50 ${tight ? "px-1 py-1 text-xs 2xl:text-sm" : compact ? "px-1 py-1 text-xs" : "px-2 py-2 text-xs"} text-left font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${stickyLeft[header.column.id] != null ? stickyColClass : ""} ${headerClassName}`
+                        ? `min-w-0 border-b border-slate-200 bg-slate-50 ${tight ? "px-1 py-1 text-xs 2xl:text-sm" : compact ? "px-1 py-1 text-xs" : "px-2 py-2 text-xs"} ${mobileTightPad} text-left font-semibold uppercase text-slate-600 first:rounded-tl-lg last:rounded-tr-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap ${stickyLeft[header.column.id] != null ? stickyColClass : ""} ${headerClassName}`
                         : ""
                     }
                     style={getStickyStyle(header.column.id, 4)}
                     key={header.id}
                     colSpan={header.colSpan}
                   >
-                    <div className={`flex items-center gap-1 ${isRightAligned ? "justify-end" : "justify-between"}`}>
+                    <div className={`flex items-center gap-1 ${scrollX ? "max-sm:gap-0" : ""} ${isRightAligned ? "justify-end" : "justify-between"}`}>
                       {header.isPlaceholder ? null : (
                         <div
                           {...{
@@ -223,7 +224,7 @@ export default function ReactTable({
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          <span className={tight ? "ml-0.5 align-middle text-[10px] opacity-70 xl:ml-1 xl:text-xs" : "ml-1 align-middle text-xs opacity-70"}>
+                          <span className={`${tight ? "ml-0.5 align-middle text-[10px] opacity-70 xl:ml-1 xl:text-xs" : "ml-1 align-middle text-xs opacity-70"} ${scrollX && !header.column.getIsSorted() ? "max-sm:hidden" : ""}`}>
                             {{
                               asc: "▲",
                               desc: "▼",
@@ -268,7 +269,7 @@ export default function ReactTable({
                     <td
                       className={
                         modern
-                          ? `min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-b border-slate-200 ${tight ? "px-1" : compact ? "px-1" : "px-2"} text-slate-800 dark:border-slate-700 dark:text-slate-100 ${stickyLeft[cell.column.id] != null ? stickyColClass : ""} ${cellClassName}`
+                          ? `min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-b border-slate-200 ${tight ? "px-1" : compact ? "px-1" : "px-2"} ${mobileTightPad} text-slate-800 dark:border-slate-700 dark:text-slate-100 ${stickyLeft[cell.column.id] != null ? stickyColClass : ""} ${cellClassName}`
                           : "border-black border px-1 text-sm whitespace-nowrap"
                       }
                       style={getStickyStyle(cell.column.id, 2)}
