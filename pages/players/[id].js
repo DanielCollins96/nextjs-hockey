@@ -305,20 +305,13 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
         })
     ), [capHitBySeason, stats]);
 
-    const currentTeam = useMemo(() => {
-        const nhlRows = rows.filter((row) => isNHLDataRow(row) && row?.['team.name']);
-        if (nhlRows.length === 0) return null;
-
-        return [...nhlRows].sort((a, b) => {
-            const seasonA = Number(a?.season) || 0;
-            const seasonB = Number(b?.season) || 0;
-            if (seasonB !== seasonA) return seasonB - seasonA;
-
-            const gamesA = toNumber(getFirstValue(a, regularStatKeys.games)) || 0;
-            const gamesB = toNumber(getFirstValue(b, regularStatKeys.games)) || 0;
-            return gamesB - gamesA;
-        })[0];
-    }, [rows]);
+    const currentTeamName = person?.fullTeamName || null;
+    const rosterLabel = (() => {
+        if (currentTeamName) return currentTeamName;
+        if (person?.isActive === true) return 'Unsigned';
+        if (person?.isActive === false) return 'Retired';
+        return '-';
+    })();
 
     const hasContractSeasonRows = contractSeasonRows.length > 0;
 
@@ -562,7 +555,7 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
         image: headshotUrl,
         birthDate: person.birthdate,
         birthPlace: person.birthCountry,
-        team: currentTeam?.['team.name'],
+        team: currentTeamName,
     });
 
     return (
@@ -628,12 +621,12 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                                     <span className="text-slate-400">|</span>
                                     <span>{handednessLabel}: {person?.shootsCatches || '-'}</span>
                                 </div>
-                                <div className="mt-3">
+                                <div className="mt-2">
                                     <button
                                         type="button"
                                         onClick={() => setCompareOpen((open) => !open)}
                                         aria-expanded={compareOpen}
-                                        className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+                                        className="rounded bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white hover:bg-blue-700"
                                     >
                                         Compare against…
                                     </button>
@@ -659,21 +652,21 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                                         </div>
                                     )}
                                 </div>
-                                <div className="mt-3 grid gap-x-5 gap-y-1 text-sm text-slate-700 dark:text-slate-300 sm:grid-cols-2">
+                                <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-0.5 text-sm text-slate-700 dark:text-slate-300 sm:justify-start">
                                     <p><span className="font-semibold text-slate-900 dark:text-white">Born:</span> {person?.birthdate || '-'}</p>
                                     <p><span className="font-semibold text-slate-900 dark:text-white">Nationality:</span> {person?.birthCountry || '-'}</p>
                                     <p><span className="font-semibold text-slate-900 dark:text-white">Height:</span> {formatHeight(person)}</p>
                                     <p><span className="font-semibold text-slate-900 dark:text-white">Weight:</span> {formatWeight(person)}</p>
                                     <p>
                                         <span className="font-semibold text-slate-900 dark:text-white">Team:</span>{' '}
-                                        {currentTeam?.['team.name'] && currentTeam?.['team.id'] ? (
+                                        {currentTeamName && person?.currentTeamId ? (
                                             <Link
-                                                href={teamUrl(currentTeam['team.name'], currentTeam['team.id'])}
+                                                href={teamUrl(currentTeamName, person.currentTeamId)}
                                                 className="text-blue-700 hover:underline dark:text-blue-300"
                                             >
-                                                {currentTeam['team.name']}
+                                                {currentTeamName}
                                             </Link>
-                                        ) : currentTeam?.['team.name'] || '-'}
+                                        ) : rosterLabel}
                                     </p>
                                     <p>
                                         {hasDraftData(person?.draft_seasons) ? (
@@ -696,11 +689,11 @@ const Players = ({ playerId, stats: initialStats, person, awards: initialAwards,
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-200 pt-3 dark:border-slate-700 sm:grid-cols-4 lg:grid-cols-2 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+                        <div className="grid grid-cols-4 gap-x-2 gap-y-3 border-t border-slate-200 pt-3 text-center dark:border-slate-700 sm:gap-x-4 sm:text-left lg:grid-cols-2 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
                             {regularSummary.map((stat) => (
                                 <div key={stat.label}>
-                                    <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{stat.label}</p>
-                                    <p className="text-2xl font-bold tabular-nums">{detailsLoading ? '—' : stat.value}</p>
+                                    <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400 sm:text-xs">{stat.label}</p>
+                                    <p className="text-lg font-bold tabular-nums sm:text-2xl">{detailsLoading ? '—' : stat.value}</p>
                                 </div>
                             ))}
                         </div>
