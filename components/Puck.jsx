@@ -26,6 +26,7 @@ const Puck = forwardRef(function Puck(
       {...props}
     >
       <g>
+        <rect width="32.96" height="32.96" fill="transparent" />
         <g>
           <g>
             <path fill="currentColor" d="M16.48,18.084c-9.101,0-16.479-2.964-16.479-6.622v10.742h0.05c0,3.916,7.357,7.093,16.429,7.093
