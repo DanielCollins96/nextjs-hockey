@@ -3,6 +3,7 @@ import {
   createTrustedReply,
   createTrustedThread,
   markTrustedDeleted,
+  readTrustedVotes,
   viewTrustedThread,
   voteTrustedTarget,
 } from "../../lib/forum-server";
@@ -44,6 +45,13 @@ export default async function handler(req, res) {
     if (action === "viewThread") {
       const activity = await viewTrustedThread({ id: req.body.id, boardSlug: req.body.boardSlug });
       return res.status(200).json({ activity });
+    }
+    if (action === "readVotes") {
+      const votes = await readTrustedVotes({
+        username: user.username,
+        targets: req.body.targets,
+      });
+      return res.status(200).json({ votes });
     }
     if (action === "voteTarget") {
       const vote = await voteTrustedTarget({

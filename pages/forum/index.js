@@ -2,6 +2,7 @@ import { useQuery } from "react-query";
 import SEO from "../../components/SEO";
 import BoardIndex from "../../components/forum/BoardIndex";
 import HotStrip from "../../components/forum/HotStrip";
+import PopularCatalog from "../../components/forum/PopularCatalog";
 import { calendarDateString } from "../../lib/format";
 import { explainForumError, loadForumHome, mergeBoards } from "../../lib/forum-api";
 
@@ -38,11 +39,16 @@ export default function ForumHomePage() {
         </div>
       )}
       {query.data && (
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-          <div className="order-2 min-w-0 lg:order-1">
+        <div className="mt-6 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_12.5rem] lg:gap-x-5">
+          <div className="min-w-0 lg:col-start-1">
+            <PopularCatalog threads={query.data.popularFeed} />
+          </div>
+          <aside className="mt-6 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0">
+            <HotStrip threads={query.data.hotThreads} compact />
+          </aside>
+          <div className="mt-6 min-w-0 lg:col-start-1 lg:mt-0">
             <BoardIndex boards={query.data.boards} games={gamesQuery.data} />
           </div>
-          <HotStrip threads={query.data.hotThreads} />
         </div>
       )}
     </div>

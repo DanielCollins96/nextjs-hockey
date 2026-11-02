@@ -18,9 +18,10 @@ export default function ForumThreadPage() {
   const waiting = !router.isReady || (numeric && !numbersQuery.isFetched);
   const missing = numeric && numbersQuery.isFetched && !threadId;
   const path = `/forum/t/${raw || ""}`;
+  const browsingPopular = router.isReady && router.query.feed === "popular";
 
   return (
-    <div className="mx-auto max-w-3xl px-3 py-6">
+    <div className={`mx-auto px-3 py-6 ${browsingPopular ? "max-w-6xl" : "max-w-3xl"}`}>
       <SEO title="Forum thread" description="Hockey forum thread" path={path} />
       {waiting && <p className="text-sm text-gray-500 dark:text-gray-400">Loading thread...</p>}
       {missing && <p className="text-gray-700 dark:text-gray-200">That thread does not exist.</p>}
