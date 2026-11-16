@@ -5,9 +5,24 @@ import {
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
-export default function ReactTable({columns, data, sortKey = "season", sortDesc = true, rowClassName, mobileFit = false, pinchToFit = false, modern = false, compact = false, mobileCollapsedColumns = []}) {
+export default function ReactTable({
+  columns,
+  data,
+  sortKey = "season",
+  sortDesc = true,
+  rowClassName,
+  mobileFit = false,
+  pinchToFit = false,
+  modern = false,
+  compact = false,
+  mobileCollapsedColumns = [],
+  getSectionKey,
+  getSectionLabel,
+  sectionWhenSortedBy,
+  hideColumnsWhenSectioned = [],
+}) {
 
   const [sorting, setSorting] = useState([{
             id: sortKey,
@@ -33,6 +48,14 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
 
   const mobileColumnVisibility = isMobile && !mobileExpanded
     ? Object.fromEntries(mobileCollapsedColumns.map((columnId) => [columnId, false]))
+    : {}
+
+  const activeSortId = sorting?.[0]?.id
+  const showSections = Boolean(getSectionKey) && (
+    !sectionWhenSortedBy || !activeSortId || activeSortId === sectionWhenSortedBy
+  )
+  const sectionColumnVisibility = showSections
+    ? Object.fromEntries(hideColumnsWhenSectioned.map((columnId) => [columnId, false]))
     : {}
 
   const toggleExpandedColumn = (column) => {
@@ -122,7 +145,10 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
       data,
       state: {
       sorting,
-      columnVisibility: mobileColumnVisibility,
+      columnVisibility: {
+        ...mobileColumnVisibility,
+        ...sectionColumnVisibility,
+      },
       },
       onSortingChange: setSorting,
       sortDescFirst: true,
@@ -227,28 +253,51 @@ export default function ReactTable({columns, data, sortKey = "season", sortDesc 
           const defaultRowClass = modern
             ? "bg-white odd:bg-white even:bg-slate-50 hover:bg-blue-50 dark:bg-slate-900 dark:odd:bg-slate-900 dark:even:bg-slate-800/70 dark:hover:bg-slate-800"
             : isNHL ? "bg-slate-200 dark:bg-gray-700" : "dark:bg-gray-800";
+          const previousRow = i > 0 ? allRows[i - 1] : null
+          const sectionKey = showSections ? getSectionKey(row) : null
+          const previousSectionKey = showSections && previousRow ? getSectionKey(previousRow) : null
+          const sectionLabel = sectionKey != null && sectionKey !== previousSectionKey
+            ? (getSectionLabel ? getSectionLabel(row, allRows) : sectionKey)
+            : null
 
           return (
-            <tr key={row.id} className={`whitespace-nowrap ` + (customRowClass ?? defaultRowClass)}>
-              {row.getVisibleCells().map((cell) => {
-                const cellClassName = cell.column.columnDef.meta?.cellClassName || ""
-
-                return (
-                  <td
+            <Fragment key={row.id}>
+              {sectionLabel != null && sectionLabel !== false && (
+                <tr className={modern ? "bg-slate-200/90 dark:bg-slate-700" : "bg-slate-300 dark:bg-gray-700"}>
+                  <th
+                    colSpan={Math.max(row.getVisibleCells().length, 1)}
+                    scope="colgroup"
                     className={
                       modern
-                        ? `border-b border-r border-slate-200 ${compact ? "px-1.5 py-0.5" : "px-2"} text-slate-800 last:border-r-0 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
-                        : `${mobileFit ? "px-1 text-xs sm:text-sm" : "px-1 text-sm"} border-black dark:border-gray-600 border dark:text-gray-200 whitespace-nowrap`
+                        ? `border-b border-slate-300 ${compact ? "px-2 py-1.5" : "px-3 py-2"} text-left text-sm font-semibold tracking-wide text-slate-800 dark:border-slate-600 dark:text-slate-50`
+                        : "px-1 text-left text-sm font-semibold dark:text-white"
                     }
-                    key={cell.id}
-                    onDoubleClick={() => toggleExpandedColumn(cell.column)}
-                    title={cell.column.columnDef.meta?.truncate ? String(cell.getValue() ?? "") : undefined}
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                );
-              })}
-            </tr>
+                    {sectionLabel}
+                  </th>
+                </tr>
+              )}
+              <tr className={`whitespace-nowrap ` + (customRowClass ?? defaultRowClass)}>
+                {row.getVisibleCells().map((cell) => {
+                  const cellClassName = cell.column.columnDef.meta?.cellClassName || ""
+
+                  return (
+                    <td
+                      className={
+                        modern
+                          ? `border-b border-r border-slate-200 ${compact ? "px-1.5 py-0.5" : "px-2"} text-slate-800 last:border-r-0 dark:border-slate-700 dark:text-slate-100 whitespace-nowrap ${getTruncationClass(cell.column)} ${cellClassName}`
+                          : `${mobileFit ? "px-1 text-xs sm:text-sm" : "px-1 text-sm"} border-black dark:border-gray-600 border dark:text-gray-200 whitespace-nowrap`
+                      }
+                      key={cell.id}
+                      onDoubleClick={() => toggleExpandedColumn(cell.column)}
+                      title={cell.column.columnDef.meta?.truncate ? String(cell.getValue() ?? "") : undefined}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  );
+                })}
+              </tr>
+            </Fragment>
           );
         })}
       </tbody>

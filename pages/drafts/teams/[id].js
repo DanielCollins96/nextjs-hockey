@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import SEO from '../../../components/SEO'
 import DraftTeamList from '../../../components/DraftTeamList'
 import { FaDownload } from 'react-icons/fa'
+import { partitionNhlTeams } from '../../../lib/nhl-teams'
 import { draftTeamUrl, extractEntityId, playerUrl, teamUrl } from '../../../lib/routes'
 import { PAGE_CACHE, setPageCache } from '../../../lib/http-cache'
 
@@ -24,6 +25,7 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
   const selectedYear = year !== 'all' && draft[year] ? year : 'all'
   const allPlayers = years.flatMap((draftYear) => draft[draftYear] || [])
   const selectedPlayers = selectedYear === 'all' ? allPlayers : draft[selectedYear] || []
+  const { active: activeDraftTeams, former: formerDraftTeams } = partitionNhlTeams(draftTeams)
 
   const teamName = team?.name || team?.abbreviation || 'Team'
   const teamAbbrev = team?.abbreviation || ''
@@ -37,11 +39,10 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
   }
 
   const downloadCsv = () => {
-    const headers = ['Year', 'Pick', 'Drafted From', 'Player', 'Pos', 'GP', 'G', 'A', 'P', 'PIM', 'Last Season']
+    const headers = ['Year', 'Pick', 'Player', 'Pos', 'GP', 'G', 'A', 'P', 'PIM', 'Drafted From', 'Last Season']
     const rows = selectedPlayers.map((player) => [
       player.draftYear,
       `${player.overallPick} (${player.round})`,
-      `${player.amateurClubName || ''} [${player.amateurLeague || ''}]`,
       player.playerName,
       player.positionCode,
       player.games,
@@ -49,6 +50,7 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
       player.assists,
       player.points,
       player.pim,
+      `${player.amateurClubName || ''} [${player.amateurLeague || ''}]`,
       player.last_season,
     ])
     const csv = [headers, ...rows]
@@ -81,25 +83,27 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
       : 'bg-white hover:bg-blue-50 dark:bg-slate-900 dark:hover:bg-slate-800'
   }
 
-  const columns = [
-    {
-      id: 'draftYear',
-      header: 'Year',
-      accessorFn: (d) => d.draftYear,
-      cell: ({ row }) => (
-        <Link
-          href={`/drafts/${row.original.draftYear}`}
-          className="hover:text-blue-700 visited:text-purple-800"
-        >
-          {row.original.draftYear}
-        </Link>
-      ),
-      size: 72,
-      meta: {
-        headerClassName: 'text-right',
-        cellClassName: 'text-right tabular-nums',
-      },
+  const showYearSections = selectedYear === 'all'
+  const yearColumn = {
+    id: 'draftYear',
+    header: 'Year',
+    accessorFn: (d) => d.draftYear,
+    cell: ({ row }) => (
+      <Link
+        href={`/drafts/${row.original.draftYear}`}
+        className="hover:text-blue-700 visited:text-purple-800"
+      >
+        {row.original.draftYear}
+      </Link>
+    ),
+    size: 72,
+    meta: {
+      headerClassName: 'text-right',
+      cellClassName: 'text-right tabular-nums',
     },
+  }
+  const columns = [
+    ...(showYearSections ? [yearColumn] : []),
     {
       id: 'overallPick',
       header: 'Pick',
@@ -109,18 +113,6 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
       meta: {
         headerClassName: 'text-right',
         cellClassName: 'text-right tabular-nums',
-      },
-    },
-    {
-      id: 'draftedFrom',
-      header: 'Drafted From',
-      accessorFn: (d) => `${d.amateurClubName || ''} [${d.amateurLeague || ''}]`,
-      cell: ({ getValue }) => getValue(),
-      size: 180,
-      meta: {
-        truncate: true,
-        expandOnDoubleClick: true,
-        expandedSize: 270,
       },
     },
     {
@@ -167,6 +159,18 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
       header: 'PIM',
       accessorFn: (d) => d.pim,
       size: 56,
+    },
+    {
+      id: 'draftedFrom',
+      header: 'Drafted From',
+      accessorFn: (d) => `${d.amateurClubName || ''} [${d.amateurLeague || ''}]`,
+      cell: ({ getValue }) => getValue(),
+      size: 180,
+      meta: {
+        truncate: true,
+        expandOnDoubleClick: true,
+        expandedSize: 270,
+      },
     },
     {
       header: 'Last Season',
@@ -250,11 +254,20 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
                   }}
                   className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white lg:hidden"
                 >
-                  {draftTeams.map((entry) => (
-                    <option value={entry.id} key={entry.id}>
-                      {entry.abbreviation || entry.name}
-                    </option>
-                  ))}
+                  {[
+                    ['Active teams', activeDraftTeams],
+                    ['Former teams', formerDraftTeams],
+                  ].map(([label, entries]) =>
+                    entries.length ? (
+                      <optgroup label={label} key={label}>
+                        {entries.map((entry) => (
+                          <option value={entry.id} key={entry.id}>
+                            {entry.abbreviation || entry.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : null
+                  )}
                 </select>
                 <div className="hidden rounded-md bg-slate-100 px-2.5 py-1.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:block">
                   <span className="font-semibold">
@@ -315,12 +328,37 @@ export default function DraftByTeam({ team, draft, draftTeams }) {
           <div>
             {selectedPlayers.length > 0 && (
               <ReactTable
+                key={selectedYear}
                 columns={columns}
                 data={selectedPlayers}
                 pageSize={50}
                 rowClassName={getRowClassName}
-                sortKey={selectedYear === 'all' ? 'draftYear' : 'overallPick'}
-                sortDesc={selectedYear === 'all'}
+                sortKey={showYearSections ? 'draftYear' : 'overallPick'}
+                sortDesc={showYearSections}
+                getSectionKey={
+                  showYearSections ? (row) => String(row.original.draftYear) : undefined
+                }
+                getSectionLabel={(row) => {
+                  const draftYear = row.original.draftYear
+                  const pickCount = draft[String(draftYear)]?.length || 0
+                  return (
+                    <span className="inline-flex flex-wrap items-baseline gap-x-2">
+                      <Link
+                        href={`/drafts/${draftYear}`}
+                        className="hover:text-blue-700 dark:hover:text-blue-300"
+                      >
+                        {draftYear} Entry
+                      </Link>
+                      {pickCount > 0 && (
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                          {pickCount} {pickCount === 1 ? 'pick' : 'picks'}
+                        </span>
+                      )}
+                    </span>
+                  )
+                }}
+                sectionWhenSortedBy="draftYear"
+                hideColumnsWhenSectioned={['draftYear']}
                 modern
                 compact
               />
@@ -407,6 +445,7 @@ export async function getServerSideProps({ params, res }) {
         id: entry.id,
         name: entry.name,
         abbreviation: entry.abbreviation,
+        active: Boolean(entry.active),
       })),
     },
   }

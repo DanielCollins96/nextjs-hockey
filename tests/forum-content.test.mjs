@@ -1,11 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FORUM_BODY_MAX, FORUM_DELETED_BODY, FORUM_TITLE_MAX, assertForumMediaLimits, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumDeleted, isForumImageUrl, isForumUploadKey, isForumVideoUrl, requireForumBody, sanitizeForumHtml, validateTitle } from "../lib/forum-content.js";
+import { FORUM_BODY_MAX, FORUM_DELETED_BODY, FORUM_TITLE_MAX, assertForumMediaLimits, forumPreviewImage, forumUploadExtension, forumUploadKeyFromStoredSrc, forumUploadSrc, isForumDeleted, isForumImageUrl, isForumUploadKey, isForumVideoUrl, requireForumBody, sanitizeForumHtml, validateTitle } from "../lib/forum-content.js";
 
 test("https image and gif links are allowed", () => {
   assert.equal(isForumImageUrl("https://i.imgur.com/abc123.png"), true);
   assert.equal(isForumImageUrl("https://media.tenor.com/example/goal.gif"), true);
   assert.equal(isForumImageUrl("https://media.giphy.com/media/abc/giphy.webp"), true);
+});
+
+test("a catalog preview uses the first allowed image", () => {
+  assert.equal(forumPreviewImage('<p>hi</p><img src="https://i.imgur.com/abc123.png" alt="">'), "https://i.imgur.com/abc123.png");
+  assert.equal(forumPreviewImage('<img src="javascript:alert(1)">'), "");
 });
 
 test("an uploaded image keeps a stable forum key", () => {
