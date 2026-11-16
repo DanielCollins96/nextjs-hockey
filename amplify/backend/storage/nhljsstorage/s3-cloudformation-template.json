@@ -282,10 +282,13 @@
 			],
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "DenyForumPrefixUploads",
+				"PolicyName": "DenyPublicPrefixWrites",
 				"Roles": [
 					{
 						"Ref": "authRoleName"
+					},
+					{
+						"Ref": "unauthRoleName"
 					}
 				],
 				"PolicyDocument": {
@@ -306,7 +309,7 @@
 											{
 												"Ref": "S3Bucket"
 											},
-											"/public/forum/*"
+											"/public/*"
 										]
 									]
 								}
@@ -598,7 +601,7 @@
 											{
 												"Ref": "S3Bucket"
 											},
-											"/public/*"
+											"/public/forum/*"
 										]
 									]
 								}
