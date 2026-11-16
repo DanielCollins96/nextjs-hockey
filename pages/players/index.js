@@ -107,7 +107,7 @@ export default function PlayersIndex({ players, searchTerm }) {
             header: 'GP',
             accessorKey: 'games',
             cell: props => <p className="text-right">{props.getValue() || '-'}</p>,
-            size: 58,
+            size: 44,
             meta: {
                 headerClassName: 'text-right',
                 cellClassName: 'text-right tabular-nums',
@@ -121,7 +121,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? '-' : (row.original.goals || 0)}
                 </p>
             ),
-            size: 48,
+            size: 36,
             meta: {
                 headerClassName: 'text-right',
                 cellClassName: 'text-right tabular-nums',
@@ -135,7 +135,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? '-' : (row.original.assists || 0)}
                 </p>
             ),
-            size: 48,
+            size: 36,
             meta: {
                 headerClassName: 'text-right',
                 cellClassName: 'text-right tabular-nums',
@@ -149,7 +149,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? '-' : (row.original.points || 0)}
                 </p>
             ),
-            size: 52,
+            size: 36,
             meta: {
                 headerClassName: 'text-right',
                 cellClassName: 'text-right tabular-nums font-semibold',
@@ -163,7 +163,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? (row.original.wins || 0) : '-'}
                 </p>
             ),
-            size: 48,
+            size: 36,
             meta: {
                 headerClassName: 'text-right',
                 cellClassName: 'text-right tabular-nums',
@@ -177,7 +177,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                     {row.original.position === 'G' ? (row.original.losses || 0) : '-'}
                 </p>
             ),
-            size: 48,
+            size: 36,
             meta: {
                 headerClassName: 'text-right',
                 cellClassName: 'text-right tabular-nums',
@@ -260,6 +260,7 @@ export default function PlayersIndex({ players, searchTerm }) {
                             { id: 'goals', desc: true },
                         ]}
                         modern
+                        compact
                     />
                 ) : searchTerm ? (
                     <p className="text-gray-500 dark:text-gray-400">

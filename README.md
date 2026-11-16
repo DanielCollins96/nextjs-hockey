@@ -55,14 +55,30 @@ This project includes integration tests for API replacement and caching behavior
 
 Public pages now load data through API routes instead of importing DB query functions directly.
 
-### 12-hour cache (`s-maxage=43200`)
+Policies live in `lib/http-cache.js` (`PAGE_CACHE`). Shared-cache entries include `max-age=0` so Vercel does not leave clients with a bare `Cache-Control: public` after it strips `s-maxage`.
+
+### Live cache (`s-maxage=300`, `stale-while-revalidate=3600`)
+
+Volatile player / team / game / current-season read models. Player and team SSR pages that hydrate from these APIs use the same policy.
 
 - `GET /api/players/:id` - Player profile, stats, awards
-- `GET /api/players?q=<term>&limit=<n>` - Player search
 - `GET /api/teams` - Team list
 - `GET /api/teams/:id` - Team details, roster stats, records, playoff seasons
 - `GET /api/teams/rosters` - Team + grouped active roster data
-- `GET /api/seasons?year=<seasonId>` - Skater/goalie leaders + available seasons
+- `GET /api/games?date=<yyyy-mm-dd>` or `GET /api/games?startDate=<yyyy-mm-dd>&endDate=<yyyy-mm-dd>`
+- `GET /api/games/:id`
+- `GET /api/seasons?year=<seasonId>` - Current NHL season only
+- `GET /api/fantasy?year=<seasonId>` - Current fantasy season only
+
+### Search cache (`s-maxage=600`, `stale-while-revalidate=3600`)
+
+- `GET /api/players?q=<term>&limit=<n>` - Player search
+- `GET /api/search?q=<term>` - Global player/team typeahead
+
+### Hourly cache (`s-maxage=3600`)
+
+- `GET /api/players/similar/:id` - Players with the most similar career statistical profile
+- `GET /api/seasons?year=<seasonId>` - Historical seasons
 
 ### 24-hour cache (`s-maxage=86400`)
 
@@ -71,16 +87,6 @@ Public pages now load data through API routes instead of importing DB query func
 - `GET /api/drafts/teams/:id` - Draft picks for a franchise
 - `GET /api/players/ids` - Player IDs (for sitemap)
 - `GET /api/teams/ids` - Team IDs (for sitemap)
-
-### Short cache for frequently changing data
-
-- `GET /api/games?date=<yyyy-mm-dd>` or `GET /api/games?startDate=<yyyy-mm-dd>&endDate=<yyyy-mm-dd>`
-- `GET /api/games/:id`
-- Cache policy: `s-maxage=300, stale-while-revalidate=3600`
-
-### Hourly cache (`s-maxage=3600`)
-
-- `GET /api/players/similar/:id` - Players with the most similar career statistical profile
 
 ## Amplify Stuff
 

@@ -4,18 +4,20 @@ export default function DarkModeToggle() {
     const [darkMode, setDarkMode] = useState(false);
 
     useEffect(() => {
-        // On mount, read the preference from localStorage and update darkMode
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
-        setDarkMode(isDarkMode);
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-        }
+        const stored = localStorage.getItem('darkMode') === 'true';
+        document.documentElement.classList.toggle('dark', stored);
+        setDarkMode(stored);
+
+        const sync = () => setDarkMode(document.documentElement.classList.contains('dark'));
+        window.addEventListener('hocke-dark-mode', sync);
+        return () => window.removeEventListener('hocke-dark-mode', sync);
     }, []);
 
     const toggleDarkMode = () => {
-        setDarkMode(!darkMode);
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('darkMode', (!darkMode).toString());
+        const next = !document.documentElement.classList.contains('dark');
+        document.documentElement.classList.toggle('dark', next);
+        localStorage.setItem('darkMode', String(next));
+        window.dispatchEvent(new Event('hocke-dark-mode'));
     };
 
     return (

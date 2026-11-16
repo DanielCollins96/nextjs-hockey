@@ -107,7 +107,7 @@ export async function getServerSideProps({ res }) {
             throw new Error('No valid rosters were fetched successfully');
         }
 
-        setPageCache(res, PAGE_CACHE.hourly)
+        setPageCache(res, PAGE_CACHE.live)
         return {
             props: {
                 rosters: validRosters
