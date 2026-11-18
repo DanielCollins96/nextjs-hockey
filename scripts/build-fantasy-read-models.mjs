@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { FANTASY_READ_MODEL_DIR, fantasyGameTypeId, fantasyPhase } from "../lib/fantasy-data.js";
 import { loadFantasyPool, loadFantasySeasons } from "../lib/fantasy-pool.js";
 import { applySkaterRealtime, fetchSkaterRealtime } from "../lib/fantasy-realtime.js";
@@ -28,15 +28,15 @@ async function upload(key, body) {
   if (!s3) return;
   const objectKey = objectKeyFor(key);
   const digest = createHash("md5").update(body).digest("hex");
-  try {
-    const head = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: objectKey }));
-    const etag = String(head.ETag || "").replaceAll('"', "");
-    if (etag && !etag.includes("-") && etag === digest) {
-      console.log(`unchanged s3://${bucket}/${objectKey}`);
-      return;
-    }
-  } catch (error) {
-    if (!isMissingObject(error)) throw error;
+  // List instead of HeadObject: the ETL publisher role can list and put, but not get.
+  const listing = await s3.send(
+    new ListObjectsV2Command({ Bucket: bucket, Prefix: objectKey, MaxKeys: 1 })
+  );
+  const existing = listing.Contents?.find((object) => object.Key === objectKey);
+  const etag = String(existing?.ETag || "").replaceAll('"', "");
+  if (etag && !etag.includes("-") && etag === digest) {
+    console.log(`unchanged s3://${bucket}/${objectKey}`);
+    return;
   }
 
   await s3.send(
@@ -85,8 +85,9 @@ try {
   for (const season of ALL ? seasons : [currentSeason]) {
     for (const phase of PHASES) {
       const key = readModelPaths.fantasyPool(season, fantasyPhase(phase));
-      const existing = await readExisting(key);
       const current = Number(season) === Number(currentSeason);
+      // The current season is always rebuilt, so only past seasons need the existing file.
+      const existing = current ? null : await readExisting(key);
       if (!current && existing?.hitsLoaded && Array.isArray(existing.players)) {
         console.log(`${key} unchanged players=${existing.players.length}`);
         continue;
