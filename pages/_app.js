@@ -19,7 +19,14 @@ Amplify.configure({
   ssr: true,
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function LoadingBar({isLoading}) {
   if (!isLoading) return null;
