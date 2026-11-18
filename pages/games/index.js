@@ -7,6 +7,7 @@ import { fetchReplyCounts } from '../../lib/forum-api';
 import { useReactTable, flexRender, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
 import { FaChevronLeft, FaChevronRight, FaTable, FaTh, FaDownload, FaRegCommentDots } from 'react-icons/fa';
 import { PAGE_CACHE, setPageCache } from '../../lib/http-cache';
+import toast from 'react-hot-toast';
 import {
   calendarDateString,
   rememberViewerTimeZone,
@@ -471,9 +472,11 @@ export default function Games({ games: initialGames, selectedDate, dateRange, da
     try {
       const res = await fetch(`/api/games?startDate=${startDate}&endDate=${endDate}`);
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch games');
       setGames(data.games || []);
     } catch (error) {
       console.error('Error fetching games:', error);
+      toast.error(error.message || 'Failed to fetch games');
     }
     setLoading(false);
   };
